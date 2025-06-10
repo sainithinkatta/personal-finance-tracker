@@ -35,7 +35,6 @@ All data is synced in real time via Supabase (PostgreSQL + Auth).
   - View recent transactions and trends  
 - **Responsive UI**  
   - Mobile-first design with Tailwind CSS and shadcn/ui components  
-  - Dark mode support  
 
 ---
 
