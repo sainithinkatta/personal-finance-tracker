@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@supabase/supabase-js';
+import { UserCircle } from 'lucide-react';
 
 interface AppHeaderProps {
   user?: User | null;
@@ -35,7 +35,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ user, showSignOut = false 
           </div>
           {showSignOut && user && (
             <div className="hidden md:flex items-center space-x-3">
-              <div className="text-right">
+              <div className="flex items-center space-x-2">
+                {/* TODO - Add profile component & show details. */}
+                <UserCircle className="h-9 w-9 text-gray-600" />
                 <Button variant="outline" onClick={handleSignOut}>
                   Sign Out
                 </Button>
