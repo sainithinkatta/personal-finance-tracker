@@ -91,7 +91,7 @@ const Dashboard: React.FC<DashboardProps> = ({ expenses }) => {
             <CardHeader className="px-3 py-2 border-b border-gray-100">
               <CardTitle className="text-sm font-medium text-gray-800 flex items-center">
                 <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></div>
-                Spending by Category ({currentMonthLabel})
+                Spending by Category ( {currentMonthLabel} )
               </CardTitle>
             </CardHeader>
             <CardContent className="p-3">
