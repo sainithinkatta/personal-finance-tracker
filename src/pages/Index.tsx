@@ -133,7 +133,7 @@ const Index = () => {
                           Track your personal financial obligations
                         </p>
                       </div>
-                      
+
                       <div className="p-4">
                         <DuesManager />
                       </div>

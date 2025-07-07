@@ -1,34 +1,36 @@
-
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { User } from '@supabase/supabase-js';
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { User } from "@supabase/supabase-js";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from "@/components/ui/tooltip";
 
 interface AppHeaderProps {
   user?: User | null;
   showSignOut?: boolean;
 }
 
-export const AppHeader: React.FC<AppHeaderProps> = ({ user, showSignOut = false }) => {
+export const AppHeader: React.FC<AppHeaderProps> = ({
+  user,
+  showSignOut = false,
+}) => {
   const { toast } = useToast();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast({
-      title: 'Signed out',
-      description: 'You have been signed out successfully.',
+      title: "Signed out",
+      description: "You have been signed out successfully.",
     });
   };
 
   const getInitials = (email?: string) => {
-    if (!email) return 'U';
+    if (!email) return "U";
     return email.charAt(0).toUpperCase();
   };
 
@@ -46,20 +48,23 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ user, showSignOut = false 
           </div>
           {showSignOut && user && (
             <div className="hidden md:flex items-center space-x-4">
-                <Button variant="outline" onClick={handleSignOut}>
-                  Sign Out
-                </Button>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Avatar className="h-9 w-9 cursor-pointer">
-                      <AvatarImage src={user.user_metadata?.avatar_url} alt="User avatar" />
-                      <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
-                    </Avatar>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Logged in as: {user.email}</p>
-                  </TooltipContent>
-                </Tooltip>
+              <Button variant="outline" onClick={handleSignOut}>
+                Sign Out
+              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Avatar className="h-9 w-9 cursor-pointer">
+                    <AvatarImage
+                      src={user.user_metadata?.avatar_url}
+                      alt="User avatar"
+                    />
+                    <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
+                  </Avatar>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Logged in as: {user.email}</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           )}
         </div>
