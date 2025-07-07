@@ -81,6 +81,37 @@ export const useRecurringTransactions = () => {
     },
   });
 
+  const markAsDoneMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('recurring_transactions')
+        .update({ 
+          status: 'done',
+          last_done_date: format(new Date(), 'yyyy-MM-dd'),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      // Invalidate all related queries to ensure UI updates everywhere
+      queryClient.invalidateQueries({ queryKey: ['recurring-transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['upcoming-reminders'] });
+      toast({
+        title: 'Marked as Done',
+        description: 'Transaction has been marked as completed.',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: 'Failed to mark transaction as done. Please try again.',
+        variant: 'destructive',
+      });
+    },
+  });
+
   const deleteRecurringTransactionMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -138,7 +169,7 @@ export const useRecurringTransactions = () => {
         date: today,
       }]);
 
-      // Update next due date
+      // Update next due date and reset status
       const currentDueDate = new Date(transaction.next_due_date);
       let nextDueDate: Date;
 
@@ -163,6 +194,7 @@ export const useRecurringTransactions = () => {
         .from('recurring_transactions')
         .update({ 
           next_due_date: format(nextDueDate, 'yyyy-MM-dd'),
+          status: 'pending',
           updated_at: new Date().toISOString()
         })
         .eq('id', transaction.id);
@@ -179,9 +211,11 @@ export const useRecurringTransactions = () => {
     addRecurringTransaction: addRecurringTransactionMutation.mutate,
     updateRecurringTransaction: updateRecurringTransactionMutation.mutate,
     deleteRecurringTransaction: deleteRecurringTransactionMutation.mutate,
+    markAsDone: markAsDoneMutation.mutate,
     getUpcomingReminders,
     processRecurringTransactions,
     isAdding: addRecurringTransactionMutation.isPending,
     isUpdating: updateRecurringTransactionMutation.isPending,
+    isMarkingDone: markAsDoneMutation.isPending,
   };
 };

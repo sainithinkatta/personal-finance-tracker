@@ -23,6 +23,6 @@ export interface SavingsContribution {
 export interface SavingsGoalFormData {
   name: string;
   target_amount: number;
-  target_date?: string;
+  target_date: string;
   currency: string;
 }

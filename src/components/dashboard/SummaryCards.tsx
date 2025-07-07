@@ -26,7 +26,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ expenses, currentMonthLabel
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-blue-600 uppercase tracking-wide">
-                Total Expenses ( {currentMonthLabel} )
+                Total Expenses — {currentMonthLabel}
               </p>
               <p className="text-sm font-bold text-blue-900 mt-0.5">
                 {expenses.length > 0 ? `$${totalSpent.toFixed(2)}` : `No data for ${currentMonthLabel}`}
@@ -46,7 +46,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ expenses, currentMonthLabel
           <div className="flex items-center justify-between">
           <div>
               <p className="text-xs font-medium text-green-600 uppercase tracking-wide">
-                Highest Category  ( {currentMonthLabel} )
+                Highest Category — {currentMonthLabel}
               </p>
               {expenses.length > 0 ? (
                 <p className="text-sm font-bold text-green-900 mt-0.5 flex items-baseline space-x-2">
@@ -57,7 +57,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ expenses, currentMonthLabel
                 </p>
               ) : (
                 <p className="text-sm font-bold text-green-900 mt-0.5">
-                  No data for  ( {currentMonthLabel} )
+                  No data for {currentMonthLabel}
                 </p>
               )}
             </div>
@@ -75,7 +75,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ expenses, currentMonthLabel
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-purple-600 uppercase tracking-wide">
-                Total Transactions ( {currentMonthLabel} )
+                Total Transactions — {currentMonthLabel}
               </p>
               <p className="text-sm font-bold text-purple-900 mt-0.5">
                 {expenses.length > 0 ? expenses.length : `No data for ${currentMonthLabel}`}

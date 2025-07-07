@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bell } from 'lucide-react';
+import { Bell, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
@@ -13,7 +13,9 @@ const UtilityPanel: React.FC = () => {
   const navigate = useNavigate();
   const { getUpcomingReminders } = useRecurringTransactions();
   const { bankAccounts } = useBankAccounts();
-  const upcomingReminders = getUpcomingReminders();
+  
+  // Filter out transactions that are marked as 'done' from upcoming reminders
+  const upcomingReminders = getUpcomingReminders().filter(tx => tx.status !== 'done');
 
   const handleAddBudget = () => {
     navigate('/?tab=budget');
@@ -53,6 +55,8 @@ const UtilityPanel: React.FC = () => {
           amount: dueAmount,
           currency: account.currency,
           next_due_date: dueDate.toISOString(),
+          status: 'pending' as const,
+          last_done_date: null,
         };
       })
       .filter(payment => {
@@ -76,21 +80,28 @@ const UtilityPanel: React.FC = () => {
             <div className="space-y-2">
               {allUpcomingPayments.map((payment) => {
                 const daysUntilDue = differenceInDays(new Date(payment.next_due_date), new Date());
+                
                 return (
                   <div
                     key={payment.id}
-                    className="p-2 border rounded-md bg-yellow-50/50"
+                    className="p-2 border rounded-md bg-yellow-50/50 border-yellow-200"
                   >
-                    <h4 className="text-xs font-medium text-gray-900">{payment.name}</h4>
-                    <p className="text-xs text-gray-600">
-                      Due: {format(new Date(payment.next_due_date), 'MMM d, yyyy')}
-                      {daysUntilDue === 0 && ' (Today)'}
-                      {daysUntilDue === 1 && ' (Tomorrow)'}
-                      {daysUntilDue > 1 && ` (${daysUntilDue} days)`}
-                    </p>
-                    <p className="text-xs font-semibold text-red-600">
-                      {formatCurrency(payment.amount, payment.currency)}
-                    </p>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs font-medium text-gray-900">
+                          {payment.name}
+                        </h4>
+                        <p className="text-xs text-gray-600">
+                          Due: {format(new Date(payment.next_due_date), 'MMM d, yyyy')}
+                          {daysUntilDue === 0 && ' (Today)'}
+                          {daysUntilDue === 1 && ' (Tomorrow)'}
+                          {daysUntilDue > 1 && ` (${daysUntilDue} days)`}
+                        </p>
+                        <p className="text-xs font-semibold text-red-600">
+                          {formatCurrency(payment.amount, payment.currency)}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 );
               })}

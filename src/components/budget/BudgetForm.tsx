@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Budget } from '@/types/budget';
 
-const CURRENCIES = ['USD', 'EUR', 'GBP', 'INR', 'JPY'];
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
@@ -118,9 +117,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {CURRENCIES.map(currency => (
-                    <SelectItem key={currency} value={currency}>{currency}</SelectItem>
-                  ))}
+                    <SelectItem value='USD'>USD</SelectItem>
                 </SelectContent>
               </Select>
             </div>

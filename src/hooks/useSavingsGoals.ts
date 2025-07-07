@@ -58,6 +58,51 @@ export const useSavingsGoals = () => {
     },
   });
 
+  const updateSavingsGoalMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<SavingsGoalFormData> }) => {
+      const { error } = await supabase
+        .from('savings_goals')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['savings-goals'] });
+      toast({
+        title: 'Savings Goal Updated',
+        description: 'Your savings goal has been updated successfully.',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: 'Failed to update savings goal. Please try again.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const deleteSavingsGoalMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('savings_goals').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['savings-goals'] });
+      toast({
+        title: 'Savings Goal Deleted',
+        description: 'Your savings goal has been deleted successfully.',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete savings goal. Please try again.',
+        variant: 'destructive',
+      });
+    },
+  });
+
   const addContributionMutation = useMutation({
     mutationFn: async ({ goalId, amount, description }: { goalId: string; amount: number; description?: string }) => {
       // First, add the contribution record
@@ -113,8 +158,12 @@ export const useSavingsGoals = () => {
     isLoading,
     error,
     addSavingsGoal: addSavingsGoalMutation.mutate,
+    updateSavingsGoal: updateSavingsGoalMutation.mutate,
+    deleteSavingsGoal: deleteSavingsGoalMutation.mutate,
     addContribution: addContributionMutation.mutate,
     isAdding: addSavingsGoalMutation.isPending,
+    isUpdating: updateSavingsGoalMutation.isPending,
+    isDeleting: deleteSavingsGoalMutation.isPending,
     isAddingContribution: addContributionMutation.isPending,
   };
 };

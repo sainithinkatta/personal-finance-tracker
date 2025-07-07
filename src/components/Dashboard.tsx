@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ExpenseTimeChart } from './charts/ExpenseTimeChart';
 import { ExpenseCategoryChart } from './charts/ExpenseCategoryChart';
-import BankAccountsSnapshot from './dashboard/BankAccountsSnapshot';
 import SummaryCards from './dashboard/SummaryCards';
 import { Expense } from '@/types/expense';
 import { format } from 'date-fns';
@@ -91,7 +90,7 @@ const Dashboard: React.FC<DashboardProps> = ({ expenses }) => {
             <CardHeader className="px-3 py-2 border-b border-gray-100">
               <CardTitle className="text-sm font-medium text-gray-800 flex items-center">
                 <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></div>
-                Spending by Category ( {currentMonthLabel} )
+                Spending by Category ({currentMonthLabel})
               </CardTitle>
             </CardHeader>
             <CardContent className="p-3">
@@ -106,11 +105,6 @@ const Dashboard: React.FC<DashboardProps> = ({ expenses }) => {
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Bank Accounts Section - Full Width Below */}
-        <div className="mt-4">
-          <BankAccountsSnapshot />
         </div>
       </div>
     </div>

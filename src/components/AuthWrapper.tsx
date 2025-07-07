@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -6,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { AppHeader } from './AppHeader';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface AuthWrapperProps {
   children: React.ReactNode;
@@ -16,9 +19,21 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isLogin, setIsLogin] = useState(true);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
+  
+  // Separate state for login form
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  
+  // Separate state for signup form
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  
+  // Forgot password email state
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  
   const { toast } = useToast();
 
   useEffect(() => {
@@ -44,8 +59,8 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
     try {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+          email: loginEmail,
+          password: loginPassword,
         });
         if (error) throw error;
         toast({
@@ -54,8 +69,8 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
         });
       } else {
         const { error } = await supabase.auth.signUp({
-          email,
-          password,
+          email: signupEmail,
+          password: signupPassword,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
           }
@@ -82,7 +97,7 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
     setAuthLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
       
@@ -140,11 +155,11 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
                   <Input
                     type="email"
                     placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={forgotPasswordEmail}
+                    onChange={(e) => setForgotPasswordEmail(e.target.value)}
                     required
                   />
-                  <Button type="submit" className="w-full" disabled={authLoading}>
+                  <Button type="submit" className="bg-blue-500 hover:bg-blue-600 w-full" disabled={authLoading}>
                     {authLoading ? 'Sending...' : 'Send Reset Email'}
                   </Button>
                   <Button
@@ -161,17 +176,31 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
                   <Input
                     type="email"
                     placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={isLogin ? loginEmail : signupEmail}
+                    onChange={(e) => isLogin ? setLoginEmail(e.target.value) : setSignupEmail(e.target.value)}
                     required
                   />
-                  <Input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      type={isLogin ? (showLoginPassword ? "text" : "password") : (showSignupPassword ? "text" : "password")}
+                      placeholder="Password"
+                      value={isLogin ? loginPassword : signupPassword}
+                      onChange={(e) => isLogin ? setLoginPassword(e.target.value) : setSignupPassword(e.target.value)}
+                      required
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      onClick={() => isLogin ? setShowLoginPassword(!showLoginPassword) : setShowSignupPassword(!showSignupPassword)}
+                    >
+                      {(isLogin ? showLoginPassword : showSignupPassword) ? (
+                        <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                      )}
+                    </button>
+                  </div>
                   <Button
                     type="submit" 
                     className="w-full bg-blue-500 hover:bg-blue-600"
@@ -215,3 +244,4 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
 };
 
 export default AuthWrapper;
+

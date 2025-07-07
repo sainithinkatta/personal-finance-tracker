@@ -3,11 +3,7 @@ import { Budget } from '@/types/budget';
 
 export const formatCurrency = (amount: number, currency: string = 'USD'): string => {
   const currencyMap: { [key: string]: string } = {
-    USD: '$',
-    EUR: '€',
-    GBP: '£',
-    INR: '₹',
-    JPY: '¥'
+    USD: '$'
   };
 
   const symbol = currencyMap[currency] || currency;
@@ -23,6 +19,7 @@ export const getCategoryRemaining = (budget: Budget, category: string): number =
 export const getTotalSpent = (budget: Budget): number => {
   return (budget.travel_spent || 0) + 
          (budget.groceries_spent || 0) + 
+         (budget.food_spent || 0) + 
          (budget.bills_spent || 0) + 
          (budget.others_spent || 0);
 };
@@ -30,6 +27,7 @@ export const getTotalSpent = (budget: Budget): number => {
 export const getTotalAllocated = (budget: Budget): number => {
   return (budget.travel_allocated || 0) + 
          (budget.groceries_allocated || 0) + 
+         (budget.food_allocated || 0) + 
          (budget.bills_allocated || 0) + 
          (budget.others_allocated || 0);
 };

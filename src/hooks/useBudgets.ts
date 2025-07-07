@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Budget, CategoryAllocations } from '@/types/budget';
 import { useToast } from '@/hooks/use-toast';
 
-export const useBudgets = () => {
+export const useBudgets = (onBudgetCreated?: (budget: Budget) => void) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -39,12 +39,16 @@ export const useBudgets = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['budgets'] });
       toast({
         title: 'Budget Created',
         description: 'Your budget has been created successfully.',
       });
+      // Call the callback to auto-open allocation
+      if (onBudgetCreated && data) {
+        onBudgetCreated(data as Budget);
+      }
     },
     onError: (error) => {
       toast({
@@ -85,17 +89,26 @@ export const useBudgets = () => {
 
   const updateCategoryAllocationsMutation = useMutation({
     mutationFn: async ({ id, allocations }: { id: string; allocations: CategoryAllocations }) => {
+      console.log('useBudgets: Updating allocations for budget', id, 'with data:', allocations);
       const { data, error } = await supabase
         .from('budgets')
         .update({
-          ...allocations,
-          updated_at: new Date().toISOString()
+          travel_allocated: allocations.travel_allocated,
+          groceries_allocated: allocations.groceries_allocated,
+          food_allocated: allocations.food_allocated,
+          bills_allocated: allocations.bills_allocated,
+          others_allocated: allocations.others_allocated,
+          updated_at: new Date().toISOString(),
         })
         .eq('id', id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('useBudgets: Error updating allocations:', error);
+        throw error;
+      }
+      console.log('useBudgets: Successfully updated allocations:', data);
       return data;
     },
     onSuccess: () => {
@@ -166,7 +179,7 @@ export const useBudgets = () => {
     error,
     createBudget: createBudgetMutation.mutate,
     updateBudget: updateBudgetMutation.mutate,
-    updateCategoryAllocations: updateCategoryAllocationsMutation.mutate,
+    updateCategoryAllocations: updateCategoryAllocationsMutation.mutateAsync, // changed from mutate to mutateAsync
     deleteBudget: deleteBudgetMutation.mutate,
     getActiveBudgetsForDate,
     isCreating: createBudgetMutation.isPending,

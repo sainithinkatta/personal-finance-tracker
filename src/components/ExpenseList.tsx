@@ -32,14 +32,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import { CURRENCIES } from '@/types/expense';
 import { useExpenses } from '@/hooks/useExpenses';
 import ExpenseEditForm from '@/components/ExpenseEditForm';
+import ExportDataButton from '@/components/ExportDataButton';
 
 interface ExpenseListProps {
   expenses: Expense[];
   title?: string;
 }
+
+const ITEMS_PER_PAGE = 10;
 
 const getCategoryColor = (category: string) => {
   switch (category) {
@@ -70,6 +81,13 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
   const { updateExpense, deleteExpense } = useExpenses();
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(expenses.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentExpenses = expenses.slice(startIndex, endIndex);
 
   const handleEditExpense = (expense: Expense) => {
     setEditingExpense(expense);
@@ -84,15 +102,28 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
     if (deletingExpenseId) {
       deleteExpense(deletingExpenseId);
       setDeletingExpenseId(null);
+      
+      // Reset to page 1 if current page becomes empty after deletion
+      const newTotalPages = Math.ceil((expenses.length - 1) / ITEMS_PER_PAGE);
+      if (currentPage > newTotalPages && newTotalPages > 0) {
+        setCurrentPage(newTotalPages);
+      }
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   const expenseToDelete = expenses.find(e => e.id === deletingExpenseId);
 
   return (
     <div className="p-6 pt-0">
-      <div className="text-sm text-muted-foreground pt-2 pb-4">
-        {expenses.length} {expenses.length === 1 ? 'expense' : 'expenses'} found
+      <div className="flex items-center justify-between pt-2 pb-4">
+        <div className="text-sm text-muted-foreground">
+          Showing {startIndex + 1}-{Math.min(endIndex, expenses.length)} of {expenses.length} {expenses.length === 1 ? 'expense' : 'expenses'}
+        </div>
+        <ExportDataButton expenses={expenses} />
       </div>
 
       <div>
@@ -122,7 +153,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {expenses.map((expense, index) => (
+                    {currentExpenses.map((expense, index) => (
                       <TableRow
                         key={expense.id}
                         className={cn(
@@ -184,13 +215,39 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
             </div>
 
             {/* Pagination */}
-            <div className="flex justify-end mt-4">
-              <div className="flex space-x-2 text-sm text-gray-500">
-                <button className="hover:text-gray-700">‹ Previous</button>
-                <span className="mx-2">1 of 1</span>
-                <button className="hover:text-gray-700">Next ›</button>
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-6">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                        className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                      />
+                    </PaginationItem>
+                    
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          onClick={() => handlePageChange(page)}
+                          isActive={currentPage === page}
+                          className="cursor-pointer"
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                        className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
               </div>
-            </div>
+            )}
           </>
         ) : (
           <div className="text-center py-12 text-gray-500">

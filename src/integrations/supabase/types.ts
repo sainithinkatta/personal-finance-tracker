@@ -61,6 +61,8 @@ export type Database = {
           created_at: string
           currency: string
           end_date: string | null
+          food_allocated: number | null
+          food_spent: number | null
           groceries_allocated: number | null
           groceries_spent: number | null
           id: string
@@ -83,6 +85,8 @@ export type Database = {
           created_at?: string
           currency?: string
           end_date?: string | null
+          food_allocated?: number | null
+          food_spent?: number | null
           groceries_allocated?: number | null
           groceries_spent?: number | null
           id?: string
@@ -105,6 +109,8 @@ export type Database = {
           created_at?: string
           currency?: string
           end_date?: string | null
+          food_allocated?: number | null
+          food_spent?: number | null
           groceries_allocated?: number | null
           groceries_spent?: number | null
           id?: string
@@ -120,6 +126,51 @@ export type Database = {
           updated_at?: string
           user_id?: string
           year?: number
+        }
+        Relationships: []
+      }
+      dues: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          due_date: string | null
+          id: string
+          notes: string | null
+          person_name: string
+          settled_date: string | null
+          status: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          person_name: string
+          settled_date?: string | null
+          status?: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          person_name?: string
+          settled_date?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -170,74 +221,6 @@ export type Database = {
           },
         ]
       }
-      loan_payments: {
-        Row: {
-          amount: number
-          created_at: string
-          id: string
-          loan_id: string | null
-          payment_date: string
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          id?: string
-          loan_id?: string | null
-          payment_date: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          id?: string
-          loan_id?: string | null
-          payment_date?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "loan_payments_loan_id_fkey"
-            columns: ["loan_id"]
-            isOneToOne: false
-            referencedRelation: "loans"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      loans: {
-        Row: {
-          created_at: string
-          currency: string
-          current_balance: number
-          id: string
-          monthly_payment: number
-          name: string
-          total_amount: number
-          updated_at: string
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          currency?: string
-          current_balance: number
-          id?: string
-          monthly_payment: number
-          name: string
-          total_amount: number
-          updated_at?: string
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          currency?: string
-          current_balance?: number
-          id?: string
-          monthly_payment?: number
-          name?: string
-          total_amount?: number
-          updated_at?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       recurring_transactions: {
         Row: {
           amount: number
@@ -247,9 +230,11 @@ export type Database = {
           email_reminder: boolean | null
           frequency: string
           id: string
+          last_done_date: string | null
           name: string
           next_due_date: string
           reminder_days_before: number | null
+          status: string | null
           updated_at: string
           user_id: string | null
         }
@@ -261,9 +246,11 @@ export type Database = {
           email_reminder?: boolean | null
           frequency: string
           id?: string
+          last_done_date?: string | null
           name: string
           next_due_date: string
           reminder_days_before?: number | null
+          status?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -275,9 +262,11 @@ export type Database = {
           email_reminder?: boolean | null
           frequency?: string
           id?: string
+          last_done_date?: string | null
           name?: string
           next_due_date?: string
           reminder_days_before?: number | null
+          status?: string | null
           updated_at?: string
           user_id?: string | null
         }

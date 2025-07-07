@@ -15,11 +15,13 @@ export interface Budget {
   // Category allocations
   travel_allocated?: number;
   groceries_allocated?: number;
+  food_allocated?: number;
   bills_allocated?: number;
   others_allocated?: number;
   // Category spending (tracked automatically)
   travel_spent?: number;
   groceries_spent?: number;
+  food_spent?: number;
   bills_spent?: number;
   others_spent?: number;
 }
@@ -27,6 +29,7 @@ export interface Budget {
 export interface CategoryAllocations {
   travel_allocated: number;
   groceries_allocated: number;
+  food_allocated: number;
   bills_allocated: number;
   others_allocated: number;
 }

@@ -1,9 +1,15 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@supabase/supabase-js';
-import { UserCircle } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface AppHeaderProps {
   user?: User | null;
@@ -21,6 +27,11 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ user, showSignOut = false 
     });
   };
 
+  const getInitials = (email?: string) => {
+    if (!email) return 'U';
+    return email.charAt(0).toUpperCase();
+  };
+
   return (
     <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200/60 px-4 py-4 shadow-sm">
       <div className="max-w-7xl mx-auto">
@@ -34,14 +45,21 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ user, showSignOut = false 
             </p>
           </div>
           {showSignOut && user && (
-            <div className="hidden md:flex items-center space-x-3">
-              <div className="flex items-center space-x-2">
-                {/* TODO - Add profile component & show details. */}
-                <UserCircle className="h-9 w-9 text-gray-600" />
+            <div className="hidden md:flex items-center space-x-4">
                 <Button variant="outline" onClick={handleSignOut}>
                   Sign Out
                 </Button>
-              </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Avatar className="h-9 w-9 cursor-pointer">
+                      <AvatarImage src={user.user_metadata?.avatar_url} alt="User avatar" />
+                      <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
+                    </Avatar>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Logged in as: {user.email}</p>
+                  </TooltipContent>
+                </Tooltip>
             </div>
           )}
         </div>

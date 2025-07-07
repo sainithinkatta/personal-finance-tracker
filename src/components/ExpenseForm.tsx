@@ -43,7 +43,6 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
   const [bankAccountId, setBankAccountId] = useState<string>(expense?.bank_account_id || '');
   const [budgetId, setBudgetId] = useState<string>(expense?.budget_id || 'none');
 
-  const selectedCurrency = CURRENCIES.find(c => c.code === currency);
   const activeBudgets = getActiveBudgetsForDate(date);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -131,11 +130,9 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
               <SelectValue placeholder="Select currency" />
             </SelectTrigger>
             <SelectContent>
-              {CURRENCIES.map((curr) => (
-                <SelectItem key={curr.code} value={curr.code}>
-                  {curr.symbol} {curr.name}
+                <SelectItem value="USD">
+                  $ US Dollar
                 </SelectItem>
-              ))}
             </SelectContent>
           </Select>
         </div>
@@ -144,8 +141,8 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700">Amount</label>
         <div className="relative">
-          <span className="absolute left-3 top-3 text-gray-500">
-            {selectedCurrency?.symbol || '$'}
+          <span className="absolute left-3 top-2 text-gray-500">
+            $
           </span>
           <Input
             value={amount}
@@ -171,6 +168,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="Groceries">Groceries</SelectItem>
+            <SelectItem value="Food">Food</SelectItem>
             <SelectItem value="Travel">Travel</SelectItem>
             <SelectItem value="Bills">Bills</SelectItem>
             <SelectItem value="Others">Others</SelectItem>

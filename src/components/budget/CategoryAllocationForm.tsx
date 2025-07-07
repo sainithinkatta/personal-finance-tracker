@@ -7,13 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Budget, CategoryAllocations } from '@/types/budget';
 import { formatCurrency } from '@/utils/budgetUtils';
 
-const CATEGORIES = ['Travel', 'Groceries', 'Bills', 'Others'] as const;
+const CATEGORIES = ['Travel', 'Groceries', 'Food', 'Bills', 'Others'] as const;
 
 interface CategoryAllocationFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (allocations: CategoryAllocations) => void;
-  budget: Budget;
+  budget: Budget | null;
   isLoading?: boolean;
 }
 
@@ -25,20 +25,22 @@ export const CategoryAllocationForm: React.FC<CategoryAllocationFormProps> = ({
   isLoading = false,
 }) => {
   const [allocations, setAllocations] = useState<CategoryAllocations>({
-    travel_allocated: budget.travel_allocated || 0,
-    groceries_allocated: budget.groceries_allocated || 0,
-    bills_allocated: budget.bills_allocated || 0,
-    others_allocated: budget.others_allocated || 0,
+    travel_allocated: 0,
+    groceries_allocated: 0,
+    food_allocated: 0,
+    bills_allocated: 0,
+    others_allocated: 0,
   });
 
   const totalAllocated = Object.values(allocations).reduce((sum, amount) => sum + amount, 0);
-  const remainingToAllocate = budget.total_amount - totalAllocated;
+  const remainingToAllocate = budget ? budget.total_amount - totalAllocated : 0;
 
   useEffect(() => {
-    if (budget) {
+    if (budget && isOpen) {
       setAllocations({
         travel_allocated: budget.travel_allocated || 0,
         groceries_allocated: budget.groceries_allocated || 0,
+        food_allocated: budget.food_allocated || 0,
         bills_allocated: budget.bills_allocated || 0,
         others_allocated: budget.others_allocated || 0,
       });
@@ -47,13 +49,16 @@ export const CategoryAllocationForm: React.FC<CategoryAllocationFormProps> = ({
 
   const handleAllocationChange = (category: string, value: string) => {
     const numValue = parseFloat(value) || 0;
+    const categoryKey = getCategoryKey(category);
+    console.log('Allocation change:', { category, categoryKey, value: numValue });
     setAllocations(prev => ({
       ...prev,
-      [`${category.toLowerCase()}_allocated`]: numValue,
+      [categoryKey]: numValue,
     }));
   };
 
   const handleSave = () => {
+    console.log('Saving allocations:', allocations);
     if (remainingToAllocate === 0) {
       onSave(allocations);
     }
@@ -62,6 +67,11 @@ export const CategoryAllocationForm: React.FC<CategoryAllocationFormProps> = ({
   const getCategoryKey = (category: string): keyof CategoryAllocations => {
     return `${category.toLowerCase()}_allocated` as keyof CategoryAllocations;
   };
+
+  // Don't render if budget is null
+  if (!budget) {
+    return null;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

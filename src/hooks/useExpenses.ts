@@ -201,12 +201,49 @@ export const useExpenses = () => {
 
   const deleteExpenseMutation = useMutation({
     mutationFn: async (id: string) => {
+      // First, get the expense details to restore bank account balance
+      const { data: expense, error: fetchError } = await supabase
+        .from('expenses')
+        .select('amount, bank_account_id')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Delete the expense
       const { error } = await supabase
         .from('expenses')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
+
+      // Restore bank account balance if the expense was linked to a bank account
+      if (expense.bank_account_id) {
+        const { data: account, error: accountFetchError } = await supabase
+          .from('bank_accounts')
+          .select('balance')
+          .eq('id', expense.bank_account_id)
+          .single();
+
+        if (accountFetchError) {
+          console.warn('Failed to fetch bank account for restoration:', accountFetchError);
+        } else {
+          // Add back the expense amount (restore the balance)
+          const restoredBalance = account.balance + expense.amount;
+          const { error: updateError } = await supabase
+            .from('bank_accounts')
+            .update({
+              balance: restoredBalance,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', expense.bank_account_id);
+
+          if (updateError) {
+            console.warn('Failed to restore bank balance:', updateError);
+          }
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
@@ -215,7 +252,7 @@ export const useExpenses = () => {
       queryClient.invalidateQueries({ queryKey: ['budgets'] });
       toast({
         title: 'Expense Deleted',
-        description: 'The expense has been removed successfully.',
+        description: 'The expense has been removed and bank balance restored.',
       });
     },
     onError: (error) => {

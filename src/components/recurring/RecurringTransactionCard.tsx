@@ -2,15 +2,23 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Edit, RotateCcw, DollarSign, ShoppingCart, Zap, Package } from 'lucide-react';
+import { Trash2, Edit, RotateCcw, DollarSign, ShoppingCart, Zap, Package, Check } from 'lucide-react';
 import { RecurringTransaction } from '@/types/recurringTransaction';
 import { CURRENCIES } from '@/types/expense';
 import { format } from 'date-fns';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface RecurringTransactionCardProps {
   transaction: RecurringTransaction;
   onEdit: (transaction: RecurringTransaction) => void;
   onDelete: (id: string) => void;
+  onMarkAsDone: (id: string) => void;
+  isMarkingDone?: boolean;
 }
 
 const getCategoryIcon = (category: string) => {
@@ -52,15 +60,24 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
   transaction,
   onEdit,
   onDelete,
+  onMarkAsDone,
+  isMarkingDone = false,
 }) => {
+  const isDone = transaction.status === 'done';
+
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+    <div className={`bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow ${isDone ? 'opacity-75' : ''}`}>
       <div className="flex items-start justify-between">
         {/* Left side - Icon, Title, and Details */}
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-3">
-            <RotateCcw className="h-5 w-5 text-gray-500" />
+            <RotateCcw className={`h-5 w-5 ${isDone ? 'text-green-500' : 'text-gray-500'}`} />
             <h3 className="text-lg font-semibold text-gray-900">{transaction.name}</h3>
+            {isDone && (
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                ✓ Done
+              </Badge>
+            )}
           </div>
           
           <div className="space-y-2">
@@ -71,6 +88,20 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
               {getCategoryIcon(transaction.category)}
               <span className="text-sm text-gray-600">Category: {transaction.category}</span>
             </div>
+            {isDone && transaction.last_done_date && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <p className="text-xs text-green-600 cursor-help">
+                      Marked as done on {format(new Date(transaction.last_done_date), 'MM/dd/yyyy')}
+                    </p>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>This transaction was manually marked as completed</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
         </div>
 
@@ -90,6 +121,27 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
 
           {/* Action Icons */}
           <div className="flex items-center gap-2">
+            {!isDone && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onMarkAsDone(transaction.id)}
+                      disabled={isMarkingDone}
+                      className="h-8 w-8 p-0 hover:bg-green-100 rounded-full"
+                      aria-label={`Mark ${transaction.name} as done`}
+                    >
+                      <Check className="h-4 w-4 text-green-600" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Mark as Done</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
             <Button
               variant="ghost"
               size="sm"

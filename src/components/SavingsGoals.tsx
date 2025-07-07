@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, TrendingUp } from 'lucide-react';
+import { Plus, TrendingUp, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,18 +21,39 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useSavingsGoals } from '@/hooks/useSavingsGoals';
-import { SavingsGoalFormData } from '@/types/savingsGoal';
+import { SavingsGoal, SavingsGoalFormData } from '@/types/savingsGoal';
 import { CURRENCIES } from '@/types/expense';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import SavingsGoalForm from './savings/SavingsGoalForm';
 
 const SavingsGoals: React.FC = () => {
   const {
     savingsGoals,
     addSavingsGoal,
+    updateSavingsGoal,
+    deleteSavingsGoal,
     addContribution,
     isAdding,
+    isUpdating,
+    isDeleting,
     isAddingContribution,
   } = useSavingsGoals();
   const { toast } = useToast();
@@ -41,21 +62,8 @@ const SavingsGoals: React.FC = () => {
   const [selectedGoalId, setSelectedGoalId] = useState<string>('');
   const [contributionAmount, setContributionAmount] = useState<string>('');
   const [contributionDescription, setContributionDescription] = useState<string>('');
-  const [goalFormData, setGoalFormData] = useState<SavingsGoalFormData>({
-    name: '',
-    target_amount: 0,
-    target_date: '',
-    currency: 'USD',
-  });
-
-  const resetGoalForm = () => {
-    setGoalFormData({
-      name: '',
-      target_amount: 0,
-      target_date: '',
-      currency: 'USD',
-    });
-  };
+  const [editingGoal, setEditingGoal] = useState<SavingsGoal | null>(null);
+  const [deletingGoal, setDeletingGoal] = useState<SavingsGoal | null>(null);
 
   const resetContributionForm = () => {
     setContributionAmount('');
@@ -63,11 +71,14 @@ const SavingsGoals: React.FC = () => {
     setSelectedGoalId('');
   };
 
-  const handleGoalSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    addSavingsGoal(goalFormData);
+  const handleGoalSubmit = (data: SavingsGoalFormData) => {
+    if (editingGoal) {
+      updateSavingsGoal({ id: editingGoal.id, updates: data });
+    } else {
+      addSavingsGoal(data);
+    }
     setIsGoalDialogOpen(false);
-    resetGoalForm();
+    setEditingGoal(null);
   };
 
   const handleContributionSubmit = (e: React.FormEvent) => {
@@ -90,6 +101,11 @@ const SavingsGoals: React.FC = () => {
 
     setIsContributionDialogOpen(false);
     resetContributionForm();
+  };
+
+  const handleEditClick = (goal: SavingsGoal) => {
+    setEditingGoal(goal);
+    setIsGoalDialogOpen(true);
   };
 
   const formatCurrency = (amount: number, currency: string) => {
@@ -115,103 +131,32 @@ const SavingsGoals: React.FC = () => {
     <div className="space-y-6">
       {/* Buttons Row: Add Goal and Add Contribution aligned right */}
       <div className="flex justify-end space-x-2">
-        <Dialog open={isGoalDialogOpen} onOpenChange={setIsGoalDialogOpen}>
+        <Dialog open={isGoalDialogOpen} onOpenChange={(open) => {
+          setIsGoalDialogOpen(open);
+          if (!open) setEditingGoal(null);
+        }}>
           <DialogTrigger asChild>
-            <Button onClick={resetGoalForm} className="bg-blue-500 hover:bg-blue-600">
+            <Button onClick={() => {
+              setEditingGoal(null);
+              setIsGoalDialogOpen(true);
+            }} className="bg-blue-500 hover:bg-blue-600">
               <Plus className="h-4 w-4" />
               Add Goal
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add Savings Goal</DialogTitle>
+              <DialogTitle>{editingGoal ? 'Edit Savings Goal' : 'Add Savings Goal'}</DialogTitle>
               <DialogDescription>
-                Create a new savings goal to track your progress.
+                {editingGoal ? 'Update your savings goal details.' : 'Create a new savings goal to track your progress.'}
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleGoalSubmit}>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">
-                    Name
-                  </Label>
-                  <Input
-                    id="name"
-                    value={goalFormData.name}
-                    onChange={(e) =>
-                      setGoalFormData({ ...goalFormData, name: e.target.value })
-                    }
-                    className="col-span-3"
-                    placeholder="e.g., Emergency Fund"
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="target_amount" className="text-right">
-                    Target Amount
-                  </Label>
-                  <Input
-                    id="target_amount"
-                    type="number"
-                    step="0.01"
-                    value={goalFormData.target_amount}
-                    onChange={(e) =>
-                      setGoalFormData({
-                        ...goalFormData,
-                        target_amount: parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    className="col-span-3"
-                    placeholder="10000.00"
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="currency" className="text-right">
-                    Currency
-                  </Label>
-                  <Select
-                    value={goalFormData.currency}
-                    onValueChange={(value) =>
-                      setGoalFormData({ ...goalFormData, currency: value })
-                    }
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Select currency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CURRENCIES.map((currency) => (
-                        <SelectItem key={currency.code} value={currency.code}>
-                          {currency.symbol} {currency.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="target_date" className="text-right">
-                    Target Date (Optional)
-                  </Label>
-                  <Input
-                    id="target_date"
-                    type="date"
-                    value={goalFormData.target_date}
-                    onChange={(e) =>
-                      setGoalFormData({
-                        ...goalFormData,
-                        target_date: e.target.value,
-                      })
-                    }
-                    className="col-span-3"
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit" disabled={isAdding}>
-                  Add Goal
-                </Button>
-              </DialogFooter>
-            </form>
+            <SavingsGoalForm
+              onSubmit={handleGoalSubmit}
+              isSaving={isAdding || isUpdating}
+              editingGoal={editingGoal}
+              onClose={() => setIsGoalDialogOpen(false)}
+            />
           </DialogContent>
         </Dialog>
 
@@ -301,13 +246,38 @@ const SavingsGoals: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold">{goal.name}</h3>
-                    {milestone && (
-                      <span className={`text-sm font-medium ${milestone.color}`}>
-                        {milestone.milestone === 'completed'
-                          ? '🎉 Goal Achieved!'
-                          : '⚡ Almost There!'}
-                      </span>
-                    )}
+                    <div className="flex items-center">
+                      {milestone && (
+                        <span className={`text-sm font-medium ${milestone.color} mr-2`}>
+                          {milestone.milestone === 'completed'
+                            ? '🎉 Goal Achieved!'
+                            : '⚡ Almost There!'}
+                        </span>
+                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEditClick(goal)}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            <span>Edit</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onSelect={(e) => {
+                              e.preventDefault();
+                              setDeletingGoal(goal);
+                            }}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            <span>Delete</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -333,6 +303,31 @@ const SavingsGoals: React.FC = () => {
           })}
         </div>
       )}
+      <AlertDialog open={!!deletingGoal} onOpenChange={(open) => !open && setDeletingGoal(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the "{deletingGoal?.name}" savings goal and all of its contributions.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingGoal(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90"
+              onClick={() => {
+                if (deletingGoal) {
+                  deleteSavingsGoal(deletingGoal.id);
+                  setDeletingGoal(null);
+                }
+              }}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

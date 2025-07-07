@@ -34,10 +34,12 @@ const RecurringTransactions: React.FC = () => {
     addRecurringTransaction,
     updateRecurringTransaction,
     deleteRecurringTransaction,
+    markAsDone,
     getUpcomingReminders,
     processRecurringTransactions,
     isAdding,
     isUpdating,
+    isMarkingDone,
   } = useRecurringTransactions();
   const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -53,7 +55,8 @@ const RecurringTransactions: React.FC = () => {
     reminder_days_before: 2,
   });
 
-  const upcomingReminders = getUpcomingReminders();
+  // Filter out transactions that are marked as 'done' from upcoming reminders
+  const upcomingReminders = getUpcomingReminders().filter(tx => tx.status !== 'done');
 
   useEffect(() => {
     processRecurringTransactions();
@@ -106,6 +109,10 @@ const RecurringTransactions: React.FC = () => {
 
   const handleDelete = (id: string) => {
     deleteRecurringTransaction(id);
+  };
+
+  const handleMarkAsDone = (id: string) => {
+    markAsDone(id);
   };
 
   const formatCurrency = (amount: number, currency: string) => {
@@ -394,6 +401,8 @@ const RecurringTransactions: React.FC = () => {
                   transaction={transaction}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
+                  onMarkAsDone={handleMarkAsDone}
+                  isMarkingDone={isMarkingDone}
                 />
               ))}
             </div>

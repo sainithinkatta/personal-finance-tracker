@@ -97,7 +97,7 @@ const BankAccountManager: React.FC = () => {
         <CardTitle>Bank Accounts</CardTitle>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm}>
+            <Button onClick={resetForm} className="bg-blue-500 hover:bg-blue-600">
               <Plus className="h-4 w-4 mr-2" />
               Add Account
             </Button>
