@@ -20,7 +20,11 @@ export const useBankAccounts = () => {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Failed to fetch bank accounts:', error);
+        throw error;
+      }
+      
       return data as BankAccount[];
     },
   });

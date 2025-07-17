@@ -89,7 +89,6 @@ export const useBudgets = (onBudgetCreated?: (budget: Budget) => void) => {
 
   const updateCategoryAllocationsMutation = useMutation({
     mutationFn: async ({ id, allocations }: { id: string; allocations: CategoryAllocations }) => {
-      console.log('useBudgets: Updating allocations for budget', id, 'with data:', allocations);
       const { data, error } = await supabase
         .from('budgets')
         .update({
@@ -108,7 +107,7 @@ export const useBudgets = (onBudgetCreated?: (budget: Budget) => void) => {
         console.error('useBudgets: Error updating allocations:', error);
         throw error;
       }
-      console.log('useBudgets: Successfully updated allocations:', data);
+      
       return data;
     },
     onSuccess: () => {

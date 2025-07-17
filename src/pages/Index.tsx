@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
 import Dashboard from "@/components/Dashboard";
 import ExpenseList from "@/components/ExpenseList";
 import FilterPanel from "@/components/FilterPanel";
@@ -17,6 +20,7 @@ import { filterExpenses } from "@/utils/expenseUtils";
 
 const Index = () => {
   const { expenses, isLoading } = useExpenses();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
     startDate: null,
     endDate: null,
@@ -42,56 +46,127 @@ const Index = () => {
 
   return (
     <AuthWrapper>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex w-full">
-        {/* Left Sidebar */}
-        <Sidebar />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col w-full">
+        {/* Mobile Header with Hamburger */}
+        <div className="lg:hidden flex items-center gap-3 p-4 bg-white/90 backdrop-blur-sm border-b border-gray-200">
+          <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="h-12 w-12 flex-shrink-0">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Toggle navigation menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-80 p-0">
+              <div className="h-full">
+                <Sidebar />
+              </div>
+            </SheetContent>
+          </Sheet>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg font-bold text-blue-600 truncate">
+              Personal Finance Tracker
+            </h1>
+            <p className="text-xs text-gray-600 truncate">
+              Track, analyze, and manage your complete financial picture
+            </p>
+          </div>
+        </div>
 
-        {/* Main Content */}
-        <main className="flex-1 flex flex-col min-w-0">
-          {/* Content Area */}
-          <div className="flex-1 flex">
-            {/* Main Content */}
-            <div className="flex-1 px-4 py-4">
-              <div className="max-w-7xl mx-auto">
-                <Tabs defaultValue="dashboard" className="w-full">
-                  <TabsList className="grid w-full grid-cols-6 mb-4 bg-white/60 backdrop-blur-sm border border-gray-200/60 shadow-sm rounded-lg p-1">
-                    <TabsTrigger
-                      value="dashboard"
-                      className="text-xs font-medium  transition-all data-[state=active]:bg-white data-[state=active] data-[state=active]:text-blue-600"
-                    >
-                      Dashboard
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="expenses"
-                      className="text-xs font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active] data-[state=active]:text-blue-600"
-                    >
-                      Expenses
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="dues"
-                      className="text-xs font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active] data-[state=active]:text-blue-600"
-                    >
-                      Dues
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="budget"
-                      className="text-xs font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active] data-[state=active]:text-blue-600"
-                    >
-                      Budget
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="recurring"
-                      className="text-xs font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active] data-[state=active]:text-blue-600"
-                    >
-                      Recurring
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="savings"
-                      className="text-xs font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active] data-[state=active]:text-blue-600"
-                    >
-                      Savings
-                    </TabsTrigger>
-                  </TabsList>
+        <div className="flex flex-1 w-full">
+          {/* Desktop Sidebar */}
+          <div className="hidden lg:block">
+            <Sidebar />
+          </div>
+
+          {/* Main Content */}
+          <main className="flex-1 flex flex-col min-w-0">
+            {/* Content Area */}
+            <div className="flex-1 flex flex-col lg:flex-row">
+              {/* Main Content */}
+              <div className="flex-1 px-3 py-3 lg:px-4 lg:py-4">
+                <div className="max-w-7xl mx-auto">
+                  <Tabs defaultValue="dashboard" className="w-full">
+                    {/* Mobile: Scrollable tabs */}
+                    <div className="block md:hidden w-full overflow-x-auto mobile-tabs-container">
+                      <TabsList className="flex w-max min-w-full bg-white/60 backdrop-blur-sm border border-gray-200/60 shadow-sm rounded-lg p-1 mb-4">
+                        <TabsTrigger
+                          value="dashboard"
+                          className="flex-none px-4 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600 min-h-[44px]"
+                        >
+                          Dashboard
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="expenses"
+                          className="flex-none px-4 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600 min-h-[44px]"
+                        >
+                          Expenses
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="dues"
+                          className="flex-none px-4 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600 min-h-[44px]"
+                        >
+                          Dues
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="budget"
+                          className="flex-none px-4 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600 min-h-[44px]"
+                        >
+                          Budget
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="recurring"
+                          className="flex-none px-4 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600 min-h-[44px]"
+                        >
+                          Recurring
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="savings"
+                          className="flex-none px-4 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600 min-h-[44px]"
+                        >
+                          Savings
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
+
+                    {/* Desktop: inline tabs */}
+                    <TabsList className="hidden md:grid w-full grid-cols-6 mb-4 bg-white/60 backdrop-blur-sm border border-gray-200/60 shadow-sm rounded-lg p-1">
+                      <TabsTrigger
+                        value="dashboard"
+                        className="text-xs lg:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600"
+                      >
+                        Dashboard
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="expenses"
+                        className="text-xs lg:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600"
+                      >
+                        Expenses
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="dues"
+                        className="text-xs lg:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600"
+                      >
+                        Dues
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="budget"
+                        className="text-xs lg:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600"
+                      >
+                        Budget
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="recurring"
+                        className="text-xs lg:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600"
+                      >
+                        Recurring
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="savings"
+                        className="text-xs lg:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600"
+                      >
+                        Savings
+                      </TabsTrigger>
+                    </TabsList>
 
                   <TabsContent value="dashboard" className="mt-0">
                     <Dashboard expenses={filteredExpenses} />
@@ -133,7 +208,7 @@ const Index = () => {
                           Track your personal financial obligations
                         </p>
                       </div>
-
+                      
                       <div className="p-4">
                         <DuesManager />
                       </div>
@@ -187,10 +262,11 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Right Utility Panel */}
-            <UtilityPanel />
-          </div>
-        </main>
+              {/* Right Utility Panel */}
+              <UtilityPanel />
+            </div>
+          </main>
+        </div>
 
         {/* Floating Action Button for Mobile */}
         <FloatingActionButton />

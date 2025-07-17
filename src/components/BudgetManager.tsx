@@ -90,7 +90,6 @@ const BudgetManager: React.FC = () => {
   const handleSaveAllocations = async (allocations: any) => {
     if (allocatingBudget) {
       try {
-        console.log('BudgetManager: Saving allocations for budget:', allocatingBudget.id, allocations);
         await updateCategoryAllocations({ 
           id: allocatingBudget.id, 
           allocations 

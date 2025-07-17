@@ -1,278 +1,159 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Expense } from '@/types/expense';
+import { BankAccount } from '@/types/bankAccount';
 import { useToast } from '@/hooks/use-toast';
 
 export const useExpenses = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const {
-    data: expenses = [],
-    isLoading,
-    error,
-  } = useQuery({
+  // Fetch expenses
+  const { data: expenses = [], isLoading, error } = useQuery<Expense[]>({
     queryKey: ['expenses'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('expenses')
         .select('*')
         .order('date', { ascending: false });
-
       if (error) throw error;
-      
-      return data.map(expense => ({
-        ...expense,
-        date: new Date(expense.date),
-      })) as Expense[];
+      return (data as any[]).map(e => ({ ...e, date: new Date(e.date) })) as Expense[];
     },
   });
 
-  const addExpenseMutation = useMutation({
-    mutationFn: async (expense: Omit<Expense, 'id'>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+  const applyBalanceChange = async (accountId: string, delta: number) => {
+    const { data: acct, error: fetchErr } = await supabase
+      .from('bank_accounts')
+      .select('balance, available_balance, account_type, due_balance')
+      .eq('id', accountId)
+      .single();
+    if (fetchErr || !acct) throw fetchErr ?? new Error('Account not found');
 
-      const { data, error } = await supabase
+    const isCredit = acct.account_type?.toLowerCase() === 'credit';
+    const now = new Date().toISOString();
+    const updates: Partial<BankAccount> = { updated_at: now };
+
+    if (isCredit) {
+      const currAvail = acct.available_balance ?? acct.balance;
+      updates.available_balance = currAvail + delta;
+      updates.balance = acct.balance + delta;
+      updates.due_balance = (acct.due_balance ?? 0) - delta;
+    } else {
+      updates.balance = acct.balance + delta;
+    }
+
+    const { error: updErr } = await supabase
+      .from('bank_accounts')
+      .update(updates)
+      .eq('id', accountId);
+    if (updErr) throw updErr;
+  };
+
+  // Add expense → subtract from bank
+  const addExpense = useMutation<Expense, unknown, Omit<Expense, 'id'>>({
+    mutationFn: async expense => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data: newExpense, error: expErr } = await supabase
         .from('expenses')
-        .insert([{
-          ...expense,
-          user_id: user.id,
-          date: expense.date.toISOString(),
-        }])
+        .insert([{ ...expense, user_id: user.id, date: expense.date.toISOString() }])
         .select()
         .single();
+      if (expErr || !newExpense) throw expErr;
 
-      if (error) throw error;
-
-      // Update bank account balance if specified
       if (expense.bank_account_id) {
-        // First get the current balance
-        const { data: account, error: fetchError } = await supabase
-          .from('bank_accounts')
-          .select('balance')
-          .eq('id', expense.bank_account_id)
-          .single();
-
-        if (fetchError) {
-          console.warn('Failed to fetch bank account:', fetchError);
-        } else {
-          // Update the balance
-          const newBalance = account.balance - expense.amount;
-          const { error: updateError } = await supabase
-            .from('bank_accounts')
-            .update({
-              balance: newBalance,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', expense.bank_account_id);
-
-          if (updateError) {
-            console.warn('Failed to update bank balance:', updateError);
-          }
-        }
+        await applyBalanceChange(expense.bank_account_id, -expense.amount);
       }
-
-      return data;
+      return { ...newExpense, date: new Date(newExpense.date) } as Expense;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       queryClient.invalidateQueries({ queryKey: ['bank-accounts'] });
-      // Invalidate budgets cache to refresh budget spending totals
       queryClient.invalidateQueries({ queryKey: ['budgets'] });
-      toast({
-        title: 'Expense Added',
-        description: 'Your expense has been recorded successfully.',
-      });
+      toast({ title: 'Expense Added', description: 'Recorded successfully.' });
     },
-    onError: (error) => {
-      toast({
-        title: 'Error',
-        description: 'Failed to add expense. Please try again.',
-        variant: 'destructive',
-      });
-    },
+    onError: () =>
+      toast({ title: 'Error', description: 'Failed to add expense.', variant: 'destructive' }),
   });
 
-  const updateExpenseMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<Expense> }) => {
-      // First, get the current expense to compare old vs new values
-      const { data: currentExpense, error: fetchError } = await supabase
+  // Update expense → revert old debit then apply new one
+  const updateExpense = useMutation<void, unknown, { id: string; data: Partial<Expense> }>({
+    mutationFn: async ({ id, data }) => {
+      const { data: oldExp, error: oldErr } = await supabase
         .from('expenses')
         .select('amount, bank_account_id')
         .eq('id', id)
         .single();
+      if (oldErr || !oldExp) throw oldErr;
 
-      if (fetchError) throw fetchError;
+      // Patch the expense record
+      const payload: any = {};
+      if (data.amount != null) payload.amount = data.amount;
+      if (data.date) payload.date = data.date.toISOString();
+      if (data.bank_account_id != null) payload.bank_account_id = data.bank_account_id;
 
-      // Update the expense
-      const { error: updateError } = await supabase
-        .from('expenses')
-        .update({
-          ...data,
-          date: data.date ? data.date.toISOString() : undefined,
-        })
-        .eq('id', id);
+      const { error: updErr } = await supabase.from('expenses').update(payload).eq('id', id);
+      if (updErr) throw updErr;
 
-      if (updateError) throw updateError;
-
-      // Handle bank account balance updates if amount or bank account changed
-      const oldAmount = currentExpense.amount;
-      const newAmount = data.amount ?? oldAmount;
-      const oldBankAccountId = currentExpense.bank_account_id;
-      const newBankAccountId = data.bank_account_id;
-
-      // If amount changed and there's a bank account involved
-      if (oldAmount !== newAmount || oldBankAccountId !== newBankAccountId) {
-        // If the old expense had a bank account, revert the old amount
-        if (oldBankAccountId) {
-          const { data: oldAccount, error: oldFetchError } = await supabase
-            .from('bank_accounts')
-            .select('balance')
-            .eq('id', oldBankAccountId)
-            .single();
-
-          if (oldFetchError) {
-            console.warn('Failed to fetch old bank account:', oldFetchError);
-          } else {
-            // Add back the old expense amount (reverse the deduction)
-            const restoredBalance = oldAccount.balance + oldAmount;
-            const { error: oldUpdateError } = await supabase
-              .from('bank_accounts')
-              .update({
-                balance: restoredBalance,
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', oldBankAccountId);
-
-            if (oldUpdateError) {
-              console.warn('Failed to restore old bank balance:', oldUpdateError);
-            }
-          }
-        }
-
-        // If the new expense has a bank account, apply the new amount
-        if (newBankAccountId && newBankAccountId !== 'none') {
-          const { data: newAccount, error: newFetchError } = await supabase
-            .from('bank_accounts')
-            .select('balance')
-            .eq('id', newBankAccountId)
-            .single();
-
-          if (newFetchError) {
-            console.warn('Failed to fetch new bank account:', newFetchError);
-          } else {
-            // Deduct the new expense amount
-            const newBalance = newAccount.balance - newAmount;
-            const { error: newUpdateError } = await supabase
-              .from('bank_accounts')
-              .update({
-                balance: newBalance,
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', newBankAccountId);
-
-            if (newUpdateError) {
-              console.warn('Failed to update new bank balance:', newUpdateError);
-            }
-          }
-        }
+      // Restore the old amount
+      if (oldExp.bank_account_id) {
+        await applyBalanceChange(oldExp.bank_account_id, oldExp.amount);
+      }
+      // Subtract the new amount
+      const newAmt = data.amount ?? oldExp.amount;
+      if (data.bank_account_id) {
+        await applyBalanceChange(data.bank_account_id, -newAmt);
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       queryClient.invalidateQueries({ queryKey: ['bank-accounts'] });
-      // Invalidate budgets cache to refresh budget spending totals
       queryClient.invalidateQueries({ queryKey: ['budgets'] });
-      toast({
-        title: 'Expense Updated',
-        description: 'Your expense has been updated successfully.',
-      });
+      toast({ title: 'Expense Updated', description: 'Updated successfully.' });
     },
-    onError: (error) => {
-      toast({
-        title: 'Error',
-        description: 'Failed to update expense. Please try again.',
-        variant: 'destructive',
-      });
-    },
+    onError: () =>
+      toast({ title: 'Error', description: 'Failed to update expense.', variant: 'destructive' }),
   });
 
-  const deleteExpenseMutation = useMutation({
-    mutationFn: async (id: string) => {
-      // First, get the expense details to restore bank account balance
-      const { data: expense, error: fetchError } = await supabase
+  // Delete expense → restore balance
+  const deleteExpense = useMutation<void, unknown, string>({
+    mutationFn: async id => {
+      const { data: exp, error: fetchErr } = await supabase
         .from('expenses')
         .select('amount, bank_account_id')
         .eq('id', id)
         .single();
+      if (fetchErr || !exp) throw fetchErr;
 
-      if (fetchError) throw fetchError;
+      const { error: delErr } = await supabase.from('expenses').delete().eq('id', id);
+      if (delErr) throw delErr;
 
-      // Delete the expense
-      const { error } = await supabase
-        .from('expenses')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      // Restore bank account balance if the expense was linked to a bank account
-      if (expense.bank_account_id) {
-        const { data: account, error: accountFetchError } = await supabase
-          .from('bank_accounts')
-          .select('balance')
-          .eq('id', expense.bank_account_id)
-          .single();
-
-        if (accountFetchError) {
-          console.warn('Failed to fetch bank account for restoration:', accountFetchError);
-        } else {
-          // Add back the expense amount (restore the balance)
-          const restoredBalance = account.balance + expense.amount;
-          const { error: updateError } = await supabase
-            .from('bank_accounts')
-            .update({
-              balance: restoredBalance,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', expense.bank_account_id);
-
-          if (updateError) {
-            console.warn('Failed to restore bank balance:', updateError);
-          }
-        }
+      if (exp.bank_account_id) {
+        await applyBalanceChange(exp.bank_account_id, exp.amount);
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       queryClient.invalidateQueries({ queryKey: ['bank-accounts'] });
-      // Invalidate budgets cache to refresh budget spending totals
       queryClient.invalidateQueries({ queryKey: ['budgets'] });
-      toast({
-        title: 'Expense Deleted',
-        description: 'The expense has been removed and bank balance restored.',
-      });
+      toast({ title: 'Expense Deleted', description: 'Balance restored.' });
     },
-    onError: (error) => {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete expense. Please try again.',
-        variant: 'destructive',
-      });
-    },
+    onError: () =>
+      toast({ title: 'Error', description: 'Failed to delete expense.', variant: 'destructive' }),
   });
 
   return {
     expenses,
     isLoading,
     error,
-    addExpense: addExpenseMutation.mutate,
-    updateExpense: updateExpenseMutation.mutate,
-    deleteExpense: deleteExpenseMutation.mutate,
-    isAdding: addExpenseMutation.isPending,
-    isUpdating: updateExpenseMutation.isPending,
-    isDeleting: deleteExpenseMutation.isPending,
+    addExpense: addExpense.mutate,
+    updateExpense: updateExpense.mutate,
+    deleteExpense: deleteExpense.mutate,
+    isAdding: addExpense.isPending,
+    isUpdating: updateExpense.isPending,
+    isDeleting: deleteExpense.isPending,
   };
 };

@@ -81,3 +81,39 @@
   transform: translateY(-2px);
   transition: transform 0.2s ease;
 }
+
+/* Mobile-friendly scrollable tabs */
+@media (max-width: 768px) {
+  .mobile-tabs-container {
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+  }
+  
+  .mobile-tabs-container::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
+  }
+  
+  /* Ensure minimum touch target size on mobile */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Focus styles for better accessibility */
+.focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Better touch feedback */
+@media (hover: none) and (pointer: coarse) {
+  .hover\:bg-muted\/50:hover {
+    background-color: transparent;
+  }
+  
+  .active\:bg-muted\/80:active {
+    background-color: hsl(var(--muted) / 0.8);
+  }
+}

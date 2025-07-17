@@ -214,6 +214,76 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
               </ScrollArea>
             </div>
 
+            {/* Mobile Card View */}
+            <div className="block md:hidden">
+              <ScrollArea className="h-[60vh] max-h-[500px]">
+                <div className="space-y-3 pb-20">
+                  {currentExpenses.map((expense) => (
+                    <div
+                      key={expense.id}
+                      className="bg-card rounded-lg border p-4 space-y-3 touch-target"
+                    >
+                      {/* Header Row */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-foreground">
+                            {format(expense.date, 'MMM d, yyyy')}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {format(expense.date, 'EEEE')}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-semibold text-foreground">
+                            {formatCurrency(expense.amount, expense.currency)}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Category and Description */}
+                      <div className="space-y-2">
+                        <Badge
+                          className={cn(
+                            'font-normal text-xs',
+                            getCategoryColor(expense.category)
+                          )}
+                        >
+                          {expense.category}
+                        </Badge>
+                        {expense.description && (
+                          <div className="text-sm text-muted-foreground">
+                            {expense.description}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex justify-end space-x-2 pt-2 border-t">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-9 px-3 touch-target"
+                          onClick={() => handleEditExpense(expense)}
+                        >
+                          <Edit2 className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-9 px-3 text-destructive hover:text-destructive touch-target"
+                          onClick={() => setDeletingExpenseId(expense.id)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex justify-center mt-6">

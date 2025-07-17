@@ -26,30 +26,30 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="hidden lg:block w-[15rem] bg-white border-r border-gray-200 h-full overflow-y-auto">
-      <div className="p-6 space-y-6 flex flex-col items-center">
-        {/* Standalone Add Expense Button */}
+    <aside className="w-full lg:w-[15rem] bg-white border-r border-gray-200 h-full overflow-y-auto">
+      <div className="p-4 lg:p-6 space-y-4 lg:space-y-6 flex flex-col items-center">
+        {/* Standalone Add Expense Button - Touch Friendly */}
         <Button 
           onClick={() => setIsAddExpenseOpen(true)}
-          className="bg-blue-500 hover:bg-blue-600"
+          className="bg-blue-500 hover:bg-blue-600 h-12 w-full max-w-[200px] text-sm font-medium"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-5 w-5 mr-2" />
           Add Expense
         </Button>
 
-        {/* Bank Accounts Section */}
-        <Card className="rounded-lg shadow-sm">
+        {/* Bank Accounts Section - Touch Friendly */}
+        <Card className="rounded-lg shadow-sm w-full max-w-[280px]">
           <CardHeader 
-            className="cursor-pointer p-4 pb-2" 
+            className="cursor-pointer p-4 pb-2 min-h-[48px] flex items-center" 
             onClick={() => setIsBankAccountsCollapsed(!isBankAccountsCollapsed)}
           >
-            <CardTitle className="flex items-center">
-              <span className='text-sm'>Bank Accounts</span>
-              <div className="flex items-center ml-2 space-x-1">
+            <CardTitle className="flex items-center w-full">
+              <span className='text-sm font-medium'>Bank Accounts</span>
+              <div className="flex items-center ml-auto space-x-2">
                 <Button 
                   size="sm" 
                   variant="ghost" 
-                  className="h-6 w-6 p-0"
+                  className="h-8 w-8 p-0 hover:bg-gray-100"
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsAddAccountOpen(true);

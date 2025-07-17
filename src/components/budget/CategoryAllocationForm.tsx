@@ -50,7 +50,6 @@ export const CategoryAllocationForm: React.FC<CategoryAllocationFormProps> = ({
   const handleAllocationChange = (category: string, value: string) => {
     const numValue = parseFloat(value) || 0;
     const categoryKey = getCategoryKey(category);
-    console.log('Allocation change:', { category, categoryKey, value: numValue });
     setAllocations(prev => ({
       ...prev,
       [categoryKey]: numValue,
@@ -58,7 +57,6 @@ export const CategoryAllocationForm: React.FC<CategoryAllocationFormProps> = ({
   };
 
   const handleSave = () => {
-    console.log('Saving allocations:', allocations);
     if (remainingToAllocate === 0) {
       onSave(allocations);
     }
