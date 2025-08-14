@@ -180,6 +180,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
         <label className="text-sm font-medium text-gray-700">
           Bank Account (USD only)
         </label>
+
         <Select value={bankAccountId} onValueChange={setBankAccountId} required>
           <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 h-10">
             <SelectValue placeholder="Select bank account" />
@@ -192,12 +193,13 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
                 </SelectItem>
               ))
             ) : (
-              <SelectItem value="" disabled>
+              <SelectItem value="no_usd_accounts" disabled>
                 No USD accounts available
               </SelectItem>
             )}
           </SelectContent>
         </Select>
+
       </div>
 
       {activeBudgets.length > 0 && (
