@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Budget } from '@/types/budget';
 import { BudgetCard } from './BudgetCard';
@@ -16,17 +15,45 @@ export const BudgetGrid: React.FC<BudgetGridProps> = ({
   onAllocate,
   onDelete,
 }) => {
-  return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
-      {budgets.map(budget => (
-        <div key={budget.id} className="h-full">
-          <BudgetCard
-            budget={budget}
-            onEdit={onEdit}
-            onAllocate={onAllocate}
-            onDelete={onDelete}
-          />
+  // Empty state
+  if (budgets.length === 0) {
+    return (
+      <div className="text-center py-12 px-4">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gray-100 mb-3">
+          <svg
+            className="w-7 h-7 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+            />
+          </svg>
         </div>
+        <h3 className="text-base font-semibold text-gray-900 mb-1.5">
+          No budgets yet
+        </h3>
+        <p className="text-sm text-gray-600 mb-5 max-w-sm mx-auto">
+          Create your first budget to start tracking your monthly expenses and stay on top of your finances.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 auto-rows-fr">
+      {budgets.map(budget => (
+        <BudgetCard
+          key={budget.id}
+          budget={budget}
+          onEdit={onEdit}
+          onAllocate={onAllocate}
+          onDelete={onDelete}
+        />
       ))}
     </div>
   );
