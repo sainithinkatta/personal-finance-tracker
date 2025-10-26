@@ -34,7 +34,16 @@ const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpe
   const { bankAccounts } = useBankAccounts();
   const { getActiveBudgetsForDate } = useBudgets();
   
-  const [date, setDate] = useState<Date>(new Date(expense.date));
+  // Parse date as local date to prevent timezone issues
+  const parseLocalDate = (dateInput: Date | string): Date => {
+    if (typeof dateInput === 'string') {
+      const [year, month, day] = dateInput.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+    return dateInput;
+  };
+  
+  const [date, setDate] = useState<Date>(parseLocalDate(expense.date));
   const [amount, setAmount] = useState<string>(expense.amount.toString());
   const [category, setCategory] = useState<ExpenseCategory>(expense.category);
   const [description, setDescription] = useState<string>(expense.description || '');

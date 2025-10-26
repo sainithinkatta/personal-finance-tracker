@@ -3,10 +3,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { Expense } from '@/types/expense';
 import { BankAccount } from '@/types/bankAccount';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
 export const useExpenses = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Parse date string as local date to avoid timezone shifts
+  const parseLocalDate = (dateStr: string): Date => {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
 
   // Fetch expenses
   const { data: expenses = [], isLoading, error } = useQuery<Expense[]>({
@@ -17,7 +24,7 @@ export const useExpenses = () => {
         .select('*')
         .order('date', { ascending: false });
       if (error) throw error;
-      return (data as any[]).map(e => ({ ...e, date: new Date(e.date) })) as Expense[];
+      return (data as any[]).map(e => ({ ...e, date: parseLocalDate(e.date) })) as Expense[];
     },
   });
 
@@ -59,7 +66,7 @@ export const useExpenses = () => {
 
       const { data: newExpense, error: expErr } = await supabase
         .from('expenses')
-        .insert([{ ...expense, user_id: user.id, date: expense.date.toISOString() }])
+        .insert([{ ...expense, user_id: user.id, date: format(expense.date, 'yyyy-MM-dd') }])
         .select()
         .single();
       if (expErr || !newExpense) throw expErr;
@@ -67,7 +74,7 @@ export const useExpenses = () => {
       if (expense.bank_account_id) {
         await applyBalanceChange(expense.bank_account_id, -expense.amount);
       }
-      return { ...newExpense, date: new Date(newExpense.date) } as Expense;
+      return { ...newExpense, date: parseLocalDate(newExpense.date) } as Expense;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
@@ -92,8 +99,12 @@ export const useExpenses = () => {
       // Patch the expense record
       const payload: any = {};
       if (data.amount != null) payload.amount = data.amount;
-      if (data.date) payload.date = data.date.toISOString();
-      if (data.bank_account_id != null) payload.bank_account_id = data.bank_account_id;
+      if (data.date) payload.date = format(data.date, 'yyyy-MM-dd');
+      if (data.category) payload.category = data.category;
+      if (data.description !== undefined) payload.description = data.description;
+      if (data.currency) payload.currency = data.currency;
+      if (data.bank_account_id !== undefined) payload.bank_account_id = data.bank_account_id;
+      if (data.budget_id !== undefined) payload.budget_id = data.budget_id;
 
       const { error: updErr } = await supabase.from('expenses').update(payload).eq('id', id);
       if (updErr) throw updErr;

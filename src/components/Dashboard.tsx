@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,7 +12,7 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ expenses }) => {
-  const currentMonthLabel = format(new Date(), 'MMMM yyyy');
+  const currentMonthLabel = format(new Date(), 'MMM yyyy').toUpperCase();
   
   // Filter expenses to current month for summary cards and category chart
   const currentDate = new Date();
