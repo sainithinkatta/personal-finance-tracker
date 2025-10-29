@@ -14,6 +14,7 @@ export interface RecurringTransaction {
   reminder_days_before: number;
   status: 'pending' | 'done';
   last_done_date: string | null;
+  last_reminder_sent_at: string | null;
   created_at: string;
   updated_at: string;
 }

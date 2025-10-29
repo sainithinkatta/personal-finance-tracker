@@ -7,10 +7,10 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
   public: {
     Tables: {
@@ -224,6 +224,13 @@ export type Database = {
             referencedRelation: "bank_accounts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "expenses_budget_id_fkey"
+            columns: ["budget_id"]
+            isOneToOne: false
+            referencedRelation: "budgets"
+            referencedColumns: ["id"]
+          },
         ]
       }
       recurring_transactions: {
@@ -236,12 +243,14 @@ export type Database = {
           frequency: string
           id: string
           last_done_date: string | null
+          last_reminder_sent_at: string | null
           name: string
           next_due_date: string
           reminder_days_before: number | null
           status: string | null
           updated_at: string
           user_id: string | null
+          user_timezone: string | null
         }
         Insert: {
           amount: number
@@ -252,12 +261,14 @@ export type Database = {
           frequency: string
           id?: string
           last_done_date?: string | null
+          last_reminder_sent_at?: string | null
           name: string
           next_due_date: string
           reminder_days_before?: number | null
           status?: string | null
           updated_at?: string
           user_id?: string | null
+          user_timezone?: string | null
         }
         Update: {
           amount?: number
@@ -268,12 +279,14 @@ export type Database = {
           frequency?: string
           id?: string
           last_done_date?: string | null
+          last_reminder_sent_at?: string | null
           name?: string
           next_due_date?: string
           reminder_days_before?: number | null
           status?: string | null
           updated_at?: string
           user_id?: string | null
+          user_timezone?: string | null
         }
         Relationships: []
       }

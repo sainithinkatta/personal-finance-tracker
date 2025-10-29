@@ -1,5 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RecurringTransaction, RecurringTransactionFormData, EditRecurringTransactionData } from '@/types/recurringTransaction';
 import { useToast } from '@/hooks/use-toast';
@@ -25,6 +26,29 @@ export const useRecurringTransactions = () => {
       return data as RecurringTransaction[];
     },
   });
+
+  // Set up real-time subscription for reminder updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('recurring-transactions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'recurring_transactions',
+        },
+        () => {
+          // Invalidate and refetch when any transaction is updated
+          queryClient.invalidateQueries({ queryKey: ['recurring-transactions'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const addRecurringTransactionMutation = useMutation({
     mutationFn: async (transactionData: RecurringTransactionFormData) => {

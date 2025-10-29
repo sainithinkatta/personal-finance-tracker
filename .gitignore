@@ -1,3 +1,36 @@
-# .gitignore
+# Dependency folders
+node_modules/
+
+# Environment files
 .env
 .env.local
+.env.production
+.env.development
+
+# Build output
+dist/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.log
+
+# Editor & system files
+.DS_Store
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.swp
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Local environment artifacts
+.vercel/
+.next/

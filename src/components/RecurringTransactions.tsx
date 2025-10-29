@@ -161,32 +161,43 @@ const RecurringTransactions: React.FC = () => {
               return (
                 <div
                   key={tx.id}
-                  className="flex items-center justify-between bg-white rounded-md border border-yellow-200 p-3"
+                  className="flex flex-col bg-white rounded-md border border-yellow-200 p-3 space-y-2"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0">
-                      <Calendar className="h-4 w-4 text-yellow-600" />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <Calendar className="h-4 w-4 text-yellow-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 text-sm">{tx.name}</p>
+                        <p className="text-xs text-gray-600">
+                          Due {format(new Date(tx.next_due_date), 'MMM d')} • {dueLabel}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-gray-900 text-sm">{tx.name}</p>
-                      <p className="text-xs text-gray-600">
-                        Due {format(new Date(tx.next_due_date), 'MMM d')} • {dueLabel}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-center gap-2">
-                    <div className="text-right">
-                      <p className="font-semibold text-gray-900 text-sm">
-                        {formatCurrency(tx.amount, tx.currency)}
-                      </p>
-                      <Badge 
-                        className={`text-xs ${getFrequencyBadgeColor(tx.frequency)}`}
-                      >
-                        {tx.frequency}
-                      </Badge>
+                    <div className="flex items-center gap-2">
+                      <div className="text-right">
+                        <p className="font-semibold text-gray-900 text-sm">
+                          {formatCurrency(tx.amount, tx.currency)}
+                        </p>
+                        <Badge 
+                          className={`text-xs ${getFrequencyBadgeColor(tx.frequency)}`}
+                        >
+                          {tx.frequency}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
+                  
+                  {tx.last_reminder_sent_at && (
+                    <div className="flex items-center gap-1.5 text-xs text-green-700 bg-green-50 px-2 py-1 rounded-md border border-green-200">
+                      <span className="text-sm">🕓</span>
+                      <span>
+                        Notified via Email at {format(new Date(tx.last_reminder_sent_at), 'h:mm a zzz')}
+                      </span>
+                    </div>
+                  )}
                 </div>
               );
             })}
