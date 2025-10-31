@@ -57,7 +57,17 @@ Create a `.env` file in project root:
 ```bash
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+# Optional: adjust how many days ahead reminders are prepared (defaults to 7)
+VITE_REMINDER_LOOKAHEAD_DAYS=7
 ```
+
+For the Supabase edge function, you can override the same reminder horizon with:
+
+```bash
+REMINDER_LOOKAHEAD_DAYS=7
+```
+
+If the variables are not set, both code paths fall back to the shared default of 7 days.
 
 ## 5. Installation & Setup
 

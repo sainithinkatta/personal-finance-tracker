@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { format, addDays, parseISO } from 'date-fns';
 import { Resend } from 'resend';
+import { REMINDER_LOOKAHEAD_DAYS } from '../_shared/config/notifications.ts';
 
 
 const corsHeaders = {
@@ -58,7 +59,10 @@ Deno.serve(async (req) => {
       .select('*')
       .eq('email_reminder', true)
       .eq('status', 'pending')
-      .lte('next_due_date', format(addDays(today, 7), 'yyyy-MM-dd')); // Check next 7 days
+      .lte(
+        'next_due_date',
+        format(addDays(today, REMINDER_LOOKAHEAD_DAYS), 'yyyy-MM-dd')
+      );
 
     if (queryError) {
       console.error('Error querying transactions:', queryError);

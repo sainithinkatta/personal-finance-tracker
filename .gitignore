@@ -10,6 +10,7 @@ node_modules/
 # Build output
 dist/
 build/
+dist-tests/
 
 # Logs
 npm-debug.log*
