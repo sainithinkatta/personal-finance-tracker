@@ -1,17 +1,10 @@
-
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Trash2, Edit, RotateCcw, DollarSign, ShoppingCart, Zap, Package, Check } from 'lucide-react';
-import { RecurringTransaction } from '@/types/recurringTransaction';
-import { CURRENCIES } from '@/types/expense';
-import { format } from 'date-fns';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Check, Edit, Trash2, RotateCcw } from "lucide-react";
+import { RecurringTransaction } from "@/types/recurringTransaction";
+import { CURRENCIES } from "@/types/expense";
+import { format } from "date-fns";
 
 interface RecurringTransactionCardProps {
   transaction: RecurringTransaction;
@@ -21,33 +14,18 @@ interface RecurringTransactionCardProps {
   isMarkingDone?: boolean;
 }
 
-const getCategoryIcon = (category: string) => {
-  switch (category) {
-    case 'Travel':
-      return <DollarSign className="h-4 w-4 text-blue-600" />;
-    case 'Groceries':
-      return <ShoppingCart className="h-4 w-4 text-green-600" />;
-    case 'Bills':
-      return <Zap className="h-4 w-4 text-orange-600" />;
-    case 'Others':
-      return <Package className="h-4 w-4 text-purple-600" />;
-    default:
-      return <Package className="h-4 w-4 text-gray-600" />;
-  }
-};
-
 const getFrequencyBadgeColor = (frequency: string) => {
   switch (frequency) {
-    case 'daily':
-      return 'bg-blue-100 text-blue-800 border-blue-200';
-    case 'weekly':
-      return 'bg-teal-100 text-teal-800 border-teal-200';
-    case 'monthly':
-      return 'bg-purple-100 text-purple-800 border-purple-200';
-    case 'yearly':
-      return 'bg-orange-100 text-orange-800 border-orange-200';
+    case "daily":
+      return "bg-blue-100 text-blue-700";
+    case "weekly":
+      return "bg-emerald-100 text-emerald-700";
+    case "monthly":
+      return "bg-violet-100 text-violet-700";
+    case "yearly":
+      return "bg-orange-100 text-orange-700";
     default:
-      return 'bg-gray-100 text-gray-800 border-gray-200';
+      return "bg-gray-100 text-gray-700";
   }
 };
 
@@ -63,106 +41,93 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
   onMarkAsDone,
   isMarkingDone = false,
 }) => {
-  const isDone = transaction.status === 'done';
+  const isDone = transaction.status === "done";
+  const notified = Boolean(transaction.last_reminder_sent_at);
 
   return (
-    <div className={`bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow ${isDone ? 'opacity-75' : ''}`}>
-      <div className="flex items-start justify-between">
-        {/* Left side - Icon, Title, and Details */}
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-3">
-            <RotateCcw className={`h-5 w-5 ${isDone ? 'text-green-500' : 'text-gray-500'}`} />
-            <h3 className="text-lg font-semibold text-gray-900">{transaction.name}</h3>
-            {isDone && (
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                ✓ Done
-              </Badge>
-            )}
+    <article
+      className={`rounded-2xl border border-muted-foreground/20 bg-white p-3.5 shadow-sm ${
+        isDone ? "opacity-75" : ""
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="rounded-2xl bg-muted/70 p-2">
+            <RotateCcw className="h-4 w-4 text-muted-foreground" />
           </div>
-          
-          <div className="space-y-2">
-            <p className="text-sm text-gray-600">
-              Next due: {format(new Date(transaction.next_due_date), 'MMM d, yyyy')}
-            </p>
-            <div className="flex items-center gap-2">
-              {getCategoryIcon(transaction.category)}
-              <span className="text-sm text-gray-600">Category: {transaction.category}</span>
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-base font-semibold text-foreground">
+                {transaction.name}
+              </h3>
+              {isDone && (
+                <Badge className="rounded-full bg-emerald-100 text-[11px] font-medium text-emerald-700">
+                  Completed
+                </Badge>
+              )}
             </div>
-            {isDone && transaction.last_done_date && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <p className="text-xs text-green-600 cursor-help">
-                      Marked as done on {format(new Date(transaction.last_done_date), 'MM/dd/yyyy')}
-                    </p>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>This transaction was manually marked as completed</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+            <p className="text-xs text-muted-foreground">
+              Next due {format(new Date(transaction.next_due_date), "MMM d, yyyy")} • {transaction.category}
+            </p>
+            {notified && transaction.last_reminder_sent_at && (
+              <p className="text-[11px] text-emerald-600">
+                Notified at {format(new Date(transaction.last_reminder_sent_at), "MMM d, h:mm a")}
+              </p>
             )}
           </div>
         </div>
-
-        {/* Right side - Amount, Frequency, and Actions */}
-        <div className="flex flex-col items-end gap-3">
-          <div className="text-right">
-            <p className="text-xl font-bold text-gray-900">
-              {formatCurrency(transaction.amount, transaction.currency)}
-            </p>
-            <Badge 
-              variant="outline" 
-              className={`mt-2 ${getFrequencyBadgeColor(transaction.frequency)}`}
-            >
-              {transaction.frequency.charAt(0).toUpperCase() + transaction.frequency.slice(1)}
-            </Badge>
-          </div>
-
-          {/* Action Icons */}
-          <div className="flex items-center gap-2">
-            {!isDone && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onMarkAsDone(transaction.id)}
-                      disabled={isMarkingDone}
-                      className="h-8 w-8 p-0 hover:bg-green-100 rounded-full"
-                      aria-label={`Mark ${transaction.name} as done`}
-                    >
-                      <Check className="h-4 w-4 text-green-600" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Mark as Done</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onEdit(transaction)}
-              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
-              aria-label={`Edit ${transaction.name} recurring transaction`}
-            >
-              <Edit className="h-4 w-4 text-gray-600" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDelete(transaction.id)}
-              className="h-8 w-8 p-0 hover:bg-red-100 rounded-full"
-              aria-label={`Delete ${transaction.name} recurring transaction`}
-            >
-              <Trash2 className="h-4 w-4 text-red-600" />
-            </Button>
-          </div>
+        <div className="text-right">
+          <p className="text-lg font-semibold text-foreground">
+            {formatCurrency(transaction.amount, transaction.currency)}
+          </p>
+          <Badge className={`mt-2 rounded-full px-2 py-1 text-[11px] font-medium ${getFrequencyBadgeColor(transaction.frequency)}`}>
+            {transaction.frequency}
+          </Badge>
         </div>
       </div>
-    </div>
+
+      <div className="mt-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Badge className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-700">
+            {transaction.email_reminder ? "Email reminders on" : "Reminders off"}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {!isDone && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 rounded-xl text-emerald-600 hover:bg-emerald-50"
+              onClick={() => onMarkAsDone(transaction.id)}
+              disabled={isMarkingDone}
+              aria-label={`Mark ${transaction.name} as done`}
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 rounded-xl text-muted-foreground hover:bg-muted/60"
+            onClick={() => onEdit(transaction)}
+            aria-label={`Edit ${transaction.name}`}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 rounded-xl text-destructive hover:bg-destructive/10"
+            onClick={() => onDelete(transaction.id)}
+            aria-label={`Delete ${transaction.name}`}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </article>
   );
 };

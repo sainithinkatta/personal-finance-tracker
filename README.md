@@ -86,5 +86,12 @@ Ensure you have the following installed:
    npm run dev
    ```
 
+## Mobile experience updates
+
+- Mobile layout now uses a compact safe-area-aware main wrapper and scrollable tab bar. Adjust spacing or typography tokens in `src/index.css` (`pb-safe`, `pt-safe`, `touch-target`, and rhythm utilities) or update responsive wrappers inside `src/pages/Index.tsx`.
+- Form controls share the new rounded `h-11` styles from `ExpenseForm`, `DueForm`, and recurring transaction forms. Tweak input sizing or radii directly in those components.
+- Bottom sheet dialogs are powered by `ResponsiveSheet` (`src/components/layout/ResponsiveSheet.tsx`). Modify global sheet padding or header styles there when introducing new sheets.
+- Test the mobile experience with `npm run dev` and resize the browser to 360–430px widths or use device emulation (e.g., Chrome DevTools iPhone 15 Pro profile) to verify safe-area padding, sticky headers, and FAB placement.
+
 ## Contributors
 Sai Nithin Reddy Katta.
