@@ -1,15 +1,24 @@
-import React, { useEffect, useState } from "react";
-import { Input } from "@/components/ui/input";
+
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { ResponsiveSheet } from "@/components/layout/ResponsiveSheet";
-import { RecurringTransaction, RecurringTransactionFormData } from "@/types/recurringTransaction";
-import { CURRENCIES, ExpenseCategory } from "@/types/expense";
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { RecurringTransaction, RecurringTransactionFormData } from '@/types/recurringTransaction';
+import { CURRENCIES, ExpenseCategory } from '@/types/expense';
 
 interface EditRecurringTransactionFormProps {
   transaction: RecurringTransaction | null;
@@ -27,12 +36,12 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
   isLoading,
 }) => {
   const [formData, setFormData] = useState<RecurringTransactionFormData>({
-    name: "",
+    name: '',
     amount: 0,
-    category: "Bills" as ExpenseCategory,
-    frequency: "monthly",
-    next_due_date: "",
-    currency: "USD",
+    category: 'Bills' as ExpenseCategory,
+    frequency: 'monthly',
+    next_due_date: '',
+    currency: 'USD',
     email_reminder: true,
     reminder_days_before: 2,
   });
@@ -52,195 +61,203 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
     }
   }, [transaction]);
 
-  if (!transaction) return null;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (transaction) {
+      onSave(transaction.id, formData);
+    }
+  };
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    onSave(transaction.id, formData);
+  const handleClose = () => {
     onClose();
   };
 
-  const formId = "edit-recurring-transaction";
+  if (!transaction) return null;
 
   return (
-    <ResponsiveSheet
-      open={isOpen}
-      onOpenChange={(open) => {
-        if (!open) {
-          onClose();
-        }
-      }}
-      title="Edit recurring transaction"
-      description="Adjust the schedule or amount for this recurring expense."
-      footer={(
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-11 rounded-xl border border-muted-foreground/20 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            form={formId}
-            disabled={isLoading}
-            className="h-11 rounded-xl bg-primary text-[15px] font-semibold text-white transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isLoading ? "Saving..." : "Save changes"}
-          </button>
-        </div>
-      )}
-      contentClassName="pb-24"
-    >
-      <form id={formId} onSubmit={handleSubmit} className="space-y-3">
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground" htmlFor="edit-recurring-name">
-            Name
-          </label>
-          <Input
-            id="edit-recurring-name"
-            value={formData.name}
-            onChange={(event) => setFormData({ ...formData, name: event.target.value })}
-            placeholder="e.g., Netflix"
-            className="h-11 rounded-xl border border-muted-foreground/30 px-3 text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
-            required
-          />
-        </div>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-md mx-auto my-8 overflow-auto">
+        <DialogHeader>
+          <DialogTitle>Edit Recurring Transaction</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1">
+            <Label htmlFor="edit-name" className="text-sm font-medium">
+              Name
+            </Label>
+            <Input
+              id="edit-name"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              placeholder="e.g., Netflix"
+              required
+              className="text-sm"
+            />
+          </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground" htmlFor="edit-recurring-amount">
-            Amount
-          </label>
-          <Input
-            id="edit-recurring-amount"
-            type="number"
-            step="0.01"
-            min="0"
-            value={formData.amount}
-            onChange={(event) =>
-              setFormData({
-                ...formData,
-                amount: parseFloat(event.target.value) || 0,
-              })
-            }
-            placeholder="0.00"
-            className="h-11 rounded-xl border border-muted-foreground/30 px-3 text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
-            required
-          />
-        </div>
+          <div className="space-y-1">
+            <Label htmlFor="edit-amount" className="text-sm font-medium">
+              Amount
+            </Label>
+            <Input
+              id="edit-amount"
+              type="number"
+              step="0.01"
+              value={formData.amount}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  amount: parseFloat(e.target.value) || 0,
+                })
+              }
+              placeholder="0.00"
+              required
+              className="text-sm"
+            />
+          </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground" htmlFor="edit-recurring-currency">
-            Currency
-          </label>
-          <Select
-            value={formData.currency}
-            onValueChange={(value) => setFormData({ ...formData, currency: value })}
-          >
-            <SelectTrigger
-              id="edit-recurring-currency"
-              className="h-11 rounded-xl border border-muted-foreground/30 text-left text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+          <div className="space-y-1">
+            <Label htmlFor="edit-currency" className="text-sm font-medium">
+              Currency
+            </Label>
+            <Select
+              value={formData.currency}
+              onValueChange={(val) =>
+                setFormData({ ...formData, currency: val })
+              }
             >
-              <SelectValue placeholder="Currency" />
-            </SelectTrigger>
-            <SelectContent className="text-[15px]">
-              {CURRENCIES.map((currency) => (
-                <SelectItem key={currency.code} value={currency.code} className="text-[15px]">
-                  {currency.symbol} {currency.name}
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="USD" />
+              </SelectTrigger>
+              <SelectContent className="text-sm">
+                {CURRENCIES.map((c) => (
+                  <SelectItem key={c.code} value={c.code} className="text-sm">
+                    {c.symbol} {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="edit-category" className="text-sm font-medium">
+              Category
+            </Label>
+            <Select
+              value={formData.category}
+              onValueChange={(val) =>
+                setFormData({ ...formData, category: val as ExpenseCategory })
+              }
+            >
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="Bills" />
+              </SelectTrigger>
+              <SelectContent className="text-sm">
+                <SelectItem value="Groceries" className="text-sm">
+                  Groceries
                 </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+                <SelectItem value="Food" className="text-sm">
+                  Food
+                </SelectItem>
+                <SelectItem value="Travel" className="text-sm">
+                  Travel
+                </SelectItem>
+                <SelectItem value="Bills" className="text-sm">
+                  Bills
+                </SelectItem>
+                <SelectItem value="Others" className="text-sm">
+                  Others
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground" htmlFor="edit-recurring-category">
-            Category
-          </label>
-          <Select
-            value={formData.category}
-            onValueChange={(value) =>
-              setFormData({ ...formData, category: value as ExpenseCategory })
-            }
-          >
-            <SelectTrigger
-              id="edit-recurring-category"
-              className="h-11 rounded-xl border border-muted-foreground/30 text-left text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+          <div className="space-y-1">
+            <Label htmlFor="edit-frequency" className="text-sm font-medium">
+              Frequency
+            </Label>
+            <Select
+              value={formData.frequency}
+              onValueChange={(val: 'daily' | 'weekly' | 'monthly' | 'yearly') =>
+                setFormData({ ...formData, frequency: val })
+              }
             >
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent className="text-[15px]">
-              <SelectItem value="Groceries">Groceries</SelectItem>
-              <SelectItem value="Food">Food</SelectItem>
-              <SelectItem value="Travel">Travel</SelectItem>
-              <SelectItem value="Bills">Bills</SelectItem>
-              <SelectItem value="Others">Others</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="Monthly" />
+              </SelectTrigger>
+              <SelectContent className="text-sm">
+                <SelectItem value="daily" className="text-sm">
+                  Daily
+                </SelectItem>
+                <SelectItem value="weekly" className="text-sm">
+                  Weekly
+                </SelectItem>
+                <SelectItem value="monthly" className="text-sm">
+                  Monthly
+                </SelectItem>
+                <SelectItem value="yearly" className="text-sm">
+                  Yearly
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground" htmlFor="edit-recurring-frequency">
-            Frequency
-          </label>
-          <Select
-            value={formData.frequency}
-            onValueChange={(value: "daily" | "weekly" | "monthly" | "yearly") =>
-              setFormData({ ...formData, frequency: value })
-            }
-          >
-            <SelectTrigger
-              id="edit-recurring-frequency"
-              className="h-11 rounded-xl border border-muted-foreground/30 text-left text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+          <div className="space-y-1">
+            <Label htmlFor="edit-next_due_date" className="text-sm font-medium">
+              Next Due Date
+            </Label>
+            <Input
+              id="edit-next_due_date"
+              type="date"
+              value={formData.next_due_date}
+              onChange={(e) =>
+                setFormData({ ...formData, next_due_date: e.target.value })
+              }
+              required
+              className="text-sm"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label
+              htmlFor="edit-reminder_days_before"
+              className="text-sm font-medium"
             >
-              <SelectValue placeholder="Frequency" />
-            </SelectTrigger>
-            <SelectContent className="text-[15px]">
-              <SelectItem value="daily">Daily</SelectItem>
-              <SelectItem value="weekly">Weekly</SelectItem>
-              <SelectItem value="monthly">Monthly</SelectItem>
-              <SelectItem value="yearly">Yearly</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+              Remind (days before)
+            </Label>
+            <Input
+              id="edit-reminder_days_before"
+              type="number"
+              min="0"
+              max="30"
+              value={formData.reminder_days_before}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  reminder_days_before: parseInt(e.target.value) || 0,
+                })
+              }
+              className="text-sm"
+            />
+          </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground" htmlFor="edit-recurring-next-due">
-            Next due date
-          </label>
-          <Input
-            id="edit-recurring-next-due"
-            type="date"
-            value={formData.next_due_date}
-            onChange={(event) =>
-              setFormData({ ...formData, next_due_date: event.target.value })
-            }
-            className="h-11 rounded-xl border border-muted-foreground/30 px-3 text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
-            required
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground" htmlFor="edit-recurring-reminder">
-            Reminder (days before)
-          </label>
-          <Input
-            id="edit-recurring-reminder"
-            type="number"
-            min="0"
-            max="30"
-            value={formData.reminder_days_before}
-            onChange={(event) =>
-              setFormData({
-                ...formData,
-                reminder_days_before: parseInt(event.target.value, 10) || 0,
-              })
-            }
-            className="h-11 rounded-xl border border-muted-foreground/30 px-3 text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
-          />
-        </div>
-      </form>
-    </ResponsiveSheet>
+          <DialogFooter>
+            <Button type="submit" size="sm" disabled={isLoading}>
+              Save Changes
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClose}
+              type="button"
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };

@@ -11,23 +11,12 @@ import {
 import { Expense, CURRENCIES } from '@/types/expense';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 
 interface ExportDataButtonProps {
   expenses: Expense[];
-  buttonVariant?: React.ComponentProps<typeof Button>["variant"];
-  buttonSize?: React.ComponentProps<typeof Button>["size"];
-  className?: string;
-  fullWidth?: boolean;
 }
 
-const ExportDataButton: React.FC<ExportDataButtonProps> = ({
-  expenses,
-  buttonVariant = 'outline',
-  buttonSize = 'sm',
-  className,
-  fullWidth = false,
-}) => {
+const ExportDataButton: React.FC<ExportDataButtonProps> = ({ expenses }) => {
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
 
@@ -217,14 +206,10 @@ const ExportDataButton: React.FC<ExportDataButtonProps> = ({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant={buttonVariant}
-          size={buttonSize}
+          variant="outline"
+          size="sm"
           disabled={isExporting || expenses.length === 0}
-          className={cn(
-            'flex items-center gap-2',
-            fullWidth && 'w-full justify-center',
-            className
-          )}
+          className="flex items-center gap-2"
         >
           <Download className="h-4 w-4" />
           {isExporting ? 'Exporting...' : 'Export Data'}

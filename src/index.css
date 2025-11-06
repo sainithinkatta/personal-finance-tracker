@@ -82,34 +82,22 @@
   transition: transform 0.2s ease;
 }
 
-@layer utilities {
-  .no-scrollbar {
-    scrollbar-width: none;
+/* Mobile-friendly scrollable tabs */
+@media (max-width: 768px) {
+  .mobile-tabs-container {
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
   }
-
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
+  
+  .mobile-tabs-container::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
   }
-
+  
+  /* Ensure minimum touch target size on mobile */
   .touch-target {
     min-height: 44px;
     min-width: 44px;
-  }
-
-  .pb-safe {
-    padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
-  }
-
-  .pt-safe {
-    padding-top: calc(env(safe-area-inset-top) + 8px);
-  }
-
-  .pb-keyboard {
-    padding-bottom: max(calc(env(safe-area-inset-bottom) + 12px), 28vh);
-  }
-
-  .min-h-dvh {
-    min-height: 100dvh;
   }
 }
 
@@ -124,7 +112,7 @@
   .hover\:bg-muted\/50:hover {
     background-color: transparent;
   }
-
+  
   .active\:bg-muted\/80:active {
     background-color: hsl(var(--muted) / 0.8);
   }

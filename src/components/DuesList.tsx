@@ -1,9 +1,11 @@
-import React, { useMemo, useState } from "react";
-import { format } from "date-fns";
-import { Edit2, Trash2, CheckCircle2 } from "lucide-react";
-import { Due } from "@/types/due";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
+import React, { useState } from 'react';
+import { format } from 'date-fns';
+import { Edit2, Trash2, CheckCircle } from 'lucide-react';
+import { Due } from '@/types/due';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -11,7 +13,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +23,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 interface DuesListProps {
   dues: Due[];
@@ -30,229 +32,159 @@ interface DuesListProps {
   onMarkAsSettled: (id: string) => void;
 }
 
-const formatCurrency = (amount: number, currency: string) => {
-  const symbol = currency === "USD" ? "$" : "₹";
-  return `${symbol}${amount.toFixed(2)}`;
-};
-
-const calculateTotals = (duesList: Due[]) => {
-  return duesList
-    .filter((due) => due.status === "Pending")
-    .reduce<Record<string, number>>((acc, due) => {
-      if (!acc[due.currency]) {
-        acc[due.currency] = 0;
-      }
-      acc[due.currency] += due.amount;
-      return acc;
-    }, {});
-};
-
-const formatTotals = (totals: Record<string, number>) =>
-  Object.entries(totals)
-    .map(([currency, amount]) => formatCurrency(amount, currency))
-    .join(" • ");
-
 const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSettled }) => {
   const [deletingDueId, setDeletingDueId] = useState<string | null>(null);
 
-  const iOweDues = useMemo(() => dues.filter((due) => due.type === "I Owe"), [dues]);
-  const theyOweMeDues = useMemo(() => dues.filter((due) => due.type === "They Owe Me"), [dues]);
+  const iOweDues = dues.filter(due => due.type === 'I Owe');
+  const theyOweMeDues = dues.filter(due => due.type === 'They Owe Me');
 
-  const isOverdue = (dueDate?: string, status?: string) => {
-    if (!dueDate || status === "Settled") return false;
+  const calculateTotal = (duesList: Due[]) => {
+    const totals = duesList
+      .filter(due => due.status === 'Pending')
+      .reduce((acc, due) => {
+        if (!acc[due.currency]) {
+          acc[due.currency] = 0;
+        }
+        acc[due.currency] += due.amount;
+        return acc;
+      }, {} as Record<string, number>);
+
+    return totals;
+  };
+
+  const formatCurrency = (amount: number, currency: string) => {
+    const symbol = currency === 'USD' ? '$' : '₹';
+    return `${symbol}${amount.toFixed(2)}`;
+  };
+
+  const formatTotals = (totals: Record<string, number>) => {
+    return Object.entries(totals)
+      .map(([currency, amount]) => formatCurrency(amount, currency))
+      .join(' + ');
+  };
+
+  const isOverdue = (dueDate?: string) => {
+    if (!dueDate) return false;
     return new Date(dueDate) < new Date();
   };
 
-  const renderMobileList = (duesList: Due[]) => (
-    <div className="space-y-3 md:hidden">
-      {duesList.map((due) => {
-        const overdue = isOverdue(due.due_date, due.status);
-        return (
-          <article
-            key={due.id}
-            className={`rounded-2xl border border-muted-foreground/20 bg-white p-3.5 shadow-sm ${
-              overdue ? "border-l-4 border-l-red-400" : ""
-            }`}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0 space-y-1">
-                <h3 className="text-base font-semibold text-foreground">{due.person_name}</h3>
-                <p className="text-xs text-muted-foreground">
-                  {due.due_date ? format(new Date(due.due_date), "MMM d, yyyy") : "No due date"}
-                </p>
-                <p className="text-xs font-medium text-foreground">{formatCurrency(due.amount, due.currency)}</p>
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                <Badge
-                  className={`rounded-full px-2 py-1 text-[11px] font-medium ${
-                    due.status === "Settled" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"
-                  }`}
+  const renderDuesTable = (duesList: Due[], title: string, colorClass: string) => (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="flex justify-between items-center">
+          <span>{title}</span>
+          <span className={`text-lg font-bold ${colorClass}`}>
+            {formatTotals(calculateTotal(duesList)) || '0.00'}
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {duesList.length === 0 ? (
+          <p className="text-gray-500 text-center py-4">No dues found</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Person</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Due Date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Notes</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {duesList.map((due) => (
+                <TableRow 
+                  key={due.id}
+                  className={due.status === 'Settled' ? 'opacity-60' : ''}
                 >
-                  {due.status}
-                </Badge>
-                <div className="flex items-center gap-1.5">
-                  {due.status === "Pending" && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-9 w-9 rounded-xl text-emerald-600 hover:bg-emerald-50"
-                      onClick={() => onMarkAsSettled(due.id)}
-                      aria-label={`Mark ${due.person_name} as settled`}
+                  <TableCell className="font-medium">{due.person_name}</TableCell>
+                  <TableCell className="font-semibold">
+                    {formatCurrency(due.amount, due.currency)}
+                  </TableCell>
+                  <TableCell>
+                    {due.due_date ? (
+                      <span className={isOverdue(due.due_date) && due.status === 'Pending' ? 'text-red-600 font-semibold' : ''}>
+                        {format(new Date(due.due_date), 'MMM d, yyyy')}
+                        {isOverdue(due.due_date) && due.status === 'Pending' && (
+                          <Badge variant="destructive" className="ml-2 text-xs">
+                            Overdue
+                          </Badge>
+                        )}
+                      </span>
+                    ) : (
+                      '–'
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge 
+                      variant={due.status === 'Settled' ? 'secondary' : 'default'}
+                      className={due.status === 'Settled' ? 'bg-green-100 text-green-800' : ''}
                     >
-                      <CheckCircle2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 rounded-xl text-muted-foreground hover:bg-muted/60"
-                    onClick={() => onEdit(due)}
-                    aria-label={`Edit due for ${due.person_name}`}
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 rounded-xl text-destructive hover:bg-destructive/10"
-                    onClick={() => setDeletingDueId(due.id)}
-                    aria-label={`Delete due for ${due.person_name}`}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-            {due.notes && (
-              <p className="mt-2 text-xs text-muted-foreground">{due.notes}</p>
-            )}
-          </article>
-        );
-      })}
-    </div>
+                      {due.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="max-w-[200px] truncate">
+                    {due.notes || '–'}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end space-x-1">
+                      {due.status === 'Pending' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
+                          onClick={() => onMarkAsSettled(due.id)}
+                          title="Mark as Settled"
+                        >
+                          <CheckCircle className="h-3 w-3" />
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => onEdit(due)}
+                        title="Edit Due"
+                      >
+                        <Edit2 className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
+                        onClick={() => setDeletingDueId(due.id)}
+                        title="Delete Due"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </CardContent>
+    </Card>
   );
 
-  const renderDesktopTable = (duesList: Due[]) => (
-    <div className="hidden md:block">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-muted/40">
-            <TableHead className="text-sm font-semibold text-muted-foreground">Person</TableHead>
-            <TableHead className="text-sm font-semibold text-muted-foreground">Amount</TableHead>
-            <TableHead className="text-sm font-semibold text-muted-foreground">Due date</TableHead>
-            <TableHead className="text-sm font-semibold text-muted-foreground">Status</TableHead>
-            <TableHead className="text-sm font-semibold text-muted-foreground">Notes</TableHead>
-            <TableHead className="text-right text-sm font-semibold text-muted-foreground">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {duesList.map((due) => (
-            <TableRow key={due.id} className="hover:bg-muted/40">
-              <TableCell className="font-medium">{due.person_name}</TableCell>
-              <TableCell className="font-semibold">
-                {formatCurrency(due.amount, due.currency)}
-              </TableCell>
-              <TableCell className={due.due_date && isOverdue(due.due_date, due.status) ? "text-red-600" : ""}>
-                {due.due_date ? format(new Date(due.due_date), "MMM d, yyyy") : "–"}
-              </TableCell>
-              <TableCell>
-                <Badge
-                  className={`rounded-full px-2 py-1 text-[11px] font-medium ${
-                    due.status === "Settled" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"
-                  }`}
-                >
-                  {due.status}
-                </Badge>
-              </TableCell>
-              <TableCell className="max-w-[200px] truncate text-sm text-muted-foreground">
-                {due.notes || "–"}
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-1.5">
-                  {due.status === "Pending" && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-9 w-9 rounded-xl text-emerald-600 hover:bg-emerald-50"
-                      onClick={() => onMarkAsSettled(due.id)}
-                      aria-label={`Mark ${due.person_name} as settled`}
-                    >
-                      <CheckCircle2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 rounded-xl text-muted-foreground hover:bg-muted/60"
-                    onClick={() => onEdit(due)}
-                    aria-label={`Edit due for ${due.person_name}`}
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 rounded-xl text-destructive hover:bg-destructive/10"
-                    onClick={() => setDeletingDueId(due.id)}
-                    aria-label={`Delete due for ${due.person_name}`}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
-
-  const dueToDelete = dues.find((due) => due.id === deletingDueId);
+  const dueToDelete = dues.find(due => due.id === deletingDueId);
 
   return (
     <div className="space-y-6">
-      {[{ label: "I Owe", data: iOweDues, accent: "text-red-600" }, { label: "They Owe Me", data: theyOweMeDues, accent: "text-emerald-600" }].map(
-        ({ label, data, accent }) => {
-          const totals = calculateTotals(data);
-          return (
-            <section key={label} className="space-y-3">
-              <div className="flex items-baseline justify-between">
-                <h3 className="text-base font-semibold text-foreground">{label}</h3>
-                <span className={`text-sm font-semibold ${accent}`}>
-                  {formatTotals(totals) || formatCurrency(0, "USD")}
-                </span>
-              </div>
-              {data.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-muted-foreground/40 bg-muted/40 py-6 text-center text-sm text-muted-foreground">
-                  No dues found
-                </div>
-              ) : (
-                <>
-                  {renderMobileList(data)}
-                  {renderDesktopTable(data)}
-                </>
-              )}
-            </section>
-          );
-        }
-      )}
+      {renderDuesTable(iOweDues, 'I Owe', 'text-red-600')}
+      {renderDuesTable(theyOweMeDues, 'They Owe Me', 'text-green-600')}
 
+      {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deletingDueId} onOpenChange={() => setDeletingDueId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete due</AlertDialogTitle>
+            <AlertDialogTitle>Delete Due</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this due
-              {dueToDelete
-                ? ` for ${dueToDelete.person_name} (${formatCurrency(dueToDelete.amount, dueToDelete.currency)})`
-                : ""}
-              ? This action cannot be undone.
+              Are you sure you want to delete this due{dueToDelete ? ` for ${dueToDelete.person_name} (${formatCurrency(dueToDelete.amount, dueToDelete.currency)})` : ''}? 
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -266,7 +198,7 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
                   setDeletingDueId(null);
                 }
               }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-red-600 hover:bg-red-700"
             >
               Delete
             </AlertDialogAction>
