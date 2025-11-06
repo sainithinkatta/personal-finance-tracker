@@ -5,6 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { RecurringTransaction, RecurringTransactionFormData, EditRecurringTransactionData } from '@/types/recurringTransaction';
 import { useToast } from '@/hooks/use-toast';
 import { addDays, addWeeks, addMonths, addYears, format } from 'date-fns';
+import { REMINDER_LOOKAHEAD_DAYS } from '@/config/notifications';
+import { isWithinReminderWindow } from '@/lib/reminders';
 
 export const useRecurringTransactions = () => {
   const { toast } = useToast();
@@ -161,16 +163,13 @@ export const useRecurringTransactions = () => {
     },
   });
 
-  // Get upcoming reminders (due within the next 7 days)
+  // Get upcoming reminders within the configured lookahead window
   const getUpcomingReminders = () => {
     const today = new Date();
-    const nextWeek = addDays(today, 7);
 
-    return recurringTransactions.filter(transaction => {
-      const dueDate = new Date(transaction.next_due_date);
-      const reminderDate = addDays(dueDate, -transaction.reminder_days_before);
-      return reminderDate <= today && dueDate <= nextWeek;
-    });
+    return recurringTransactions.filter(transaction =>
+      isWithinReminderWindow(transaction, today, REMINDER_LOOKAHEAD_DAYS)
+    );
   };
 
   const processRecurringTransactions = async () => {
