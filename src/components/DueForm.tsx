@@ -1,7 +1,5 @@
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -17,27 +15,28 @@ interface DueFormProps {
   onClose: () => void;
   initialData?: Due;
   isLoading?: boolean;
+  formId?: string;
+  hideActions?: boolean;
 }
+
+const formatDateForInput = (dateString?: string) => {
+  if (!dateString) return "";
+  if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    return dateString;
+  }
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().split("T")[0];
+};
 
 const DueForm: React.FC<DueFormProps> = ({
   onSubmit,
   onClose,
   initialData,
-  isLoading,
+  isLoading = false,
+  formId,
+  hideActions = false,
 }) => {
-  // Format initial due_date to ensure it's in YYYY-MM-DD format for the date input
-  const formatDateForInput = (dateString?: string) => {
-    if (!dateString) return "";
-    // If it's already in YYYY-MM-DD format, return as is
-    if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      return dateString;
-    }
-    // Otherwise, try to parse and format correctly
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "";
-    return date.toISOString().split("T")[0];
-  };
-
   const [formData, setFormData] = useState<CreateDueData>({
     type: initialData?.type || "I Owe",
     person_name: initialData?.person_name || "",
@@ -48,101 +47,114 @@ const DueForm: React.FC<DueFormProps> = ({
     status: initialData?.status || "Pending",
   });
 
-  // Validation function to check if all required fields are filled
-  const isFormValid = () => {
-    return (
-      formData.type &&
-      formData.person_name.trim() !== "" &&
-      formData.amount > 0 &&
-      formData.currency &&
-      formData.due_date &&
-      formData.due_date.trim() !== "" &&
-      formData.status
-    );
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isFormValid()) {
-      return;
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        type: initialData.type,
+        person_name: initialData.person_name,
+        amount: initialData.amount,
+        currency: initialData.currency,
+        due_date: formatDateForInput(initialData.due_date) || "",
+        notes: initialData.notes || "",
+        status: initialData.status,
+      });
     }
-    // Ensure due_date is passed as a clean YYYY-MM-DD string
-    const submitData = {
+  }, [initialData]);
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    onSubmit({
       ...formData,
-      due_date: formData.due_date,
-    };
-    onSubmit(submitData);
+      amount: Number(formData.amount),
+    });
   };
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Directly use the value from the date input, which is already in YYYY-MM-DD format
-    setFormData({ ...formData, due_date: e.target.value });
+  const handleFieldChange = <T extends keyof CreateDueData>(field: T, value: CreateDueData[T]) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
+
+  const isFormValid =
+    formData.person_name.trim() !== "" &&
+    Number(formData.amount) > 0 &&
+    formData.due_date !== "";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label htmlFor="type">Type *</Label>
+    <form
+      id={formId}
+      onSubmit={handleSubmit}
+      className="space-y-3"
+      autoComplete="off"
+    >
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground" htmlFor="due-type">
+          Type
+        </label>
         <Select
           value={formData.type}
-          onValueChange={(value: "I Owe" | "They Owe Me") =>
-            setFormData({ ...formData, type: value })
-          }
+          onValueChange={(value: "I Owe" | "They Owe Me") => handleFieldChange("type", value)}
         >
-          <SelectTrigger>
+          <SelectTrigger
+            id="due-type"
+            className="h-11 rounded-xl border border-muted-foreground/30 text-left text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+          >
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="text-[15px]">
             <SelectItem value="I Owe">I Owe</SelectItem>
             <SelectItem value="They Owe Me">They Owe Me</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      <div>
-        <Label htmlFor="person_name">Person's Name *</Label>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground" htmlFor="due-person">
+          Person's name
+        </label>
         <Input
-          id="person_name"
+          id="due-person"
           value={formData.person_name}
-          onChange={(e) =>
-            setFormData({ ...formData, person_name: e.target.value })
-          }
+          onChange={(event) => handleFieldChange("person_name", event.target.value)}
           placeholder="Enter person's name"
+          className="h-11 rounded-xl border border-muted-foreground/30 px-3 text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
           required
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label htmlFor="amount">Amount *</Label>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground" htmlFor="due-amount">
+            Amount
+          </label>
           <Input
-            id="amount"
+            id="due-amount"
             type="number"
             step="0.01"
             min="0"
             value={formData.amount}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                amount: parseFloat(e.target.value) || 0,
-              })
-            }
+            onChange={(event) => handleFieldChange("amount", parseFloat(event.target.value) || 0)}
             placeholder="0.00"
+            className="h-11 rounded-xl border border-muted-foreground/30 px-3 text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
             required
           />
         </div>
-        <div>
-          <Label htmlFor="currency">Currency *</Label>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground" htmlFor="due-currency">
+            Currency
+          </label>
           <Select
             value={formData.currency}
-            onValueChange={(value: "USD" | "INR") =>
-              setFormData({ ...formData, currency: value })
-            }
+            onValueChange={(value: "USD" | "INR") => handleFieldChange("currency", value)}
           >
-            <SelectTrigger>
+            <SelectTrigger
+              id="due-currency"
+              className="h-11 rounded-xl border border-muted-foreground/30 text-left text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+            >
               <SelectValue placeholder="Select currency" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="text-[15px]">
               <SelectItem value="USD">USD ($)</SelectItem>
               <SelectItem value="INR">INR (₹)</SelectItem>
             </SelectContent>
@@ -150,60 +162,74 @@ const DueForm: React.FC<DueFormProps> = ({
         </div>
       </div>
 
-      <div>
-        <Label htmlFor="due_date">Due Date *</Label>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground" htmlFor="due-date">
+          Due date
+        </label>
         <Input
-          id="due_date"
+          id="due-date"
           type="date"
           value={formData.due_date}
-          onChange={handleDateChange}
+          onChange={(event) => handleFieldChange("due_date", event.target.value)}
+          className="h-11 rounded-xl border border-muted-foreground/30 px-3 text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
           required
         />
       </div>
 
-      <div>
-        <Label htmlFor="status">Status *</Label>
-        <Select
-          value={formData.status}
-          onValueChange={(value: "Pending" | "Settled") =>
-            setFormData({ ...formData, status: value })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Pending">Pending</SelectItem>
-            <SelectItem value="Settled">Settled</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground" htmlFor="due-status">
+            Status
+          </label>
+          <Select
+            value={formData.status}
+            onValueChange={(value: "Pending" | "Settled") => handleFieldChange("status", value)}
+          >
+            <SelectTrigger
+              id="due-status"
+              className="h-11 rounded-xl border border-muted-foreground/30 text-left text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="text-[15px]">
+              <SelectItem value="Pending">Pending</SelectItem>
+              <SelectItem value="Settled">Settled</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <div>
-        <Label htmlFor="notes">Notes</Label>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground" htmlFor="due-notes">
+          Notes (optional)
+        </label>
         <Textarea
-          id="notes"
+          id="due-notes"
           value={formData.notes}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+          onChange={(event) => handleFieldChange("notes", event.target.value)}
           placeholder="e.g., Split lunch, Lent for books"
-          rows={3}
+          className="min-h-[96px] resize-none rounded-2xl border border-muted-foreground/30 px-3 py-2 text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
         />
       </div>
 
-      <div className="flex justify-end space-x-2">
-        <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          disabled={isLoading || !isFormValid()}
-          className={`bg-blue-500 hover:bg-blue-600 ${
-            isLoading || !isFormValid() ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-        >
-          {isLoading ? "Saving..." : initialData ? "Update Due" : "Add Due"}
-        </Button>
-      </div>
+      {!hideActions && (
+        <div className="grid grid-cols-2 gap-3 pt-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-11 rounded-xl border border-muted-foreground/20 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isLoading || !isFormValid}
+            className="h-11 rounded-xl bg-primary text-[15px] font-semibold text-white transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isLoading ? "Saving..." : initialData ? "Update Due" : "Add Due"}
+          </button>
+        </div>
+      )}
     </form>
   );
 };

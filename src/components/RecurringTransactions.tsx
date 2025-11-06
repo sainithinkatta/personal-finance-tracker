@@ -1,32 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Bell, Calendar } from 'lucide-react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
+import React, { useEffect, useMemo, useState } from "react";
+import { Plus, Bell, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
-import { RecurringTransaction, RecurringTransactionFormData } from '@/types/recurringTransaction';
-import { CURRENCIES, ExpenseCategory } from '@/types/expense';
-import { useToast } from '@/hooks/use-toast';
-import { format, differenceInDays } from 'date-fns';
-import { RecurringTransactionCard } from '@/components/recurring/RecurringTransactionCard';
-import { EditRecurringTransactionForm } from '@/components/recurring/EditRecurringTransactionForm';
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { ResponsiveSheet } from "@/components/layout/ResponsiveSheet";
+import { useRecurringTransactions } from "@/hooks/useRecurringTransactions";
+import { RecurringTransaction, RecurringTransactionFormData } from "@/types/recurringTransaction";
+import { CURRENCIES, ExpenseCategory } from "@/types/expense";
+import { useToast } from "@/hooks/use-toast";
+import { format, differenceInDays } from "date-fns";
+import { RecurringTransactionCard } from "@/components/recurring/RecurringTransactionCard";
+import { EditRecurringTransactionForm } from "@/components/recurring/EditRecurringTransactionForm";
 
 const RecurringTransactions: React.FC = () => {
   const {
@@ -42,60 +33,56 @@ const RecurringTransactions: React.FC = () => {
     isMarkingDone,
   } = useRecurringTransactions();
   const { toast } = useToast();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<RecurringTransaction | null>(null);
   const [formData, setFormData] = useState<RecurringTransactionFormData>({
-    name: '',
+    name: "",
     amount: 0,
-    category: 'Bills' as ExpenseCategory,
-    frequency: 'monthly',
-    next_due_date: '',
-    currency: 'USD',
+    category: "Bills" as ExpenseCategory,
+    frequency: "monthly",
+    next_due_date: "",
+    currency: "USD",
     email_reminder: true,
     reminder_days_before: 2,
   });
 
-  // Filter out transactions that are marked as 'done' from upcoming reminders
-  const upcomingReminders = getUpcomingReminders().filter(tx => tx.status !== 'done');
-
   useEffect(() => {
     processRecurringTransactions();
+  }, [processRecurringTransactions]);
+
+  useEffect(() => {
+    const upcomingReminders = getUpcomingReminders().filter((tx) => tx.status !== "done");
     upcomingReminders.forEach((tx) => {
-      const daysUntilDue = differenceInDays(
-        new Date(tx.next_due_date),
-        new Date()
-      );
+      const daysUntilDue = differenceInDays(new Date(tx.next_due_date), new Date());
       if (daysUntilDue <= tx.reminder_days_before && daysUntilDue >= 0) {
         toast({
-          title: 'Upcoming Reminder',
-          description: `${tx.name} — ${formatCurrency(
-            tx.amount,
-            tx.currency
-          )} due in ${daysUntilDue} day${daysUntilDue !== 1 ? 's' : ''}.`,
+          title: "Upcoming reminder",
+          description: `${tx.name} — ${formatCurrency(tx.amount, tx.currency)} due in ${daysUntilDue} day${
+            daysUntilDue !== 1 ? "s" : ""
+          }`,
         });
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [getUpcomingReminders, toast]);
 
   const resetForm = () => {
     setFormData({
-      name: '',
+      name: "",
       amount: 0,
-      category: 'Bills' as ExpenseCategory,
-      frequency: 'monthly',
-      next_due_date: '',
-      currency: 'USD',
+      category: "Bills" as ExpenseCategory,
+      frequency: "monthly",
+      next_due_date: "",
+      currency: "USD",
       email_reminder: true,
       reminder_days_before: 2,
     });
-    setIsAddDialogOpen(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
     addRecurringTransaction(formData);
     resetForm();
+    setIsAddSheetOpen(false);
   };
 
   const handleEdit = (transaction: RecurringTransaction) => {
@@ -120,308 +107,276 @@ const RecurringTransactions: React.FC = () => {
     return `${currencyInfo?.symbol || currency}${amount.toFixed(2)}`;
   };
 
-  const getFrequencyBadgeColor = (freq: string) => {
-    switch (freq) {
-      case 'daily':
-        return 'bg-blue-100 text-blue-800';
-      case 'weekly':
-        return 'bg-green-100 text-green-800';
-      case 'monthly':
-        return 'bg-purple-100 text-purple-800';
-      case 'yearly':
-        return 'bg-orange-100 text-orange-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
+  const upcomingReminders = useMemo(
+    () => getUpcomingReminders().filter((tx) => tx.status !== "done"),
+    [getUpcomingReminders]
+  );
+
+  const addFormId = "add-recurring-transaction";
 
   return (
-    <div className="space-y-6">
-      {/* Compact Upcoming Reminders Notification */}
+    <div className="space-y-4">
       {upcomingReminders.length > 0 && (
-        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Bell className="h-5 w-5 text-yellow-600" />
-            <h3 className="font-semibold text-yellow-800">Upcoming Payments</h3>
+        <section className="rounded-3xl border border-amber-200 bg-amber-50/70 p-4">
+          <div className="mb-3 flex items-center gap-2 text-amber-700">
+            <Bell className="h-4 w-4" />
+            <h3 className="text-sm font-semibold">Upcoming payments</h3>
           </div>
-          
-          <div className="grid gap-2">
+          <div className="space-y-3">
             {upcomingReminders.map((tx) => {
-              const daysUntilDue = differenceInDays(
-                new Date(tx.next_due_date),
-                new Date()
-              );
+              const daysUntilDue = differenceInDays(new Date(tx.next_due_date), new Date());
               const dueLabel =
                 daysUntilDue === 0
-                  ? 'Today'
+                  ? "Today"
                   : daysUntilDue === 1
-                  ? 'Tomorrow'
+                  ? "Tomorrow"
                   : `${daysUntilDue} days`;
 
               return (
-                <div
+                <article
                   key={tx.id}
-                  className="flex flex-col bg-white rounded-md border border-yellow-200 p-3 space-y-2"
+                  className="rounded-2xl border border-amber-200 bg-white p-3.5 shadow-sm"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-shrink-0">
-                        <Calendar className="h-4 w-4 text-yellow-600" />
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="rounded-2xl bg-amber-100 p-2">
+                        <Calendar className="h-4 w-4 text-amber-700" />
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900 text-sm">{tx.name}</p>
-                        <p className="text-xs text-gray-600">
-                          Due {format(new Date(tx.next_due_date), 'MMM d')} • {dueLabel}
+                      <div className="space-y-1">
+                        <p className="text-sm font-semibold text-foreground">{tx.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Due {format(new Date(tx.next_due_date), "MMM d")} • {dueLabel}
                         </p>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                      <div className="text-right">
-                        <p className="font-semibold text-gray-900 text-sm">
-                          {formatCurrency(tx.amount, tx.currency)}
-                        </p>
-                        <Badge 
-                          className={`text-xs ${getFrequencyBadgeColor(tx.frequency)}`}
-                        >
-                          {tx.frequency}
-                        </Badge>
-                      </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-foreground">
+                        {formatCurrency(tx.amount, tx.currency)}
+                      </p>
+                      <Badge className="mt-1 rounded-full bg-amber-100 text-[11px] font-medium text-amber-700">
+                        {tx.frequency}
+                      </Badge>
                     </div>
                   </div>
-                  
-                  {tx.last_reminder_sent_at && (
-                    <div className="flex items-center gap-1.5 text-xs text-green-700 bg-green-50 px-2 py-1 rounded-md border border-green-200">
-                      <span className="text-sm">🕓</span>
-                      <span>
-                        Notified via Email at {format(new Date(tx.last_reminder_sent_at), 'h:mm a zzz')}
-                      </span>
-                    </div>
-                  )}
-                </div>
+                </article>
               );
             })}
           </div>
+        </section>
+      )}
+
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-foreground">Recurring transactions</h2>
+        <Button
+          type="button"
+          className="h-11 rounded-xl bg-primary text-sm font-semibold text-white hover:bg-primary/90"
+          onClick={() => setIsAddSheetOpen(true)}
+        >
+          <Plus className="mr-2 h-4 w-4" /> Add
+        </Button>
+      </div>
+
+      {recurringTransactions.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-muted-foreground/40 bg-muted/40 py-12 text-center">
+          <p className="text-base font-medium text-foreground">No recurring transactions yet</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Create your first recurring expense to stay ahead of upcoming bills.
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-3">
+          {recurringTransactions.map((transaction) => (
+            <RecurringTransactionCard
+              key={transaction.id}
+              transaction={transaction}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onMarkAsDone={handleMarkAsDone}
+              isMarkingDone={isMarkingDone}
+            />
+          ))}
         </div>
       )}
 
-      {/* Recurring Transactions List */}
-      <Card>
-        <CardHeader className="flex items-center justify-between">
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="flex bg-blue-500 hover:bg-blue-600 text-white shadow-lg ml-auto">
-                <Plus className="h-4 w-4 mr-1" />
-                Add Transaction
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md mx-auto my-8 overflow-auto">
-              <DialogHeader>
-                <DialogTitle>Add Recurring Transaction</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-1">
-                  <Label htmlFor="name" className="text-sm font-medium">
-                    Name
-                  </Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    placeholder="e.g., Netflix"
-                    required
-                    className="text-sm"
-                  />
-                </div>
+      <ResponsiveSheet
+        open={isAddSheetOpen}
+        onOpenChange={setIsAddSheetOpen}
+        title="Add recurring transaction"
+        description="Keep subscriptions and bills organized."
+        footer={(
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setIsAddSheetOpen(false)}
+              className="h-11 rounded-xl border border-muted-foreground/20 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form={addFormId}
+              disabled={isAdding}
+              className="h-11 rounded-xl bg-primary text-[15px] font-semibold text-white transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isAdding ? "Saving..." : "Add"}
+            </button>
+          </div>
+        )}
+        contentClassName="pb-24"
+      >
+        <form id={addFormId} onSubmit={handleSubmit} className="space-y-3">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground" htmlFor="recurring-name">
+              Name
+            </label>
+            <Input
+              id="recurring-name"
+              value={formData.name}
+              onChange={(event) => setFormData({ ...formData, name: event.target.value })}
+              placeholder="e.g., Netflix"
+              className="h-11 rounded-xl border border-muted-foreground/30 px-3 text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+              required
+            />
+          </div>
 
-                <div className="space-y-1">
-                  <Label htmlFor="amount" className="text-sm font-medium">
-                    Amount
-                  </Label>
-                  <Input
-                    id="amount"
-                    type="number"
-                    step="0.01"
-                    value={formData.amount}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        amount: parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    placeholder="0.00"
-                    required
-                    className="text-sm"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor="currency" className="text-sm font-medium">
-                    Currency
-                  </Label>
-                  <Select
-                    value={formData.currency}
-                    onValueChange={(val) =>
-                      setFormData({ ...formData, currency: val })
-                    }
-                  >
-                    <SelectTrigger className="text-sm">
-                      <SelectValue placeholder="USD" />
-                    </SelectTrigger>
-                    <SelectContent className="text-sm">
-                      {CURRENCIES.map((c) => (
-                        <SelectItem key={c.code} value={c.code} className="text-sm">
-                          {c.symbol} {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor="category" className="text-sm font-medium">
-                    Category
-                  </Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(val) =>
-                      setFormData({ ...formData, category: val as ExpenseCategory })
-                    }
-                  >
-                    <SelectTrigger className="text-sm">
-                      <SelectValue placeholder="Bills" />
-                    </SelectTrigger>
-                    <SelectContent className="text-sm">
-                      <SelectItem value="Groceries" className="text-sm">
-                        Groceries
-                      </SelectItem>
-                      <SelectItem value="Food" className="text-sm">
-                        Food
-                      </SelectItem>
-                      <SelectItem value="Travel" className="text-sm">
-                        Travel
-                      </SelectItem>
-                      <SelectItem value="Bills" className="text-sm">
-                        Bills
-                      </SelectItem>
-                      <SelectItem value="Others" className="text-sm">
-                        Others
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor="frequency" className="text-sm font-medium">
-                    Frequency
-                  </Label>
-                  <Select
-                    value={formData.frequency}
-                    onValueChange={(val: 'daily' | 'weekly' | 'monthly' | 'yearly') =>
-                      setFormData({ ...formData, frequency: val })
-                    }
-                  >
-                    <SelectTrigger className="text-sm">
-                      <SelectValue placeholder="Monthly" />
-                    </SelectTrigger>
-                    <SelectContent className="text-sm">
-                      <SelectItem value="daily" className="text-sm">
-                        Daily
-                      </SelectItem>
-                      <SelectItem value="weekly" className="text-sm">
-                        Weekly
-                      </SelectItem>
-                      <SelectItem value="monthly" className="text-sm">
-                        Monthly
-                      </SelectItem>
-                      <SelectItem value="yearly" className="text-sm">
-                        Yearly
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor="next_due_date" className="text-sm font-medium">
-                    Next Due Date
-                  </Label>
-                  <Input
-                    id="next_due_date"
-                    type="date"
-                    value={formData.next_due_date}
-                    onChange={(e) =>
-                      setFormData({ ...formData, next_due_date: e.target.value })
-                    }
-                    required
-                    className="text-sm"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <Label
-                    htmlFor="reminder_days_before"
-                    className="text-sm font-medium"
-                  >
-                    Remind (days before)
-                  </Label>
-                  <Input
-                    id="reminder_days_before"
-                    type="number"
-                    min="0"
-                    max="30"
-                    value={formData.reminder_days_before}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        reminder_days_before: parseInt(e.target.value) || 0,
-                      })
-                    }
-                    className="text-sm"
-                  />
-                </div>
-
-                <DialogFooter>
-                  <Button type="submit" size="sm" disabled={isAdding}>
-                    Save
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsAddDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          {recurringTransactions.length === 0 ? (
-            <p className="text-center text-gray-500 py-8">
-              No recurring transactions yet. Click "Add Transaction" to get started.
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {recurringTransactions.map((transaction) => (
-                <RecurringTransactionCard
-                  key={transaction.id}
-                  transaction={transaction}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onMarkAsDone={handleMarkAsDone}
-                  isMarkingDone={isMarkingDone}
-                />
-              ))}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground" htmlFor="recurring-amount">
+                Amount
+              </label>
+              <Input
+                id="recurring-amount"
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.amount}
+                onChange={(event) =>
+                  setFormData({
+                    ...formData,
+                    amount: parseFloat(event.target.value) || 0,
+                  })
+                }
+                placeholder="0.00"
+                className="h-11 rounded-xl border border-muted-foreground/30 px-3 text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+                required
+              />
             </div>
-          )}
-        </CardContent>
-      </Card>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground" htmlFor="recurring-currency">
+                Currency
+              </label>
+              <Select
+                value={formData.currency}
+                onValueChange={(value) => setFormData({ ...formData, currency: value })}
+              >
+                <SelectTrigger
+                  id="recurring-currency"
+                  className="h-11 rounded-xl border border-muted-foreground/30 text-left text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+                >
+                  <SelectValue placeholder="Currency" />
+                </SelectTrigger>
+                <SelectContent className="text-[15px]">
+                  {CURRENCIES.map((currency) => (
+                    <SelectItem key={currency.code} value={currency.code} className="text-[15px]">
+                      {currency.symbol} {currency.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-      {/* Edit Transaction Form */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground" htmlFor="recurring-category">
+                Category
+              </label>
+              <Select
+                value={formData.category}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, category: value as ExpenseCategory })
+                }
+              >
+                <SelectTrigger
+                  id="recurring-category"
+                  className="h-11 rounded-xl border border-muted-foreground/30 text-left text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+                >
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent className="text-[15px]">
+                  <SelectItem value="Groceries">Groceries</SelectItem>
+                  <SelectItem value="Food">Food</SelectItem>
+                  <SelectItem value="Travel">Travel</SelectItem>
+                  <SelectItem value="Bills">Bills</SelectItem>
+                  <SelectItem value="Others">Others</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground" htmlFor="recurring-frequency">
+                Frequency
+              </label>
+              <Select
+                value={formData.frequency}
+                onValueChange={(value: "daily" | "weekly" | "monthly" | "yearly") =>
+                  setFormData({ ...formData, frequency: value })
+                }
+              >
+                <SelectTrigger
+                  id="recurring-frequency"
+                  className="h-11 rounded-xl border border-muted-foreground/30 text-left text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+                >
+                  <SelectValue placeholder="Frequency" />
+                </SelectTrigger>
+                <SelectContent className="text-[15px]">
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="yearly">Yearly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground" htmlFor="recurring-next-due">
+                Next due date
+              </label>
+              <Input
+                id="recurring-next-due"
+                type="date"
+                value={formData.next_due_date}
+                onChange={(event) =>
+                  setFormData({ ...formData, next_due_date: event.target.value })
+                }
+                className="h-11 rounded-xl border border-muted-foreground/30 px-3 text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground" htmlFor="recurring-reminder">
+                Reminder (days before)
+              </label>
+              <Input
+                id="recurring-reminder"
+                type="number"
+                min="0"
+                max="30"
+                value={formData.reminder_days_before}
+                onChange={(event) =>
+                  setFormData({
+                    ...formData,
+                    reminder_days_before: parseInt(event.target.value, 10) || 0,
+                  })
+                }
+                className="h-11 rounded-xl border border-muted-foreground/30 px-3 text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+              />
+            </div>
+          </div>
+        </form>
+      </ResponsiveSheet>
+
       <EditRecurringTransactionForm
         transaction={editingTransaction}
         isOpen={!!editingTransaction}

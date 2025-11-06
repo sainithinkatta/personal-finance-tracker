@@ -1,47 +1,50 @@
-import React, { useState } from 'react';
-import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
+import React, { useState } from "react";
+import { format } from "date-fns";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
-import { Expense, ExpenseCategory, CURRENCIES } from '@/types/expense';
-import { useBankAccounts } from '@/hooks/useBankAccounts';
-import { useBudgets } from '@/hooks/useBudgets';
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { Expense, ExpenseCategory, CURRENCIES } from "@/types/expense";
+import { useBankAccounts } from "@/hooks/useBankAccounts";
+import { useBudgets } from "@/hooks/useBudgets";
 
 interface ExpenseFormProps {
-  onAddExpense: (expense: Omit<Expense, 'id'>) => void;
+  onAddExpense: (expense: Omit<Expense, "id">) => void;
   expense?: Expense;
   onClose?: () => void;
+  formId?: string;
+  hideSubmit?: boolean;
 }
 
-const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClose }) => {
+const ExpenseForm: React.FC<ExpenseFormProps> = ({
+  onAddExpense,
+  expense,
+  onClose,
+  formId,
+  hideSubmit = false,
+}) => {
   const { toast } = useToast();
   const { bankAccounts } = useBankAccounts();
   const { getActiveBudgetsForDate } = useBudgets();
   const isEditing = !!expense;
 
   const [date, setDate] = useState<Date>(expense?.date || new Date());
-  const [amount, setAmount] = useState<string>(expense?.amount?.toString() || '');
-  const [category, setCategory] = useState<ExpenseCategory>(expense?.category || 'Groceries');
-  const [description, setDescription] = useState<string>(expense?.description || '');
-  const [currency, setCurrency] = useState<string>(expense?.currency || 'USD');
-  const [bankAccountId, setBankAccountId] = useState<string>(expense?.bank_account_id || '');
-  const [budgetId, setBudgetId] = useState<string>(expense?.budget_id || 'none');
+  const [amount, setAmount] = useState<string>(expense?.amount?.toString() || "");
+  const [category, setCategory] = useState<ExpenseCategory>(
+    expense?.category || "Groceries"
+  );
+  const [description, setDescription] = useState<string>(expense?.description || "");
+  const [currency, setCurrency] = useState<string>(expense?.currency || "USD");
+  const [bankAccountId, setBankAccountId] = useState<string>(
+    expense?.bank_account_id || ""
+  );
+  const [budgetId, setBudgetId] = useState<string>(expense?.budget_id || "none");
 
   const activeBudgets = getActiveBudgetsForDate(date);
 
@@ -50,40 +53,39 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
 
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
       toast({
-        title: 'Invalid Amount',
-        description: 'Please enter a valid amount',
-        variant: 'destructive',
+        title: "Invalid Amount",
+        description: "Please enter a valid amount",
+        variant: "destructive",
       });
       return;
     }
 
     if (!bankAccountId) {
       toast({
-        title: 'Bank Account Required',
-        description: 'Please select a bank account (USD only)',
-        variant: 'destructive',
+        title: "Bank Account Required",
+        description: "Please select a bank account (USD only)",
+        variant: "destructive",
       });
       return;
     }
 
-    const newExpense: Omit<Expense, 'id'> = {
+    const newExpense: Omit<Expense, "id"> = {
       date,
       amount: Number(amount),
       category,
       description,
       currency,
       bank_account_id: bankAccountId,
-      budget_id: budgetId === 'none' ? undefined : budgetId,
+      budget_id: budgetId === "none" ? undefined : budgetId,
     };
 
     onAddExpense(newExpense);
 
     if (!isEditing) {
-      // Reset form only when adding new expense
-      setAmount('');
-      setDescription('');
-      setBankAccountId('');
-      setBudgetId('none');
+      setAmount("");
+      setDescription("");
+      setBankAccountId("");
+      setBudgetId("none");
     }
 
     if (onClose) {
@@ -91,82 +93,104 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
     }
   };
 
-  // Filter bank accounts to only those with USD currency:
-  const usdOnlyAccounts = bankAccounts.filter((acct) => acct.currency === 'USD');
+  const usdOnlyAccounts = bankAccounts.filter((acct) => acct.currency === "USD");
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">Date</label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal h-10",
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {format(date, 'PPP')}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={(d) => d && setDate(d)}
-                initialFocus
-                className="pointer-events-auto"
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">Currency</label>
-          <Select value={currency} onValueChange={setCurrency}>
-            <SelectTrigger className="h-10">
-              <SelectValue placeholder="Select currency" />
-            </SelectTrigger>
-            <SelectContent>
-                <SelectItem value="USD">
-                  $ US Dollar
-                </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+    <form
+      onSubmit={handleSubmit}
+      id={formId}
+      className="space-y-3"
+      autoComplete="off"
+    >
+      <div className="space-y-1.5">
+        <label
+          className="text-xs font-medium text-muted-foreground"
+          htmlFor="expense-date"
+        >
+          Date
+        </label>
+        <Input
+          id="expense-date"
+          type="date"
+          value={format(date, "yyyy-MM-dd")}
+          onChange={(event) => {
+            const value = event.target.value;
+            if (value) {
+              setDate(new Date(`${value}T00:00:00`));
+            }
+          }}
+          className="h-11 rounded-xl border border-muted-foreground/30 px-3 text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+        />
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Amount</label>
+      <div className="space-y-1.5">
+        <label
+          className="text-xs font-medium text-muted-foreground"
+          htmlFor="expense-currency"
+        >
+          Currency
+        </label>
+        <Select value={currency} onValueChange={setCurrency}>
+          <SelectTrigger
+            id="expense-currency"
+            className="h-11 rounded-xl border border-muted-foreground/30 text-left text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+          >
+            <SelectValue placeholder="Select currency" />
+          </SelectTrigger>
+          <SelectContent>
+            {CURRENCIES.map((curr) => (
+              <SelectItem key={curr.code} value={curr.code} className="text-[15px]">
+                {curr.symbol} {curr.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-1.5">
+        <label
+          className="text-xs font-medium text-muted-foreground"
+          htmlFor="expense-amount"
+        >
+          Amount
+        </label>
         <div className="relative">
-          <span className="absolute left-3 top-2 text-gray-500">
-            $
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+            {CURRENCIES.find((curr) => curr.code === currency)?.symbol || "$"}
           </span>
           <Input
+            id="expense-amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="pl-8 border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 h-10"
+            className="h-11 rounded-xl border border-muted-foreground/30 pl-8 pr-3 text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
             type="number"
             step="0.01"
             min="0"
+            inputMode="decimal"
             required
           />
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Category</label>
+      <div className="space-y-1.5">
+        <label
+          className="text-xs font-medium text-muted-foreground"
+          htmlFor="expense-category"
+        >
+          Category
+        </label>
         <Select
           value={category}
           onValueChange={(value) => setCategory(value as ExpenseCategory)}
         >
-          <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 h-10">
+          <SelectTrigger
+            id="expense-category"
+            className="h-11 rounded-xl border border-muted-foreground/30 text-left text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+          >
             <SelectValue placeholder="Select a category" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="text-[15px]">
             <SelectItem value="Groceries">Groceries</SelectItem>
             <SelectItem value="Food">Food</SelectItem>
             <SelectItem value="Travel">Travel</SelectItem>
@@ -176,19 +200,24 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
         </Select>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">
+      <div className="space-y-1.5">
+        <label
+          className="text-xs font-medium text-muted-foreground"
+          htmlFor="expense-bank-account"
+        >
           Bank Account (USD only)
         </label>
-
         <Select value={bankAccountId} onValueChange={setBankAccountId} required>
-          <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 h-10">
+          <SelectTrigger
+            id="expense-bank-account"
+            className="h-11 rounded-xl border border-muted-foreground/30 text-left text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+          >
             <SelectValue placeholder="Select bank account" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="text-[15px]">
             {usdOnlyAccounts.length > 0 ? (
               usdOnlyAccounts.map((account) => (
-                <SelectItem key={account.id} value={account.id}>
+                <SelectItem key={account.id} value={account.id} className="text-[15px]">
                   {account.name} ({account.currency})
                 </SelectItem>
               ))
@@ -199,22 +228,27 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
             )}
           </SelectContent>
         </Select>
-
       </div>
 
       {activeBudgets.length > 0 && (
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">
+        <div className="space-y-1.5">
+          <label
+            className="text-xs font-medium text-muted-foreground"
+            htmlFor="expense-budget"
+          >
             Budget (Optional)
           </label>
           <Select value={budgetId} onValueChange={setBudgetId}>
-            <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 h-10">
+            <SelectTrigger
+              id="expense-budget"
+              className="h-11 rounded-xl border border-muted-foreground/30 text-left text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
+            >
               <SelectValue placeholder="Select budget" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="text-[15px]">
               <SelectItem value="none">No budget</SelectItem>
               {activeBudgets.map((budget) => (
-                <SelectItem key={budget.id} value={budget.id}>
+                <SelectItem key={budget.id} value={budget.id} className="text-[15px]">
                   {budget.name} ({budget.currency})
                 </SelectItem>
               ))}
@@ -223,25 +257,30 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
         </div>
       )}
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">
+      <div className="space-y-1.5">
+        <label
+          className="text-xs font-medium text-muted-foreground"
+          htmlFor="expense-description"
+        >
           Description (Optional)
         </label>
         <Textarea
+          id="expense-description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Add details about this expense"
-          className="resize-none border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-          rows={2}
+          className="min-h-[96px] resize-none rounded-2xl border border-muted-foreground/30 px-3 py-2 text-[15px] focus:border-primary focus:ring-2 focus:ring-primary"
         />
       </div>
 
-      <Button
-        type="submit"
-        className="w-full bg-blue-500 hover:bg-blue-600 focus:ring-2 focus:ring-blue-400"
-      >
-        {isEditing ? 'Update Expense' : 'Add Expense'}
-      </Button>
+      {!hideSubmit && (
+        <button
+          type="submit"
+          className="h-11 w-full rounded-xl bg-primary text-[15px] font-semibold text-white transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          {isEditing ? "Update Expense" : "Add Expense"}
+        </button>
+      )}
     </form>
   );
 };
