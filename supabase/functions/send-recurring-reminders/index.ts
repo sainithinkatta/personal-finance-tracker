@@ -279,7 +279,7 @@ const emailHtml = `
         
         .detail-row {
           display: flex;
-          align-items: flex-start;
+          align-items: center;
           padding: 16px;
           background: #f8f9fa !important;
           border-radius: 10px;
