@@ -87,13 +87,13 @@ export const CategoryAllocationForm: React.FC<CategoryAllocationFormProps> = ({
               <div key={category} className="grid grid-cols-2 items-center gap-4">
                 <Label htmlFor={category}>{category}</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-3 text-gray-500 text-sm">$</span>
+                  <span className="absolute left-3 top-2 text-gray-500">$</span>
                   <Input
                     id={category}
                     type="number"
                     step="0.01"
                     min="0"
-                    className="pl-8"
+                    className="pl-8 leading-none"
                     value={allocations[getCategoryKey(category)]}
                     onChange={(e) => handleAllocationChange(category, e.target.value)}
                   />

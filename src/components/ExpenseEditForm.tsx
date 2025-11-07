@@ -126,17 +126,17 @@ const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpe
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        <label className="text-xs font-medium text-muted-foreground">Amount</label>
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">Amount</label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[15px]">
-            {selectedCurrency?.symbol || '$'}
+          <span className="absolute left-3 top-2 text-gray-500">
+            $
           </span>
           <Input
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="pl-8 h-11 rounded-xl border px-3 text-[15px] focus-visible:ring-2 focus-visible:ring-primary"
+            className="pl-8 border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 h-10"
             type="number"
             step="0.01"
             min="0"
