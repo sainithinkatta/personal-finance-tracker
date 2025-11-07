@@ -7,7 +7,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  BottomSheet,
+  BottomSheetContent,
+  BottomSheetHeader,
+  BottomSheetTitle,
+  BottomSheetBody,
+} from "@/components/ui/bottom-sheet";
 import { useDues } from "@/hooks/useDues";
+import { useIsMobile } from "@/hooks/use-mobile";
 import DueForm from "@/components/DueForm";
 import DuesList from "@/components/DuesList";
 import { CreateDueData, Due, UpdateDueData } from "@/types/due";
@@ -24,6 +32,7 @@ const DuesManager: React.FC = () => {
     isUpdating,
   } = useDues();
 
+  const isMobile = useIsMobile();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingDue, setEditingDue] = useState<Due | null>(null);
 
@@ -80,20 +89,42 @@ const DuesManager: React.FC = () => {
         onMarkAsSettled={markAsSettled}
       />
 
-      {/* Add/Edit Due Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingDue ? "Edit Due" : "Add New Due"}</DialogTitle>
-          </DialogHeader>
-          <DueForm
-            onSubmit={editingDue ? handleUpdateDue : handleAddDue}
-            onClose={handleCloseDialog}
-            initialData={editingDue || undefined}
-            isLoading={isAdding || isUpdating}
-          />
-        </DialogContent>
-      </Dialog>
+      {/* Add/Edit Due - Bottom Sheet on Mobile, Dialog on Desktop */}
+      {isMobile ? (
+        <BottomSheet open={isDialogOpen} onOpenChange={handleCloseDialog}>
+          <BottomSheetContent>
+            <BottomSheetHeader>
+              <BottomSheetTitle>
+                {editingDue ? "Edit Due" : "Add New Due"}
+              </BottomSheetTitle>
+            </BottomSheetHeader>
+            <BottomSheetBody>
+              <DueForm
+                onSubmit={editingDue ? handleUpdateDue : handleAddDue}
+                onClose={handleCloseDialog}
+                initialData={editingDue || undefined}
+                isLoading={isAdding || isUpdating}
+              />
+            </BottomSheetBody>
+          </BottomSheetContent>
+        </BottomSheet>
+      ) : (
+        <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
+          <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {editingDue ? "Edit Due" : "Add New Due"}
+              </DialogTitle>
+            </DialogHeader>
+            <DueForm
+              onSubmit={editingDue ? handleUpdateDue : handleAddDue}
+              onClose={handleCloseDialog}
+              initialData={editingDue || undefined}
+              isLoading={isAdding || isUpdating}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

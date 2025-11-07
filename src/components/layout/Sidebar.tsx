@@ -12,13 +12,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  BottomSheet,
+  BottomSheetContent,
+  BottomSheetHeader,
+  BottomSheetTitle,
+  BottomSheetBody,
+} from '@/components/ui/bottom-sheet';
 import { useExpenses } from '@/hooks/useExpenses';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Sidebar: React.FC = () => {
   const [isBankAccountsCollapsed, setIsBankAccountsCollapsed] = useState(false);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [isAddAccountOpen, setIsAddAccountOpen] = useState(false);
   const { addExpense } = useExpenses();
+  const isMobile = useIsMobile();
 
   const handleAddExpense = (expense: any) => {
     addExpense(expense);
@@ -68,25 +77,57 @@ const Sidebar: React.FC = () => {
           )}
         </Card>
 
-        {/* Add Expense Dialog */}
-        <Dialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>
-          <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Add Expense</DialogTitle>
-            </DialogHeader>
-            <ExpenseForm onAddExpense={handleAddExpense} />
-          </DialogContent>
-        </Dialog>
+        {/* Add Expense - Bottom Sheet on Mobile, Dialog on Desktop */}
+        {isMobile ? (
+          <BottomSheet open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>
+            <BottomSheetContent>
+              <BottomSheetHeader>
+                <BottomSheetTitle>Add Expense</BottomSheetTitle>
+              </BottomSheetHeader>
+              <BottomSheetBody>
+                <ExpenseForm
+                  onAddExpense={handleAddExpense}
+                  onClose={() => setIsAddExpenseOpen(false)}
+                />
+              </BottomSheetBody>
+            </BottomSheetContent>
+          </BottomSheet>
+        ) : (
+          <Dialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>
+            <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Add Expense</DialogTitle>
+              </DialogHeader>
+              <ExpenseForm
+                onAddExpense={handleAddExpense}
+                onClose={() => setIsAddExpenseOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
 
-        {/* Add Bank Account Dialog */}
-        <Dialog open={isAddAccountOpen} onOpenChange={setIsAddAccountOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Add Bank Account</DialogTitle>
-            </DialogHeader>
-            <BankAccountForm onClose={() => setIsAddAccountOpen(false)} />
-          </DialogContent>
-        </Dialog>
+        {/* Add Bank Account - Bottom Sheet on Mobile, Dialog on Desktop */}
+        {isMobile ? (
+          <BottomSheet open={isAddAccountOpen} onOpenChange={setIsAddAccountOpen}>
+            <BottomSheetContent>
+              <BottomSheetHeader>
+                <BottomSheetTitle>Add Bank Account</BottomSheetTitle>
+              </BottomSheetHeader>
+              <BottomSheetBody>
+                <BankAccountForm onClose={() => setIsAddAccountOpen(false)} />
+              </BottomSheetBody>
+            </BottomSheetContent>
+          </BottomSheet>
+        ) : (
+          <Dialog open={isAddAccountOpen} onOpenChange={setIsAddAccountOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Add Bank Account</DialogTitle>
+              </DialogHeader>
+              <BankAccountForm onClose={() => setIsAddAccountOpen(false)} />
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </aside>
   );

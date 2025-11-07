@@ -3,11 +3,12 @@ import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  BottomSheet,
+  BottomSheetContent,
+  BottomSheetHeader,
+  BottomSheetTitle,
+  BottomSheetBody,
+} from '@/components/ui/bottom-sheet';
 import ExpenseForm from '@/components/ExpenseForm';
 import { useExpenses } from '@/hooks/useExpenses';
 
@@ -23,21 +24,27 @@ const FloatingActionButton: React.FC = () => {
   return (
     <>
       <Button
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg lg:hidden z-50 bg-blue-500 hover:bg-blue-600 active:scale-95 transition-transform duration-150 touch-target"
+        className="fixed right-4 h-14 w-14 rounded-full shadow-lg lg:hidden z-50 bg-primary hover:bg-primary/90 active:scale-95 transition-transform duration-150 touch-target"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}
         onClick={() => setIsOpen(true)}
         aria-label="Add new expense"
       >
         <Plus className="h-6 w-6" />
       </Button>
 
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto mx-4">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold">Add Expense</DialogTitle>
-          </DialogHeader>
-          <ExpenseForm onAddExpense={handleAddExpense} />
-        </DialogContent>
-      </Dialog>
+      <BottomSheet open={isOpen} onOpenChange={setIsOpen}>
+        <BottomSheetContent>
+          <BottomSheetHeader>
+            <BottomSheetTitle>Add Expense</BottomSheetTitle>
+          </BottomSheetHeader>
+          <BottomSheetBody>
+            <ExpenseForm
+              onAddExpense={handleAddExpense}
+              onClose={() => setIsOpen(false)}
+            />
+          </BottomSheetBody>
+        </BottomSheetContent>
+      </BottomSheet>
     </>
   );
 };

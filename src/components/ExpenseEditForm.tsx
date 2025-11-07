@@ -81,16 +81,16 @@ const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpe
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">Date</label>
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Date</label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 className={cn(
-                  "w-full justify-start text-left font-normal h-10",
+                  "w-full justify-start text-left font-normal h-11 rounded-xl border px-3 text-[15px]",
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
@@ -109,10 +109,10 @@ const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpe
           </Popover>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">Currency</label>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Currency</label>
           <Select value={currency} onValueChange={setCurrency}>
-            <SelectTrigger className="h-10">
+            <SelectTrigger className="h-11 rounded-xl border px-3 text-[15px]">
               <SelectValue placeholder="Select currency" />
             </SelectTrigger>
             <SelectContent>
@@ -126,17 +126,17 @@ const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpe
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Amount</label>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Amount</label>
         <div className="relative">
-          <span className="absolute left-3 top-3 text-gray-500">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[15px]">
             {selectedCurrency?.symbol || '$'}
           </span>
           <Input
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="pl-8 border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 h-10"
+            className="pl-8 h-11 rounded-xl border px-3 text-[15px] focus-visible:ring-2 focus-visible:ring-primary"
             type="number"
             step="0.01"
             min="0"
@@ -145,10 +145,10 @@ const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpe
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Category</label>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Category</label>
         <Select value={category} onValueChange={(value) => setCategory(value as ExpenseCategory)}>
-          <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 h-10">
+          <SelectTrigger className="h-11 rounded-xl border px-3 text-[15px] focus-visible:ring-2 focus-visible:ring-primary">
             <SelectValue placeholder="Select a category" />
           </SelectTrigger>
           <SelectContent>
@@ -162,10 +162,10 @@ const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpe
       </div>
 
       {bankAccounts.length > 0 && (
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">Bank Account (Optional)</label>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Bank Account (Optional)</label>
           <Select value={bankAccountId} onValueChange={setBankAccountId}>
-            <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 h-10">
+            <SelectTrigger className="h-11 rounded-xl border px-3 text-[15px] focus-visible:ring-2 focus-visible:ring-primary">
               <SelectValue placeholder="Select bank account" />
             </SelectTrigger>
             <SelectContent>
@@ -181,10 +181,10 @@ const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpe
       )}
 
       {activeBudgets.length > 0 && (
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">Budget (Optional)</label>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Budget (Optional)</label>
           <Select value={budgetId} onValueChange={setBudgetId}>
-            <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 h-10">
+            <SelectTrigger className="h-11 rounded-xl border px-3 text-[15px] focus-visible:ring-2 focus-visible:ring-primary">
               <SelectValue placeholder="Select budget" />
             </SelectTrigger>
             <SelectContent>
@@ -199,22 +199,22 @@ const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpe
         </div>
       )}
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Description (Optional)</label>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Description (Optional)</label>
         <Textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Add details about this expense"
-          className="resize-none border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-          rows={2}
+          className="resize-none min-h-[96px] rounded-xl border px-3 text-[15px] focus-visible:ring-2 focus-visible:ring-primary"
+          rows={3}
         />
       </div>
 
-      <div className="flex space-x-2 pt-4">
-        <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+      <div className="grid grid-cols-2 gap-3 pt-2">
+        <Button type="button" variant="outline" onClick={onClose} className="h-11 rounded-xl">
           Cancel
         </Button>
-        <Button type="submit" className="flex-1 bg-blue-500 hover:bg-blue-600">
+        <Button type="submit" className="h-11 rounded-xl bg-primary text-white hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary">
           Update Expense
         </Button>
       </div>

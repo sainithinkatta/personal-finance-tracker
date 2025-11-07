@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Eye, Edit2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,6 +10,13 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
+  BottomSheet,
+  BottomSheetContent,
+  BottomSheetHeader,
+  BottomSheetTitle,
+  BottomSheetBody,
+} from '@/components/ui/bottom-sheet';
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -21,12 +27,14 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { CURRENCIES } from '@/types/expense';
 import { BankAccount } from '@/types/bankAccount';
 import BankAccountForm from './BankAccountForm';
 
 const BankAccountsList: React.FC = () => {
   const { bankAccounts, deleteBankAccount } = useBankAccounts();
+  const isMobile = useIsMobile();
 
   const [viewingAccount, setViewingAccount] = useState<BankAccount | null>(null);
   const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
@@ -214,45 +222,47 @@ const BankAccountsList: React.FC = () => {
 
       {/* View Account Dialog */}
       <Dialog open={!!viewingAccount} onOpenChange={() => setViewingAccount(null)}>
-        <DialogContent className="sm:max-w-md bg-white rounded-lg shadow-xl p-6">
+        <DialogContent className="sm:max-w-md mx-auto w-[calc(100%-2rem)] sm:w-full">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold text-gray-800">
               Bank Account Details
             </DialogTitle>
-            <DialogDescription className="mt-1 text-xs text-gray-500">
+            <DialogDescription className="mt-1 text-sm text-gray-500">
               View all information for this account.
             </DialogDescription>
           </DialogHeader>
 
           {viewingAccount && (
             <div className="mt-4">
-              <dl className="divide-y divide-gray-200">
+              <dl className="space-y-4">
                 {/* Account Name */}
-                <div className="flex justify-between py-3">
-                  <dt className="text-[10px] font-medium text-gray-500 uppercase">Account Name</dt>
-                  <dd className="text-sm text-gray-900">{viewingAccount.name}</dd>
+                <div className="flex flex-col gap-1">
+                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Account Name</dt>
+                  <dd className="text-base font-medium text-gray-900">{viewingAccount.name}</dd>
                 </div>
 
                 {/* Account Type */}
-                <div className="flex justify-between py-3">
-                  <dt className="text-[10px] font-medium text-gray-500 uppercase">Account Type</dt>
-                  <dd className="text-sm">
+                <div className="flex flex-col gap-1">
+                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Account Type</dt>
+                  <dd className="text-base">
                     {getAccountTypeBadge(viewingAccount.account_type!)}
                   </dd>
                 </div>
 
                 {/* Balance with conditional color */}
-                <div className="flex justify-between py-3">
-                  <dt className="text-[10px] font-medium text-gray-500 uppercase">Balance</dt>
-                  <dd className={`text-sm ${getBalanceColorClass(viewingAccount)}`}>{getDisplayBalance(viewingAccount)}</dd>
+                <div className="flex flex-col gap-1">
+                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Balance</dt>
+                  <dd className={`text-lg font-bold ${getBalanceColorClass(viewingAccount)}`}>
+                    {getDisplayBalance(viewingAccount)}
+                  </dd>
                 </div>
 
                 {/* Credit Limit (Credit Only) */}
                 {viewingAccount.account_type?.toLowerCase() === 'credit' &&
                   viewingAccount.credit_limit !== undefined && (
-                    <div className="flex justify-between py-3">
-                      <dt className="text-[10px] font-medium text-gray-500 uppercase">Credit Limit</dt>
-                      <dd className="text-sm text-gray-900">
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Credit Limit</dt>
+                      <dd className="text-base font-medium text-gray-900">
                         {formatCurrency(
                           viewingAccount.credit_limit,
                           viewingAccount.currency
@@ -261,14 +271,14 @@ const BankAccountsList: React.FC = () => {
                     </div>
                   )}
 
-                {/* Due Balance (Credit Only, red if below limit) */}
+                {/* Due Balance (Credit Only) */}
                 {viewingAccount.account_type?.toLowerCase() === 'credit' &&
                   viewingAccount.due_balance !== undefined && (
-                    <div className="flex justify-between py-3">
-                      <dt className="text-[10px] font-medium text-gray-500 uppercase">Due Balance</dt>
+                    <div className="flex flex-col gap-1">
+                      <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Due Balance</dt>
                       <dd
-                        className={`text-sm ${
-                          viewingAccount.due_balance < (viewingAccount.credit_limit ?? 0)
+                        className={`text-base font-medium ${
+                          viewingAccount.due_balance > 0
                             ? 'text-red-600'
                             : 'text-gray-900'
                         }`}
@@ -282,15 +292,15 @@ const BankAccountsList: React.FC = () => {
                   )}
 
                 {/* Currency */}
-                <div className="flex justify-between py-3">
-                  <dt className="text-[10px] font-medium text-gray-500 uppercase">Currency</dt>
-                  <dd className="text-sm text-gray-900">{viewingAccount.currency}</dd>
+                <div className="flex flex-col gap-1">
+                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Currency</dt>
+                  <dd className="text-base font-medium text-gray-900">{viewingAccount.currency}</dd>
                 </div>
 
                 {/* Last Updated */}
-                <div className="flex justify-between py-3">
-                  <dt className="text-[10px] font-medium text-gray-500 uppercase">Last Updated</dt>
-                  <dd className="text-sm text-gray-900">
+                <div className="flex flex-col gap-1">
+                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Last Updated</dt>
+                  <dd className="text-base font-medium text-gray-900">
                     {new Date(viewingAccount.updated_at).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
@@ -302,48 +312,66 @@ const BankAccountsList: React.FC = () => {
             </div>
           )}
 
-          <DialogFooter className="mt-6 flex space-x-3">
+          <DialogFooter className="mt-6 flex flex-col-reverse sm:flex-row gap-3 sm:gap-3">
             <Button
               variant="outline"
               onClick={() => viewingAccount && handleEdit(viewingAccount)}
-              className="flex-1 text-sm border-gray-300 hover:bg-gray-50"
+              className="w-full sm:flex-1 h-11 text-sm border-gray-300 hover:bg-gray-50"
             >
-              <Edit2 className="h-4 w-4 mr-1 text-gray-600" />
+              <Edit2 className="h-4 w-4 mr-2 text-gray-600" />
               Edit
             </Button>
             <Button
               variant="destructive"
               onClick={() => viewingAccount && handleDelete(viewingAccount)}
-              className="flex-1 text-sm"
+              className="w-full sm:flex-1 h-11 text-sm"
             >
-              <Trash2 className="h-4 w-4 mr-1" />
+              <Trash2 className="h-4 w-4 mr-2" />
               Delete
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Edit Account Dialog */}
-      <Dialog open={!!editingAccount} onOpenChange={() => setEditingAccount(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Edit Bank Account</DialogTitle>
-          </DialogHeader>
-          {editingAccount && (
-            <BankAccountForm
-              account={editingAccount}
-              onClose={() => setEditingAccount(null)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Edit Account - Bottom Sheet on Mobile, Dialog on Desktop */}
+      {isMobile ? (
+        <BottomSheet open={!!editingAccount} onOpenChange={() => setEditingAccount(null)}>
+          <BottomSheetContent>
+            <BottomSheetHeader>
+              <BottomSheetTitle>Edit Bank Account</BottomSheetTitle>
+            </BottomSheetHeader>
+            <BottomSheetBody>
+              {editingAccount && (
+                <BankAccountForm
+                  account={editingAccount}
+                  onClose={() => setEditingAccount(null)}
+                />
+              )}
+            </BottomSheetBody>
+          </BottomSheetContent>
+        </BottomSheet>
+      ) : (
+        <Dialog open={!!editingAccount} onOpenChange={() => setEditingAccount(null)}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit Bank Account</DialogTitle>
+            </DialogHeader>
+            {editingAccount && (
+              <BankAccountForm
+                account={editingAccount}
+                onClose={() => setEditingAccount(null)}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog
         open={!!deletingAccount}
         onOpenChange={handleDeleteDialogClose}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="mx-4 sm:mx-0">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>

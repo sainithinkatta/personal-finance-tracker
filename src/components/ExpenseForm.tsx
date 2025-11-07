@@ -95,16 +95,16 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
   const usdOnlyAccounts = bankAccounts.filter((acct) => acct.currency === 'USD');
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">Date</label>
+    <form onSubmit={handleSubmit} className="space-y-3 px-4 sm:px-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Date</label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 className={cn(
-                  "w-full justify-start text-left font-normal h-10",
+                  "w-full justify-start text-left font-normal h-11 rounded-xl border px-3 text-[15px]",
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
@@ -123,10 +123,10 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
           </Popover>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">Currency</label>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">Currency</label>
           <Select value={currency} onValueChange={setCurrency}>
-            <SelectTrigger className="h-10">
+            <SelectTrigger className="h-11 rounded-xl border px-3 text-[15px]">
               <SelectValue placeholder="Select currency" />
             </SelectTrigger>
             <SelectContent>
@@ -138,17 +138,17 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Amount</label>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Amount</label>
         <div className="relative">
-          <span className="absolute left-3 top-2 text-gray-500">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[15px]">
             $
           </span>
           <Input
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="pl-8 border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 h-10"
+            className="pl-8 h-11 rounded-xl border px-3 text-[15px] focus-visible:ring-2 focus-visible:ring-primary"
             type="number"
             step="0.01"
             min="0"
@@ -157,13 +157,13 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Category</label>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Category</label>
         <Select
           value={category}
           onValueChange={(value) => setCategory(value as ExpenseCategory)}
         >
-          <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 h-10">
+          <SelectTrigger className="h-11 rounded-xl border px-3 text-[15px] focus-visible:ring-2 focus-visible:ring-primary">
             <SelectValue placeholder="Select a category" />
           </SelectTrigger>
           <SelectContent>
@@ -176,13 +176,13 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
         </Select>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">
           Bank Account (USD only)
         </label>
 
         <Select value={bankAccountId} onValueChange={setBankAccountId} required>
-          <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 h-10">
+          <SelectTrigger className="h-11 rounded-xl border px-3 text-[15px] focus-visible:ring-2 focus-visible:ring-primary">
             <SelectValue placeholder="Select bank account" />
           </SelectTrigger>
           <SelectContent>
@@ -203,12 +203,12 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
       </div>
 
       {activeBudgets.length > 0 && (
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">
             Budget (Optional)
           </label>
           <Select value={budgetId} onValueChange={setBudgetId}>
-            <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 h-10">
+            <SelectTrigger className="h-11 rounded-xl border px-3 text-[15px] focus-visible:ring-2 focus-visible:ring-primary">
               <SelectValue placeholder="Select budget" />
             </SelectTrigger>
             <SelectContent>
@@ -223,25 +223,40 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
         </div>
       )}
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">
           Description (Optional)
         </label>
         <Textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Add details about this expense"
-          className="resize-none border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-          rows={2}
+          className="resize-none min-h-[96px] rounded-xl border px-3 text-[15px] focus-visible:ring-2 focus-visible:ring-primary"
+          rows={3}
         />
       </div>
 
-      <Button
-        type="submit"
-        className="w-full bg-blue-500 hover:bg-blue-600 focus:ring-2 focus:ring-blue-400"
-      >
-        {isEditing ? 'Update Expense' : 'Add Expense'}
-      </Button>
+      <div className="grid grid-cols-2 gap-3 pt-2">
+        {onClose && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            className="h-11 rounded-xl"
+          >
+            Cancel
+          </Button>
+        )}
+        <Button
+          type="submit"
+          className={cn(
+            "h-11 rounded-xl bg-primary text-white hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary",
+            !onClose && "col-span-2"
+          )}
+        >
+          {isEditing ? 'Update Expense' : 'Add Expense'}
+        </Button>
+      </div>
     </form>
   );
 };

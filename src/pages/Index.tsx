@@ -46,31 +46,32 @@ const Index = () => {
 
   return (
     <AuthWrapper>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col w-full">
-        {/* Mobile Header with Hamburger */}
-        <div className="lg:hidden flex items-center gap-3 p-4 bg-white/90 backdrop-blur-sm border-b border-gray-200">
-          <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="h-12 w-12 flex-shrink-0">
-                <Menu className="h-6 w-6" />
-                <span className="sr-only">Toggle navigation menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-80 p-0">
-              <div className="h-full">
-                <Sidebar />
-              </div>
-            </SheetContent>
-          </Sheet>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold text-blue-600 truncate">
+      <div className="min-h-dvh bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col w-full">
+        {/* Mobile Header - Sticky with safe area */}
+        <header className="lg:hidden sticky top-0 z-40 bg-white/80 backdrop-blur-sm pt-safe border-b border-gray-200">
+          <div className="flex items-center gap-2 px-3 h-12">
+            <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 rounded-xl -ml-1 hover:bg-muted/60 touch-target"
+                  aria-label="Open menu"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80 p-0">
+                <div className="h-full">
+                  <Sidebar />
+                </div>
+              </SheetContent>
+            </Sheet>
+            <h1 className="text-base font-semibold truncate flex-1">
               Personal Finance Tracker
             </h1>
-            <p className="text-xs text-gray-600 truncate">
-              Track, analyze, and manage your complete financial picture
-            </p>
           </div>
-        </div>
+        </header>
 
         <div className="flex flex-1 w-full">
           {/* Desktop Sidebar */}
@@ -83,45 +84,45 @@ const Index = () => {
             {/* Content Area */}
             <div className="flex-1 flex flex-col lg:flex-row">
               {/* Main Content */}
-              <div className="flex-1 px-3 py-3 lg:px-4 lg:py-4">
-                <div className="max-w-7xl mx-auto">
+              <div className="flex-1 px-3 pb-2 sm:px-4 sm:py-3 lg:px-4 lg:py-4">
+                <div className="mx-auto w-full max-w-screen-sm sm:max-w-7xl">
                   <Tabs defaultValue="dashboard" className="w-full">
-                    {/* Mobile: Scrollable tabs */}
-                    <div className="block md:hidden w-full overflow-x-auto mobile-tabs-container">
-                      <TabsList className="flex w-max min-w-full bg-white/60 backdrop-blur-sm border border-gray-200/60 shadow-sm rounded-lg p-1 mb-4">
+                    {/* Mobile: Scrollable pill tabs - Sticky */}
+                    <div className="block md:hidden w-full overflow-x-auto no-scrollbar scroll-px-3 pb-2 pt-3 -mx-3 sticky top-12 z-30 bg-gradient-to-br from-gray-50 to-gray-100">
+                      <TabsList className="flex gap-2.5 w-max bg-transparent border-0 shadow-none p-0 mb-3 pl-3 pr-6">
                         <TabsTrigger
                           value="dashboard"
-                          className="flex-none px-4 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600 min-h-[44px]"
+                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-primary data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
                         >
                           Dashboard
                         </TabsTrigger>
                         <TabsTrigger
                           value="expenses"
-                          className="flex-none px-4 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600 min-h-[44px]"
+                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-primary data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
                         >
                           Expenses
                         </TabsTrigger>
                         <TabsTrigger
                           value="dues"
-                          className="flex-none px-4 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600 min-h-[44px]"
+                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-primary data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
                         >
                           Dues
                         </TabsTrigger>
                         <TabsTrigger
                           value="budget"
-                          className="flex-none px-4 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600 min-h-[44px]"
+                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-primary data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
                         >
                           Budget
                         </TabsTrigger>
                         <TabsTrigger
                           value="recurring"
-                          className="flex-none px-4 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600 min-h-[44px]"
+                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-primary data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
                         >
                           Recurring
                         </TabsTrigger>
                         <TabsTrigger
                           value="savings"
-                          className="flex-none px-4 py-3 text-sm font-medium rounded-md transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600 min-h-[44px]"
+                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-primary data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
                         >
                           Savings
                         </TabsTrigger>
@@ -173,10 +174,10 @@ const Index = () => {
                   </TabsContent>
 
                   <TabsContent value="expenses" className="mt-0">
-                    <div className="space-y-4">
-                      <div className="bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200/60 shadow-sm p-4">
-                        <div className="border-b border-gray-200/60 pb-3 mb-4">
-                          <h2 className="text-lg font-semibold text-gray-900">
+                    <div className="space-y-3">
+                      <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm p-3.5 sm:p-4">
+                        <div className="border-b border-gray-200/60 pb-2 mb-3">
+                          <h2 className="text-base sm:text-lg font-semibold text-gray-900">
                             Expenses
                           </h2>
                         </div>
@@ -199,61 +200,61 @@ const Index = () => {
                   </TabsContent>
 
                   <TabsContent value="dues" className="mt-0">
-                    <div className="bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200/60 shadow-sm">
-                      <div className="flex flex-col items-start p-4 border-b border-gray-200/60 space-y-1">
-                        <h2 className="text-lg font-semibold text-gray-900">
+                    <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
+                      <div className="flex flex-col items-start p-3.5 sm:p-4 border-b border-gray-200/60 gap-1">
+                        <h2 className="text-base sm:text-lg font-semibold text-gray-900">
                           Dues Management
                         </h2>
-                        <p className="text-gray-600">
+                        <p className="text-xs sm:text-sm text-gray-600">
                           Track your personal financial obligations
                         </p>
                       </div>
-                      
-                      <div className="p-4">
+
+                      <div className="p-3.5 sm:p-4">
                         <DuesManager />
                       </div>
                     </div>
                   </TabsContent>
 
                   <TabsContent value="budget" className="mt-0">
-                    <div className="bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200/60 shadow-sm">
-                      <div className="flex flex-col items-start p-4 border-b border-gray-200/60 space-y-1">
-                        <h2 className="text-lg font-semibold text-gray-900">
+                    <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
+                      <div className="flex flex-col items-start p-3.5 sm:p-4 border-b border-gray-200/60 gap-1">
+                        <h2 className="text-base sm:text-lg font-semibold text-gray-900">
                           Budget Manager
                         </h2>
-                        <p className="text-gray-600">
+                        <p className="text-xs sm:text-sm text-gray-600">
                           Create and manage your monthly budgets
                         </p>
                       </div>
 
                       {/* Main content */}
-                      <div className="p-4">
+                      <div className="p-3.5 sm:p-4">
                         <BudgetManager />
                       </div>
                     </div>
                   </TabsContent>
 
                   <TabsContent value="recurring" className="mt-0">
-                    <div className="bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200/60 shadow-sm">
-                      <div className="flex items-center justify-between p-4 border-b border-gray-200/60">
-                        <h2 className="text-lg font-semibold text-gray-900">
+                    <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
+                      <div className="flex items-center justify-between p-3.5 sm:p-4 border-b border-gray-200/60">
+                        <h2 className="text-base sm:text-lg font-semibold text-gray-900">
                           Recurring Transactions
                         </h2>
                       </div>
-                      <div className="p-4">
+                      <div className="p-3.5 sm:p-4">
                         <RecurringTransactions />
                       </div>
                     </div>
                   </TabsContent>
 
                   <TabsContent value="savings" className="mt-0">
-                    <div className="bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200/60 shadow-sm">
-                      <div className="flex items-center justify-between p-4 border-b border-gray-200/60">
-                        <h2 className="text-lg font-semibold text-gray-900">
+                    <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
+                      <div className="flex items-center justify-between p-3.5 sm:p-4 border-b border-gray-200/60">
+                        <h2 className="text-base sm:text-lg font-semibold text-gray-900">
                           Savings Goals
                         </h2>
                       </div>
-                      <div className="p-4">
+                      <div className="p-3.5 sm:p-4">
                         <SavingsGoals />
                       </div>
                     </div>
@@ -262,8 +263,10 @@ const Index = () => {
               </div>
             </div>
 
-              {/* Right Utility Panel */}
-              <UtilityPanel />
+              {/* Right Utility Panel - Desktop Only */}
+              <div className="hidden xl:block">
+                <UtilityPanel />
+              </div>
             </div>
           </main>
         </div>

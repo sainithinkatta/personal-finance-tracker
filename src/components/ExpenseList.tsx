@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { Edit2, Trash2 } from 'lucide-react';
@@ -23,6 +22,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  BottomSheet,
+  BottomSheetContent,
+  BottomSheetHeader,
+  BottomSheetTitle,
+  BottomSheetBody,
+} from '@/components/ui/bottom-sheet';
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -42,6 +48,7 @@ import {
 } from '@/components/ui/pagination';
 import { CURRENCIES } from '@/types/expense';
 import { useExpenses } from '@/hooks/useExpenses';
+import { useIsMobile } from '@/hooks/use-mobile';
 import ExpenseEditForm from '@/components/ExpenseEditForm';
 import ExportDataButton from '@/components/ExportDataButton';
 
@@ -79,6 +86,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
   title = 'Recent Expenses',
 }) => {
   const { updateExpense, deleteExpense } = useExpenses();
+  const isMobile = useIsMobile();
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -118,10 +126,10 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
   const expenseToDelete = expenses.find(e => e.id === deletingExpenseId);
 
   return (
-    <div className="p-6 pt-0">
-      <div className="flex items-center justify-between pt-2 pb-4">
-        <div className="text-sm text-muted-foreground">
-          Showing {startIndex + 1}-{Math.min(endIndex, expenses.length)} of {expenses.length} {expenses.length === 1 ? 'expense' : 'expenses'}
+    <div className="p-3 sm:p-6 pt-0">
+      <div className="flex items-center justify-between pt-2 pb-3 gap-2">
+        <div className="text-xs sm:text-sm text-muted-foreground">
+          {expenses.length} {expenses.length === 1 ? 'expense' : 'expenses'}
         </div>
         <ExportDataButton expenses={expenses} />
       </div>
@@ -219,66 +227,79 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
               <ScrollArea className="h-[60vh] max-h-[500px]">
                 <div className="space-y-3 pb-20">
                   {currentExpenses.map((expense) => (
-                    <div
+                    <article
                       key={expense.id}
-                      className="bg-card rounded-lg border p-4 space-y-3 touch-target"
+                      className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
                     >
-                      {/* Header Row */}
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="text-sm font-medium text-foreground">
-                            {format(expense.date, 'MMM d, yyyy')}
+                      {/* Main Content */}
+                      <div className="p-4">
+                        <div className="flex gap-3">
+                          {/* Date Section - Calendar Style */}
+                          <div className="flex-shrink-0 w-16 h-16 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+                            <div className="text-2xl font-bold text-gray-900 leading-none">
+                              {format(expense.date, 'dd')}
+                            </div>
+                            <div className="text-xs font-semibold text-blue-700 uppercase mt-0.5">
+                              {format(expense.date, 'MMM')}
+                            </div>
+                            <div className="text-xs text-gray-600 capitalize">
+                              {format(expense.date, 'EEE')}
+                            </div>
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {format(expense.date, 'EEEE')}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-semibold text-foreground">
-                            {formatCurrency(expense.amount, expense.currency)}
+
+                          {/* Content Section */}
+                          <div className="flex-1 min-w-0 flex flex-col gap-2">
+                            {/* Amount and Category Row */}
+                            <div className="flex items-start justify-between gap-2">
+                              <Badge
+                                className={cn(
+                                  'font-semibold text-xs px-3 py-1 rounded-lg',
+                                  getCategoryColor(expense.category)
+                                )}
+                              >
+                                {expense.category}
+                              </Badge>
+                              <div className="text-xl font-bold text-gray-900 whitespace-nowrap">
+                                {formatCurrency(expense.amount, expense.currency)}
+                              </div>
+                            </div>
+
+                            {/* Description */}
+                            {expense.description ? (
+                              <div className="text-sm text-gray-700 leading-relaxed line-clamp-2">
+                                {expense.description}
+                              </div>
+                            ) : (
+                              <div className="text-sm text-gray-400 italic">
+                                No description
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
 
-                      {/* Category and Description */}
-                      <div className="space-y-2">
-                        <Badge
-                          className={cn(
-                            'font-normal text-xs',
-                            getCategoryColor(expense.category)
-                          )}
-                        >
-                          {expense.category}
-                        </Badge>
-                        {expense.description && (
-                          <div className="text-sm text-muted-foreground">
-                            {expense.description}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex justify-end space-x-2 pt-2 border-t">
+                      {/* Actions Bar */}
+                      <div className="flex items-center border-t border-gray-100 bg-gray-50/50">
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-9 px-3 touch-target"
+                          className="flex-1 h-11 rounded-none hover:bg-blue-50 flex items-center justify-center gap-2 touch-target transition-colors border-r border-gray-100"
                           onClick={() => handleEditExpense(expense)}
                         >
-                          <Edit2 className="h-4 w-4 mr-1" />
-                          Edit
+                          <Edit2 className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm font-medium text-blue-700">Edit</span>
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-9 px-3 text-destructive hover:text-destructive touch-target"
+                          className="flex-1 h-11 rounded-none hover:bg-red-50 flex items-center justify-center gap-2 touch-target transition-colors"
                           onClick={() => setDeletingExpenseId(expense.id)}
                         >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                          <span className="text-sm font-medium text-red-700">Delete</span>
                         </Button>
                       </div>
-                    </div>
+                    </article>
                   ))}
                 </div>
               </ScrollArea>
@@ -331,25 +352,44 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
         )}
       </div>
 
-      {/* Edit Expense Dialog */}
-      <Dialog open={!!editingExpense} onOpenChange={() => setEditingExpense(null)}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Expense</DialogTitle>
-          </DialogHeader>
-          {editingExpense && (
-            <ExpenseEditForm
-              expense={editingExpense}
-              onUpdateExpense={handleUpdateExpense}
-              onClose={() => setEditingExpense(null)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Edit Expense - Bottom Sheet on Mobile, Dialog on Desktop */}
+      {isMobile ? (
+        <BottomSheet open={!!editingExpense} onOpenChange={() => setEditingExpense(null)}>
+          <BottomSheetContent>
+            <BottomSheetHeader>
+              <BottomSheetTitle>Edit Expense</BottomSheetTitle>
+            </BottomSheetHeader>
+            <BottomSheetBody>
+              {editingExpense && (
+                <ExpenseEditForm
+                  expense={editingExpense}
+                  onUpdateExpense={handleUpdateExpense}
+                  onClose={() => setEditingExpense(null)}
+                />
+              )}
+            </BottomSheetBody>
+          </BottomSheetContent>
+        </BottomSheet>
+      ) : (
+        <Dialog open={!!editingExpense} onOpenChange={() => setEditingExpense(null)}>
+          <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Expense</DialogTitle>
+            </DialogHeader>
+            {editingExpense && (
+              <ExpenseEditForm
+                expense={editingExpense}
+                onUpdateExpense={handleUpdateExpense}
+                onClose={() => setEditingExpense(null)}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deletingExpenseId} onOpenChange={() => setDeletingExpenseId(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="mx-auto w-[calc(100%-2rem)] sm:w-full">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Expense</AlertDialogTitle>
             <AlertDialogDescription>
