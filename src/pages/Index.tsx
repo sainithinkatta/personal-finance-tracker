@@ -14,6 +14,7 @@ import AuthWrapper from "@/components/AuthWrapper";
 import Sidebar from "@/components/layout/Sidebar";
 import UtilityPanel from "@/components/layout/UtilityPanel";
 import FloatingActionButton from "@/components/layout/FloatingActionButton";
+import  { MobileReminders }from "@/components/layout/MobileReminders";
 import { useExpenses } from "@/hooks/useExpenses";
 import { FilterOptions } from "@/types/expense";
 import { filterExpenses } from "@/utils/expenseUtils";
@@ -273,6 +274,9 @@ const Index = () => {
 
         {/* Floating Action Button for Mobile */}
         <FloatingActionButton />
+
+        {/* Mobile Reminders */}
+        <MobileReminders />
       </div>
     </AuthWrapper>
   );
