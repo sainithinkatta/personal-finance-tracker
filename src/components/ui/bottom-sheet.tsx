@@ -88,7 +88,7 @@ const BottomSheetFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "sticky bottom-0 bg-white px-4 pt-3 pb-safe border-t",
+      "sticky bottom-0 bg-white px-4 pt-3 pb-4 pb-safe border-t",
       "z-10",
       className
     )}

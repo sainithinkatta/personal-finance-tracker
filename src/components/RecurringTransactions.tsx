@@ -27,6 +27,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format, differenceInDays } from 'date-fns';
 import { RecurringTransactionCard } from '@/components/recurring/RecurringTransactionCard';
 import { EditRecurringTransactionForm } from '@/components/recurring/EditRecurringTransactionForm';
+import { parseLocalDate } from '@/utils/dateUtils';
 
 const RecurringTransactions: React.FC = () => {
   const {
@@ -62,7 +63,7 @@ const RecurringTransactions: React.FC = () => {
     processRecurringTransactions();
     upcomingReminders.forEach((tx) => {
       const daysUntilDue = differenceInDays(
-        new Date(tx.next_due_date),
+        parseLocalDate(tx.next_due_date),
         new Date()
       );
       if (daysUntilDue <= tx.reminder_days_before && daysUntilDue >= 0) {
@@ -148,7 +149,7 @@ const RecurringTransactions: React.FC = () => {
           <div className="grid gap-2">
             {upcomingReminders.map((tx) => {
               const daysUntilDue = differenceInDays(
-                new Date(tx.next_due_date),
+                parseLocalDate(tx.next_due_date),
                 new Date()
               );
               const dueLabel =
@@ -171,7 +172,7 @@ const RecurringTransactions: React.FC = () => {
                       <div>
                         <p className="font-medium text-gray-900 text-sm">{tx.name}</p>
                         <p className="text-xs text-gray-600">
-                          Due {format(new Date(tx.next_due_date), 'MMM d')} • {dueLabel}
+                          Due {format(parseLocalDate(tx.next_due_date), 'MMM d')} • {dueLabel}
                         </p>
                       </div>
                     </div>

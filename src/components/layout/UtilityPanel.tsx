@@ -8,6 +8,7 @@ import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { CURRENCIES } from '@/types/expense';
+import { parseLocalDate } from '@/utils/dateUtils';
 
 const UtilityPanel: React.FC = () => {
   const navigate = useNavigate();
@@ -60,7 +61,7 @@ const UtilityPanel: React.FC = () => {
         };
       })
       .filter(payment => {
-        const dueDate = new Date(payment.next_due_date);
+        const dueDate = parseLocalDate(payment.next_due_date);
         return dueDate <= nextWeek && payment.amount > 0;
       });
   };
@@ -79,8 +80,8 @@ const UtilityPanel: React.FC = () => {
           {allUpcomingPayments.length > 0 ? (
             <div className="space-y-2">
               {allUpcomingPayments.map((payment) => {
-                const daysUntilDue = differenceInDays(new Date(payment.next_due_date), new Date());
-                
+                const daysUntilDue = differenceInDays(parseLocalDate(payment.next_due_date), new Date());
+
                 return (
                   <div
                     key={payment.id}
@@ -92,7 +93,7 @@ const UtilityPanel: React.FC = () => {
                           {payment.name}
                         </h4>
                         <p className="text-xs text-gray-600">
-                          Due: {format(new Date(payment.next_due_date), 'MMM d, yyyy')}
+                          Due: {format(parseLocalDate(payment.next_due_date), 'MMM d, yyyy')}
                           {daysUntilDue === 0 && ' (Today)'}
                           {daysUntilDue === 1 && ' (Tomorrow)'}
                           {daysUntilDue > 1 && ` (${daysUntilDue} days)`}

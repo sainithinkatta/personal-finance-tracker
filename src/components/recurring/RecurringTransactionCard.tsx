@@ -12,6 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { parseLocalDate } from '@/utils/dateUtils';
 
 interface RecurringTransactionCardProps {
   transaction: RecurringTransaction;
@@ -82,7 +83,7 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
           
           <div className="space-y-2">
             <p className="text-sm text-gray-600">
-              Next due: {format(new Date(transaction.next_due_date), 'MMM d, yyyy')}
+              Next due: {format(parseLocalDate(transaction.next_due_date), 'MMM d, yyyy')}
             </p>
             <div className="flex items-center gap-2">
               {getCategoryIcon(transaction.category)}
@@ -93,7 +94,7 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <p className="text-xs text-green-600 cursor-help">
-                      Marked as done on {format(new Date(transaction.last_done_date), 'MM/dd/yyyy')}
+                      Marked as done on {format(parseLocalDate(transaction.last_done_date), 'MM/dd/yyyy')}
                     </p>
                   </TooltipTrigger>
                   <TooltipContent>

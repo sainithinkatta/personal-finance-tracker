@@ -7,6 +7,7 @@ import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { CURRENCIES } from '@/types/expense';
+import { parseLocalDate } from '@/utils/dateUtils';
 
 export const MobileReminders: React.FC = () => {
   const { getUpcomingReminders } = useRecurringTransactions();
@@ -48,7 +49,7 @@ export const MobileReminders: React.FC = () => {
         };
       })
       .filter(payment => {
-        const dueDate = new Date(payment.next_due_date);
+        const dueDate = parseLocalDate(payment.next_due_date);
         return dueDate <= nextWeek && payment.amount > 0;
       });
   };
@@ -83,8 +84,8 @@ export const MobileReminders: React.FC = () => {
           </SheetHeader>
           <div className="mt-4 space-y-3 overflow-y-auto max-h-[50vh]">
             {allUpcomingPayments.map((payment) => {
-              const daysUntilDue = differenceInDays(new Date(payment.next_due_date), new Date());
-              
+              const daysUntilDue = differenceInDays(parseLocalDate(payment.next_due_date), new Date());
+
               return (
                 <div
                   key={payment.id}
@@ -96,7 +97,7 @@ export const MobileReminders: React.FC = () => {
                         {payment.name}
                       </h4>
                       <p className="text-sm text-gray-600 mt-1">
-                        Due: {format(new Date(payment.next_due_date), 'MMM d, yyyy')}
+                        Due: {format(parseLocalDate(payment.next_due_date), 'MMM d, yyyy')}
                         {daysUntilDue === 0 && ' (Today)'}
                         {daysUntilDue === 1 && ' (Tomorrow)'}
                         {daysUntilDue > 1 && ` (${daysUntilDue} days)`}

@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { RecurringTransaction, RecurringTransactionFormData, EditRecurringTransactionData } from '@/types/recurringTransaction';
 import { useToast } from '@/hooks/use-toast';
 import { addDays, addWeeks, addMonths, addYears, format } from 'date-fns';
+import { parseLocalDate } from '@/utils/dateUtils';
 
 export const useRecurringTransactions = () => {
   const { toast } = useToast();
@@ -167,7 +168,7 @@ export const useRecurringTransactions = () => {
     const nextWeek = addDays(today, 7);
 
     return recurringTransactions.filter(transaction => {
-      const dueDate = new Date(transaction.next_due_date);
+      const dueDate = parseLocalDate(transaction.next_due_date);
       const reminderDate = addDays(dueDate, -transaction.reminder_days_before);
       return reminderDate <= today && dueDate <= nextWeek;
     });
@@ -194,7 +195,7 @@ export const useRecurringTransactions = () => {
       }]);
 
       // Update next due date and reset status
-      const currentDueDate = new Date(transaction.next_due_date);
+      const currentDueDate = parseLocalDate(transaction.next_due_date);
       let nextDueDate: Date;
 
       switch (transaction.frequency) {
