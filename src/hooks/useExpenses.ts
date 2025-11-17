@@ -11,7 +11,10 @@ export const useExpenses = () => {
 
   // Parse date string as local date to avoid timezone shifts
   const parseLocalDate = (dateStr: string): Date => {
-    const [year, month, day] = dateStr.split('-').map(Number);
+    // Handle both "yyyy-MM-dd" and "yyyy-MM-ddTHH:mm:ss+00:00" formats
+    const dateOnly = dateStr.split('T')[0];
+    const [year, month, day] = dateOnly.split('-').map(Number);
+
     return new Date(year, month - 1, day);
   };
 

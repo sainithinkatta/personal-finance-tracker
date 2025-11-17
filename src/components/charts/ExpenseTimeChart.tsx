@@ -33,8 +33,16 @@ export const ExpenseTimeChart: React.FC<ExpenseTimeChartProps> = ({
     const expenseMap = new Map<string, number>();
 
     expenses.forEach((expense) => {
-      let periodKey: string;
+
       const date = new Date(expense.date);
+
+      // Skip invalid dates
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid date found in expense:', expense);
+        return;
+      }
+
+      let periodKey: string;
 
       switch (groupBy) {
         case 'day':
