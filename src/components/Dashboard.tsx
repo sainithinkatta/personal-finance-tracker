@@ -94,7 +94,7 @@ const Dashboard: React.FC<DashboardProps> = ({ expenses }) => {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-2 md:p-3">
-              <div className="h-[280px] md:h-[340px] w-full bg-gray-50/30 rounded-md p-1 md:p-2 flex items-center justify-center">
+              <div className="h-[300px] md:h-[340px] w-full bg-gray-50/30 rounded-md p-2 md:p-2 flex items-center justify-center">
                 {currentMonthExpenses.length > 0 ? (
                   <ExpenseCategoryChart expenses={currentMonthExpenses} />
                 ) : (

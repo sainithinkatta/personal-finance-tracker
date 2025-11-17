@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Sector } from 'recharts';
 import { Expense, ExpenseCategory, CategorySummary } from '@/types/expense';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ExpenseCategoryChartProps {
   expenses: Expense[];
@@ -36,6 +37,11 @@ const renderActiveShape = (props: any) => {
 
 export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({ expenses }) => {
   const [activeIndex, setActiveIndex] = React.useState<number | undefined>(undefined);
+  const isMobile = useIsMobile();
+
+  // Responsive radii - smaller on mobile to prevent cropping
+  const innerRadius = isMobile ? 50 : 65;
+  const outerRadius = isMobile ? 75 : 95;
 
   const chartData = useMemo(() => {
     if (expenses.length === 0) return [];
@@ -107,8 +113,8 @@ export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({ expe
               data={chartData}
               cx="50%"
               cy="50%"
-              innerRadius={65}
-              outerRadius={95}
+              innerRadius={innerRadius}
+              outerRadius={outerRadius}
               paddingAngle={2}
               dataKey="total"
               onMouseEnter={onPieEnter}
@@ -149,8 +155,8 @@ export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({ expe
         {/* Center Total */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total</p>
-            <p className="text-lg font-bold text-gray-900">${totalAmount.toFixed(2)}</p>
+            <p className="text-[0.65rem] md:text-xs font-medium text-gray-500 uppercase tracking-wide">Total</p>
+            <p className="text-base md:text-lg font-bold text-gray-900">${totalAmount.toFixed(2)}</p>
           </div>
         </div>
       </div>

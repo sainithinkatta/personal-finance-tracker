@@ -25,7 +25,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ expenses, currentMonthLabel
         <CardContent className="p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-info-foreground uppercase tracking-wide truncate">
+              <p className="text-xs sm:text-sm md:text-[0.65rem] lg:text-xs font-medium text-info-foreground uppercase tracking-wide truncate">
                 Total Expenses — {currentMonthLabel}
               </p>
               <p className="text-base sm:text-lg font-bold text-info-foreground mt-1 truncate">
@@ -45,7 +45,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ expenses, currentMonthLabel
         <CardContent className="p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-accent-foreground uppercase tracking-wide truncate">
+              <p className="text-xs sm:text-sm md:text-[0.65rem] lg:text-xs font-medium text-accent-foreground uppercase tracking-wide truncate">
                 Highest Category — {currentMonthLabel}
               </p>
               {expenses.length > 0 ? (
@@ -74,7 +74,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ expenses, currentMonthLabel
         <CardContent className="p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-warning-foreground uppercase tracking-wide truncate">
+              <p className="text-xs sm:text-sm md:text-[0.65rem] lg:text-xs font-medium text-warning-foreground uppercase tracking-wide truncate">
                 Total Transactions — {currentMonthLabel}
               </p>
               <p className="text-base sm:text-lg font-bold text-warning-foreground mt-1 truncate">

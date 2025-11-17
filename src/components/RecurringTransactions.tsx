@@ -292,7 +292,7 @@ const RecurringTransactions: React.FC = () => {
 
       {/* Recurring Transactions List */}
       <Card>
-        <CardHeader className="flex items-center justify-between">
+        <CardHeader className="flex items-center justify-between pb-2 pt-3">
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="default" size="sm" className="flex shadow-lg ml-auto">
