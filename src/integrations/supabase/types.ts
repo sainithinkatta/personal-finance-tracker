@@ -179,7 +179,7 @@ export type Database = {
         }
         Relationships: []
       }
-      expenses: {
+        expenses: {
         Row: {
           amount: number
           bank_account_id: string | null
@@ -190,7 +190,8 @@ export type Database = {
           date: string
           description: string | null
           id: string
-          user_id: string | null
+          updated_at: string
+          user_id: string
         }
         Insert: {
           amount: number
@@ -202,7 +203,8 @@ export type Database = {
           date?: string
           description?: string | null
           id?: string
-          user_id?: string | null
+          updated_at?: string
+          user_id: string
         }
         Update: {
           amount?: number
@@ -214,7 +216,8 @@ export type Database = {
           date?: string
           description?: string | null
           id?: string
-          user_id?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: [
           {
