@@ -35,12 +35,13 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-full lg:w-[15rem] bg-white border-r border-gray-200 h-full overflow-y-auto">
+    <aside className="w-full lg:w-[15rem] bg-background border-r h-full overflow-y-auto">
       <div className="p-4 lg:p-6 space-y-4 lg:space-y-6 flex flex-col items-center">
         {/* Standalone Add Expense Button - Touch Friendly */}
-        <Button 
+        <Button
           onClick={() => setIsAddExpenseOpen(true)}
-          className="bg-blue-500 hover:bg-blue-600 h-12 w-full max-w-[200px] text-sm font-medium"
+          variant="default"
+          className="h-12 w-full max-w-[200px] text-sm font-medium"
         >
           <Plus className="h-5 w-5 mr-2" />
           Add Expense
@@ -48,17 +49,17 @@ const Sidebar: React.FC = () => {
 
         {/* Bank Accounts Section - Touch Friendly */}
         <Card className="rounded-lg shadow-sm w-full max-w-[280px]">
-          <CardHeader 
-            className="cursor-pointer p-4 pb-2 min-h-[48px] flex items-center" 
+          <CardHeader
+            className="cursor-pointer p-4 pb-2 min-h-[48px] flex items-center touch-target"
             onClick={() => setIsBankAccountsCollapsed(!isBankAccountsCollapsed)}
           >
             <CardTitle className="flex items-center w-full">
               <span className='text-sm font-medium'>Bank Accounts</span>
               <div className="flex items-center ml-auto space-x-2">
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  className="h-8 w-8 p-0 hover:bg-gray-100"
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-9 w-9"
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsAddAccountOpen(true);

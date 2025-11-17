@@ -59,8 +59,8 @@ const BankAccountsList: React.FC = () => {
       <span
         className={`inline-flex items-center px-1 py-0.5 rounded-full text-[10px] font-medium ${
           isCredit
-            ? 'bg-orange-100 text-orange-800 border border-orange-200'
-            : 'bg-green-100 text-green-800 border border-green-200'
+            ? 'bg-warning-muted text-warning-foreground border border-warning/20'
+            : 'bg-accent-muted text-accent-foreground border border-accent/20'
         }`}
       >
         {isCredit ? 'Credit' : 'Debit'}
@@ -100,7 +100,7 @@ const BankAccountsList: React.FC = () => {
   // Get the color class for balance display
   const getBalanceColorClass = (account: BankAccount) => {
     const balanceValue = getBalanceValue(account);
-    return balanceValue < 0 ? 'text-red-600' : 'text-green-600';
+    return balanceValue < 0 ? 'text-destructive' : 'text-accent';
   };
 
   // Handlers for opening view, edit, and delete dialogs
@@ -149,8 +149,8 @@ const BankAccountsList: React.FC = () => {
   if (bankAccounts.length === 0) {
     return (
       <div className="text-center py-4 px-2">
-        <p className="text-xs text-gray-500">No bank accounts added.</p>
-        <p className="text-xs text-gray-400 mt-1.5">
+        <p className="text-xs text-muted-foreground">No bank accounts added.</p>
+        <p className="text-xs text-muted-foreground mt-1.5">
           Add your first account to get started!
         </p>
       </div>
@@ -164,12 +164,12 @@ const BankAccountsList: React.FC = () => {
         {bankAccounts.map((account) => (
           <div
             key={account.id}
-            className="p-2.5 border border-gray-100 rounded-md hover:bg-gray-50 hover:border-gray-200 transition-all duration-150"
+            className="p-2.5 border border-border rounded-md hover:bg-muted/30 hover:border-border transition-all duration-150"
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
-                  <h4 className="flex items-center font-medium text-gray-900 text-xs leading-tight truncate">
+                  <h4 className="flex items-center font-medium text-foreground text-xs leading-tight truncate">
                     <span className="truncate">{account.name}</span>
                     {account.account_type && (
                       <span className="ml-2 leading-none">
@@ -181,7 +181,7 @@ const BankAccountsList: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 w-6 p-0 hover:bg-blue-50 hover:text-blue-600"
+                      className="h-6 w-6 p-0 hover:bg-primary/10 hover:text-primary"
                       onClick={() => handleView(account)}
                     >
                       <Eye className="h-4 w-4" />
@@ -201,13 +201,13 @@ const BankAccountsList: React.FC = () => {
                   account.due_balance !== undefined &&
                   account.due_balance !== null &&
                   account.due_balance > 0 && (
-                    <p className="text-xs text-red-600 mt-0.5 leading-tight">
+                    <p className="text-xs text-destructive mt-0.5 leading-tight">
                       Due: {formatCurrency(account.due_balance, account.currency)}
                     </p>
                   )}
 
                 {/* Last-updated date, formatted as "MMM d, yy" (e.g., "Jun 2, '25") */}
-                <p className="text-xs text-gray-400 mt-1 leading-tight">
+                <p className="text-xs text-muted-foreground mt-1 leading-tight">
                   {new Date(account.updated_at).toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
@@ -224,10 +224,10 @@ const BankAccountsList: React.FC = () => {
       <Dialog open={!!viewingAccount} onOpenChange={() => setViewingAccount(null)}>
         <DialogContent className="sm:max-w-md mx-auto w-[calc(100%-2rem)] sm:w-full">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold text-gray-800">
+            <DialogTitle className="text-lg font-semibold text-foreground">
               Bank Account Details
             </DialogTitle>
-            <DialogDescription className="mt-1 text-sm text-gray-500">
+            <DialogDescription className="mt-1 text-sm text-muted-foreground">
               View all information for this account.
             </DialogDescription>
           </DialogHeader>
@@ -237,13 +237,13 @@ const BankAccountsList: React.FC = () => {
               <dl className="space-y-4">
                 {/* Account Name */}
                 <div className="flex flex-col gap-1">
-                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Account Name</dt>
-                  <dd className="text-base font-medium text-gray-900">{viewingAccount.name}</dd>
+                  <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Account Name</dt>
+                  <dd className="text-base font-medium text-foreground">{viewingAccount.name}</dd>
                 </div>
 
                 {/* Account Type */}
                 <div className="flex flex-col gap-1">
-                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Account Type</dt>
+                  <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Account Type</dt>
                   <dd className="text-base">
                     {getAccountTypeBadge(viewingAccount.account_type!)}
                   </dd>
@@ -251,7 +251,7 @@ const BankAccountsList: React.FC = () => {
 
                 {/* Balance with conditional color */}
                 <div className="flex flex-col gap-1">
-                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Balance</dt>
+                  <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Balance</dt>
                   <dd className={`text-lg font-bold ${getBalanceColorClass(viewingAccount)}`}>
                     {getDisplayBalance(viewingAccount)}
                   </dd>
@@ -261,8 +261,8 @@ const BankAccountsList: React.FC = () => {
                 {viewingAccount.account_type?.toLowerCase() === 'credit' &&
                   viewingAccount.credit_limit !== undefined && (
                     <div className="flex flex-col gap-1">
-                      <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Credit Limit</dt>
-                      <dd className="text-base font-medium text-gray-900">
+                      <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Credit Limit</dt>
+                      <dd className="text-base font-medium text-foreground">
                         {formatCurrency(
                           viewingAccount.credit_limit,
                           viewingAccount.currency
@@ -275,12 +275,12 @@ const BankAccountsList: React.FC = () => {
                 {viewingAccount.account_type?.toLowerCase() === 'credit' &&
                   viewingAccount.due_balance !== undefined && (
                     <div className="flex flex-col gap-1">
-                      <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Due Balance</dt>
+                      <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Due Balance</dt>
                       <dd
                         className={`text-base font-medium ${
                           viewingAccount.due_balance > 0
-                            ? 'text-red-600'
-                            : 'text-gray-900'
+                            ? 'text-destructive'
+                            : 'text-foreground'
                         }`}
                       >
                         {formatCurrency(
@@ -293,14 +293,14 @@ const BankAccountsList: React.FC = () => {
 
                 {/* Currency */}
                 <div className="flex flex-col gap-1">
-                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Currency</dt>
-                  <dd className="text-base font-medium text-gray-900">{viewingAccount.currency}</dd>
+                  <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Currency</dt>
+                  <dd className="text-base font-medium text-foreground">{viewingAccount.currency}</dd>
                 </div>
 
                 {/* Last Updated */}
                 <div className="flex flex-col gap-1">
-                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Last Updated</dt>
-                  <dd className="text-base font-medium text-gray-900">
+                  <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Last Updated</dt>
+                  <dd className="text-base font-medium text-foreground">
                     {new Date(viewingAccount.updated_at).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
@@ -316,9 +316,9 @@ const BankAccountsList: React.FC = () => {
             <Button
               variant="outline"
               onClick={() => viewingAccount && handleEdit(viewingAccount)}
-              className="w-full sm:flex-1 h-11 text-sm border-gray-300 hover:bg-gray-50"
+              className="w-full sm:flex-1 h-11 text-sm border-border hover:bg-muted/30"
             >
-              <Edit2 className="h-4 w-4 mr-2 text-gray-600" />
+              <Edit2 className="h-4 w-4 mr-2 text-muted-foreground" />
               Edit
             </Button>
             <Button
@@ -382,7 +382,7 @@ const BankAccountsList: React.FC = () => {
 
           {deleteError && (
             <div className="px-6 pb-2">
-              <p className="text-sm text-red-600">{deleteError}</p>
+              <p className="text-sm text-destructive">{deleteError}</p>
             </div>
           )}
 
@@ -391,7 +391,7 @@ const BankAccountsList: React.FC = () => {
             <AlertDialogAction
               onClick={confirmDelete}
               disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700 disabled:opacity-50"
+              className="bg-destructive hover:bg-destructive/90 disabled:opacity-50"
             >
               {isDeleting ? (
                 <div className="flex items-center gap-2">

@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { Label } from '@/components/ui/label';
 import {
   Popover,
   PopoverContent,
@@ -59,12 +60,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
       {/* Mobile: Stacked Layout */}
       <div className="block md:hidden space-y-3">
         {/* Category Select */}
-        <div className="w-full">
-          <label className="text-xs font-medium text-gray-600 mb-1.5 block">
+        <div className="w-full space-y-2">
+          <Label className="text-sm font-medium">
             Category
-          </label>
+          </Label>
           <Select value={filters.category} onValueChange={handleCategoryChange}>
-            <SelectTrigger className="h-11 rounded-xl border-gray-300 touch-target">
+            <SelectTrigger className="touch-target">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
@@ -80,18 +81,18 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
 
         {/* Date Range Section */}
         <div className="space-y-2">
-          <label className="text-xs font-medium text-gray-600 block">
+          <Label className="text-sm font-medium">
             Date Range
-          </label>
+          </Label>
           <div className="grid grid-cols-2 gap-2">
             {/* Start Date */}
             <Popover>
               <PopoverTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start text-left h-11 rounded-xl border-gray-300 px-3 hover:bg-gray-50 touch-target"
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left touch-target min-w-0"
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0 text-gray-500" />
+                  <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
                   <span className="truncate text-sm">
                     {filters.startDate ? format(filters.startDate, 'MMM d') : "Start"}
                   </span>
@@ -103,7 +104,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
                   selected={filters.startDate || undefined}
                   onSelect={handleStartDateChange}
                   initialFocus
-                  className="pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
@@ -111,11 +111,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
             {/* End Date */}
             <Popover>
               <PopoverTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start text-left h-11 rounded-xl border-gray-300 px-3 hover:bg-gray-50 touch-target"
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left touch-target min-w-0"
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0 text-gray-500" />
+                  <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
                   <span className="truncate text-sm">
                     {filters.endDate ? format(filters.endDate, 'MMM d') : "End"}
                   </span>
@@ -127,7 +127,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
                   selected={filters.endDate || undefined}
                   onSelect={handleEndDateChange}
                   initialFocus
-                  className="pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
@@ -135,10 +134,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
         </div>
 
         {/* Clear Filters Button */}
-        <Button 
-          variant="outline" 
-          onClick={clearFilters} 
-          className="w-full h-11 rounded-xl border-gray-300 hover:bg-gray-50 font-medium text-gray-700 touch-target"
+        <Button
+          variant="outline"
+          onClick={clearFilters}
+          className="w-full touch-target"
         >
           Clear Filters
         </Button>
@@ -165,9 +164,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
         <div className="flex-1 min-w-[160px]">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className={cn("w-full justify-start text-left")}>
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {filters.startDate ? format(filters.startDate, 'MMM d, yyyy') : "Start Date"}
+              <Button variant="outline" className="w-full justify-start text-left min-w-0">
+                <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                <span className="truncate">
+                  {filters.startDate ? format(filters.startDate, 'MMM d, yyyy') : "Start Date"}
+                </span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -176,7 +177,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
                 selected={filters.startDate || undefined}
                 onSelect={handleStartDateChange}
                 initialFocus
-                className="pointer-events-auto"
               />
             </PopoverContent>
           </Popover>
@@ -185,9 +185,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
         <div className="flex-1 min-w-[160px]">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className={cn("w-full justify-start text-left")}>
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {filters.endDate ? format(filters.endDate, 'MMM d, yyyy') : "End Date"}
+              <Button variant="outline" className="w-full justify-start text-left min-w-0">
+                <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                <span className="truncate">
+                  {filters.endDate ? format(filters.endDate, 'MMM d, yyyy') : "End Date"}
+                </span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -196,13 +198,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
                 selected={filters.endDate || undefined}
                 onSelect={handleEndDateChange}
                 initialFocus
-                className="pointer-events-auto"
               />
             </PopoverContent>
           </Popover>
         </div>
 
-        <Button variant="ghost" onClick={clearFilters} className="flex-0">Clear</Button>
+        <Button variant="ghost" onClick={clearFilters}>Clear</Button>
       </div>
     </div>
   );

@@ -85,20 +85,20 @@ const UtilityPanel: React.FC = () => {
                 return (
                   <div
                     key={payment.id}
-                    className="p-2 border rounded-md bg-yellow-50/50 border-yellow-200"
+                    className="p-2 border rounded-md bg-warning-muted border-warning/20"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-xs font-medium text-gray-900">
+                        <h4 className="text-xs font-medium text-foreground truncate">
                           {payment.name}
                         </h4>
-                        <p className="text-xs text-gray-600">
+                        <p className="text-xs text-muted-foreground">
                           Due: {format(parseLocalDate(payment.next_due_date), 'MMM d, yyyy')}
                           {daysUntilDue === 0 && ' (Today)'}
                           {daysUntilDue === 1 && ' (Tomorrow)'}
                           {daysUntilDue > 1 && ` (${daysUntilDue} days)`}
                         </p>
-                        <p className="text-xs font-semibold text-red-600">
+                        <p className="text-xs font-semibold text-destructive">
                           {formatCurrency(payment.amount, payment.currency)}
                         </p>
                       </div>
@@ -108,8 +108,8 @@ const UtilityPanel: React.FC = () => {
               })}
             </div>
           ) : (
-            <div className="text-center py-4 text-gray-500">
-              <Bell className="h-6 w-6 mx-auto mb-2 text-gray-400" />
+            <div className="text-center py-4 text-muted-foreground">
+              <Bell className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
               <p className="text-xs">No payments due in the next 7 days</p>
             </div>
           )}

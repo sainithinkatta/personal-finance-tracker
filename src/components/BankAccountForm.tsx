@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -9,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 import { CURRENCIES } from '@/types/expense';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
 import { useToast } from '@/hooks/use-toast';
@@ -125,10 +127,11 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ onClose, account }) =
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 px-1 sm:px-0">
       <div className="space-y-2">
-        <label className="text-sm font-medium">Account Name</label>
+        <Label htmlFor="account-name">Account Name</Label>
         <Input
+          id="account-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g., Main Checking"
@@ -137,9 +140,9 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ onClose, account }) =
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Currency</label>
+        <Label htmlFor="currency">Currency</Label>
         <Select value={currency} onValueChange={setCurrency}>
-          <SelectTrigger>
+          <SelectTrigger id="currency">
             <SelectValue placeholder="Select currency" />
           </SelectTrigger>
           <SelectContent>
@@ -153,9 +156,9 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ onClose, account }) =
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Account Type</label>
+        <Label htmlFor="account-type">Account Type</Label>
         <Select value={accountType} onValueChange={setAccountType}>
-          <SelectTrigger>
+          <SelectTrigger id="account-type">
             <SelectValue placeholder="Select account type" />
           </SelectTrigger>
           <SelectContent>
@@ -168,8 +171,9 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ onClose, account }) =
       {accountType === 'Credit' ? (
         <>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Credit Limit</label>
+            <Label htmlFor="credit-limit">Credit Limit</Label>
             <Input
+              id="credit-limit"
               value={creditLimit}
               onChange={(e) => setCreditLimit(e.target.value)}
               placeholder="e.g., 50,000"
@@ -181,8 +185,9 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ onClose, account }) =
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Available Balance</label>
+            <Label htmlFor="available-balance">Available Balance</Label>
             <Input
+              id="available-balance"
               value={availableBalance}
               onChange={(e) => setAvailableBalance(e.target.value)}
               placeholder="e.g., 12,500"
@@ -190,16 +195,17 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ onClose, account }) =
               step="0.01"
               min="0"
               required
-              className={availableBalanceError ? 'border-red-500' : ''}
+              className={cn(availableBalanceError && 'border-destructive focus-visible:ring-destructive')}
             />
             {availableBalanceError && (
-              <p className="text-sm text-red-500">{availableBalanceError}</p>
+              <p className="text-sm text-destructive">{availableBalanceError}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Payment Due Date</label>
+            <Label htmlFor="payment-due-date">Payment Due Date</Label>
             <Input
+              id="payment-due-date"
               value={paymentDueDate}
               onChange={(e) => setPaymentDueDate(e.target.value)}
               placeholder="e.g., 20"
@@ -208,21 +214,23 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ onClose, account }) =
               max="31"
               required
             />
-            <p className="text-xs text-gray-500">Day of month when payment is due (1-31)</p>
+            <p className="text-xs text-muted-foreground">Day of month when payment is due (1-31)</p>
           </div>
 
           {creditLimit && availableBalance && (
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Computed Due Balance (Read-only)</label>
-              <div className="p-2 bg-gray-50 rounded border">
+              <Label className="text-muted-foreground">Computed Due Balance (Read-only)</Label>
+              <div className="p-3 bg-muted/50 rounded-md border">
                 <span className="text-sm font-semibold">
                   {computedDueBalance < 0 ? (
-                    <span className="text-red-600">
+                    <span className="text-destructive">
                       -{Math.abs(computedDueBalance).toFixed(2)}
-                      <span className="text-xs ml-2 text-red-500">⚠️ Negative balance detected</span>
+                      <span className="text-xs ml-2">⚠️ Negative balance detected</span>
                     </span>
                   ) : (
-                    computedDueBalance.toFixed(2)
+                    <span className="text-foreground">
+                      ${computedDueBalance.toFixed(2)}
+                    </span>
                   )}
                 </span>
               </div>
@@ -231,8 +239,9 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ onClose, account }) =
         </>
       ) : (
         <div className="space-y-2">
-          <label className="text-sm font-medium">Initial Balance</label>
+          <Label htmlFor="initial-balance">Initial Balance</Label>
           <Input
+            id="initial-balance"
             value={balance}
             onChange={(e) => setBalance(e.target.value)}
             placeholder="0.00"
@@ -244,13 +253,14 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ onClose, account }) =
         </div>
       )}
 
-      <div className="flex space-x-2 pt-4">
+      <div className="flex gap-3 pt-4">
         <Button type="button" variant="outline" onClick={onClose} className="flex-1">
           Cancel
         </Button>
-        <Button 
-          type="submit" 
-          className="bg-blue-500 hover:bg-blue-600 flex-1"
+        <Button
+          type="submit"
+          variant="default"
+          className="flex-1"
           disabled={!!availableBalanceError}
         >
           {isEditing ? 'Update Account' : 'Add Account'}

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Bell, Calendar } from 'lucide-react';
+import { Plus, Bell, Calendar, Edit2, Trash2, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -20,6 +21,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  BottomSheet,
+  BottomSheetContent,
+  BottomSheetHeader,
+  BottomSheetTitle,
+  BottomSheetBody,
+} from '@/components/ui/bottom-sheet';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
 import { RecurringTransaction, RecurringTransactionFormData } from '@/types/recurringTransaction';
 import { CURRENCIES, ExpenseCategory } from '@/types/expense';
@@ -28,6 +46,8 @@ import { format, differenceInDays } from 'date-fns';
 import { RecurringTransactionCard } from '@/components/recurring/RecurringTransactionCard';
 import { EditRecurringTransactionForm } from '@/components/recurring/EditRecurringTransactionForm';
 import { parseLocalDate } from '@/utils/dateUtils';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 const RecurringTransactions: React.FC = () => {
   const {
@@ -43,8 +63,10 @@ const RecurringTransactions: React.FC = () => {
     isMarkingDone,
   } = useRecurringTransactions();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<RecurringTransaction | null>(null);
+  const [deletingTransactionId, setDeletingTransactionId] = useState<string | null>(null);
   const [formData, setFormData] = useState<RecurringTransactionFormData>({
     name: '',
     amount: 0,
@@ -109,7 +131,14 @@ const RecurringTransactions: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    deleteRecurringTransaction(id);
+    setDeletingTransactionId(id);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deletingTransactionId) {
+      deleteRecurringTransaction(deletingTransactionId);
+      setDeletingTransactionId(null);
+    }
   };
 
   const handleMarkAsDone = (id: string) => {
@@ -124,26 +153,45 @@ const RecurringTransactions: React.FC = () => {
   const getFrequencyBadgeColor = (freq: string) => {
     switch (freq) {
       case 'daily':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-info-muted text-info-foreground';
       case 'weekly':
-        return 'bg-green-100 text-green-800';
+        return 'bg-accent-muted text-accent-foreground';
       case 'monthly':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-warning-muted text-warning-foreground';
       case 'yearly':
+        return 'bg-warning-muted text-warning-foreground';
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'Groceries':
+        return 'bg-green-100 text-green-800';
+      case 'Food':
         return 'bg-orange-100 text-orange-800';
+      case 'Travel':
+        return 'bg-blue-100 text-blue-800';
+      case 'Bills':
+        return 'bg-red-100 text-red-800';
+      case 'Others':
+        return 'bg-purple-100 text-purple-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
+  const transactionToDelete = recurringTransactions.find(t => t.id === deletingTransactionId);
+
   return (
     <div className="space-y-6">
       {/* Compact Upcoming Reminders Notification */}
       {upcomingReminders.length > 0 && (
-        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-4">
+        <div className="bg-gradient-to-r from-warning-muted to-warning-muted border border-warning/20 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-3">
-            <Bell className="h-5 w-5 text-yellow-600" />
-            <h3 className="font-semibold text-yellow-800">Upcoming Payments</h3>
+            <Bell className="h-5 w-5 text-warning" />
+            <h3 className="font-semibold text-warning-foreground">Upcoming Payments</h3>
           </div>
           
           <div className="grid gap-2">
@@ -162,16 +210,16 @@ const RecurringTransactions: React.FC = () => {
               return (
                 <div
                   key={tx.id}
-                  className="flex flex-col bg-white rounded-md border border-yellow-200 p-3 space-y-2"
+                  className="flex flex-col bg-card rounded-md border border-warning/20 p-3 space-y-2"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0">
-                        <Calendar className="h-4 w-4 text-yellow-600" />
+                        <Calendar className="h-4 w-4 text-warning" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900 text-sm">{tx.name}</p>
-                        <p className="text-xs text-gray-600">
+                        <p className="font-medium text-foreground text-sm">{tx.name}</p>
+                        <p className="text-xs text-muted-foreground">
                           Due {format(parseLocalDate(tx.next_due_date), 'MMM d')} • {dueLabel}
                         </p>
                       </div>
@@ -179,10 +227,10 @@ const RecurringTransactions: React.FC = () => {
 
                     <div className="flex items-center gap-2">
                       <div className="text-right">
-                        <p className="font-semibold text-gray-900 text-sm">
+                        <p className="font-semibold text-foreground text-sm">
                           {formatCurrency(tx.amount, tx.currency)}
                         </p>
-                        <Badge 
+                        <Badge
                           className={`text-xs ${getFrequencyBadgeColor(tx.frequency)}`}
                         >
                           {tx.frequency}
@@ -190,9 +238,9 @@ const RecurringTransactions: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   {tx.last_reminder_sent_at && (
-                    <div className="flex items-center gap-1.5 text-xs text-green-700 bg-green-50 px-2 py-1 rounded-md border border-green-200">
+                    <div className="flex items-center gap-1.5 text-xs text-accent bg-accent-muted px-2 py-1 rounded-md border border-accent/20">
                       <span className="text-sm">🕓</span>
                       <span>
                         Notified via Email at {format(new Date(tx.last_reminder_sent_at), 'h:mm a zzz')}
@@ -211,7 +259,7 @@ const RecurringTransactions: React.FC = () => {
         <CardHeader className="flex items-center justify-between">
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" className="flex bg-blue-500 hover:bg-blue-600 text-white shadow-lg ml-auto">
+              <Button variant="default" size="sm" className="flex shadow-lg ml-auto">
                 <Plus className="h-4 w-4 mr-1" />
                 Add Transaction
               </Button>
@@ -402,34 +450,196 @@ const RecurringTransactions: React.FC = () => {
 
         <CardContent className="space-y-4">
           {recurringTransactions.length === 0 ? (
-            <p className="text-center text-gray-500 py-8">
+            <p className="text-center text-muted-foreground py-8">
               No recurring transactions yet. Click "Add Transaction" to get started.
             </p>
           ) : (
-            <div className="space-y-4">
-              {recurringTransactions.map((transaction) => (
-                <RecurringTransactionCard
-                  key={transaction.id}
-                  transaction={transaction}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onMarkAsDone={handleMarkAsDone}
-                  isMarkingDone={isMarkingDone}
-                />
-              ))}
-            </div>
+            <>
+              {/* Desktop View */}
+              <div className="hidden md:block space-y-4">
+                {recurringTransactions.map((transaction) => (
+                  <RecurringTransactionCard
+                    key={transaction.id}
+                    transaction={transaction}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onMarkAsDone={handleMarkAsDone}
+                    isMarkingDone={isMarkingDone}
+                  />
+                ))}
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="block md:hidden">
+                <ScrollArea className="h-[60vh] max-h-[500px]">
+                  <div className="space-y-3 pb-20">
+                    {recurringTransactions.map((transaction) => {
+                      const daysUntilDue = differenceInDays(
+                        parseLocalDate(transaction.next_due_date),
+                        new Date()
+                      );
+
+                      return (
+                        <article
+                          key={transaction.id}
+                          className="bg-card rounded-2xl border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
+                        >
+                          {/* Main Content */}
+                          <div className="p-4">
+                            <div className="flex gap-3">
+                              {/* Date Section - Calendar Style */}
+                              <div className="flex-shrink-0 w-16 h-16 flex flex-col items-center justify-center bg-gradient-to-br from-info-muted to-info-muted/50 rounded-xl border border-info/20">
+                                <div className="text-2xl font-bold text-foreground leading-none">
+                                  {format(parseLocalDate(transaction.next_due_date), 'dd')}
+                                </div>
+                                <div className="text-xs font-semibold text-info-foreground uppercase mt-0.5">
+                                  {format(parseLocalDate(transaction.next_due_date), 'MMM')}
+                                </div>
+                                <div className="text-xs text-muted-foreground capitalize">
+                                  {format(parseLocalDate(transaction.next_due_date), 'EEE')}
+                                </div>
+                              </div>
+
+                              {/* Content Section */}
+                              <div className="flex-1 min-w-0 flex flex-col gap-2">
+                                {/* Category and Amount Row */}
+                                <div className="flex items-start justify-between gap-2">
+                                  <Badge
+                                    className={cn(
+                                      'font-semibold text-xs px-3 py-1 rounded-lg',
+                                      getCategoryColor(transaction.category)
+                                    )}
+                                  >
+                                    {transaction.category}
+                                  </Badge>
+                                  <div className="text-xl font-bold text-gray-900 whitespace-nowrap">
+                                    {formatCurrency(transaction.amount, transaction.currency)}
+                                  </div>
+                                </div>
+
+                                {/* Name */}
+                                <div className="text-sm font-medium text-foreground leading-relaxed">
+                                  {transaction.name}
+                                </div>
+
+                                {/* Frequency and Due Info */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <Badge
+                                    className={cn(
+                                      'text-xs',
+                                      getFrequencyBadgeColor(transaction.frequency)
+                                    )}
+                                  >
+                                    {transaction.frequency}
+                                  </Badge>
+                                  <span className="text-xs text-muted-foreground">
+                                    Due in {daysUntilDue} day{daysUntilDue !== 1 ? 's' : ''}
+                                  </span>
+                                  {transaction.status === 'done' && (
+                                    <Badge className="text-xs bg-green-100 text-green-800">
+                                      ✓ Done
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Actions Bar */}
+                          <div className="flex items-center border-t bg-muted/30">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="flex-1 h-11 rounded-none hover:bg-primary/10 flex items-center justify-center gap-2 touch-target transition-colors border-r"
+                              onClick={() => handleEdit(transaction)}
+                            >
+                              <Edit2 className="h-4 w-4 text-primary" />
+                              <span className="text-sm font-medium text-primary">Edit</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="flex-1 h-11 rounded-none hover:bg-green-600/10 flex items-center justify-center gap-2 touch-target transition-colors border-r"
+                              onClick={() => handleMarkAsDone(transaction.id)}
+                              disabled={isMarkingDone || transaction.status === 'done'}
+                            >
+                              <Check className="h-4 w-4 text-green-600" />
+                              <span className="text-sm font-medium text-green-600">Done</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="flex-1 h-11 rounded-none hover:bg-destructive/10 flex items-center justify-center gap-2 touch-target transition-colors"
+                              onClick={() => handleDelete(transaction.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                              <span className="text-sm font-medium text-destructive">Delete</span>
+                            </Button>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
 
-      {/* Edit Transaction Form */}
-      <EditRecurringTransactionForm
-        transaction={editingTransaction}
-        isOpen={!!editingTransaction}
-        onClose={() => setEditingTransaction(null)}
-        onSave={handleSaveEdit}
-        isLoading={isUpdating}
-      />
+      {/* Edit Transaction Form - Bottom Sheet on Mobile, Dialog on Desktop */}
+      {isMobile ? (
+        <BottomSheet open={!!editingTransaction} onOpenChange={() => setEditingTransaction(null)}>
+          <BottomSheetContent>
+            <BottomSheetHeader>
+              <BottomSheetTitle>Edit Recurring Transaction</BottomSheetTitle>
+            </BottomSheetHeader>
+            <BottomSheetBody>
+              {editingTransaction && (
+                <EditRecurringTransactionForm
+                  transaction={editingTransaction}
+                  isOpen={true}
+                  onClose={() => setEditingTransaction(null)}
+                  onSave={handleSaveEdit}
+                  isLoading={isUpdating}
+                />
+              )}
+            </BottomSheetBody>
+          </BottomSheetContent>
+        </BottomSheet>
+      ) : (
+        <EditRecurringTransactionForm
+          transaction={editingTransaction}
+          isOpen={!!editingTransaction}
+          onClose={() => setEditingTransaction(null)}
+          onSave={handleSaveEdit}
+          isLoading={isUpdating}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingTransactionId} onOpenChange={() => setDeletingTransactionId(null)}>
+        <AlertDialogContent className="mx-auto w-[calc(100%-2rem)] sm:w-full">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Recurring Transaction</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this recurring transaction{transactionToDelete ? ` "${transactionToDelete.name}" for ${formatCurrency(transactionToDelete.amount, transactionToDelete.currency)}` : ''}?
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingTransactionId(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

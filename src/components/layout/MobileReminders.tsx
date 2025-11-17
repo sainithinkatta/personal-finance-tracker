@@ -89,20 +89,20 @@ export const MobileReminders: React.FC = () => {
               return (
                 <div
                   key={payment.id}
-                  className="p-4 border rounded-lg bg-yellow-50/50 border-yellow-200"
+                  className="p-4 border rounded-lg bg-warning-muted border-warning/20"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium text-gray-900">
+                      <h4 className="text-sm font-medium text-foreground truncate">
                         {payment.name}
                       </h4>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-muted-foreground mt-1">
                         Due: {format(parseLocalDate(payment.next_due_date), 'MMM d, yyyy')}
                         {daysUntilDue === 0 && ' (Today)'}
                         {daysUntilDue === 1 && ' (Tomorrow)'}
                         {daysUntilDue > 1 && ` (${daysUntilDue} days)`}
                       </p>
-                      <p className="text-sm font-semibold text-red-600 mt-1">
+                      <p className="text-sm font-semibold text-destructive mt-1">
                         {formatCurrency(payment.amount, payment.currency)}
                       </p>
                     </div>

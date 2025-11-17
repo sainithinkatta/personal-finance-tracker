@@ -40,17 +40,17 @@ const BottomSheetContent = React.forwardRef<
     <DrawerPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-3xl border bg-white shadow-xl",
-        "max-h-[85vh] max-h-[85dvh] pb-safe",
+        "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-3xl border bg-background shadow-xl",
+        "max-h-[85vh] max-h-[85dvh]",
         "focus:outline-none",
         className
       )}
       {...props}
     >
-      <div className="sticky top-0 z-10 bg-white rounded-t-3xl px-4 pt-3 pb-2 border-b">
+      <div className="flex-shrink-0 sticky top-0 z-10 bg-background rounded-t-3xl px-4 pt-3 pb-2 border-b">
         <div className="mx-auto h-1 w-10 rounded-full bg-muted mb-2" />
-        {children}
       </div>
+      {children}
     </DrawerPrimitive.Content>
   </BottomSheetPortal>
 ))
@@ -61,7 +61,7 @@ const BottomSheetHeader = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("text-left", className)}
+    className={cn("flex-shrink-0 text-left px-4 pt-2 pb-3", className)}
     {...props}
   />
 )
@@ -88,7 +88,7 @@ const BottomSheetFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "sticky bottom-0 bg-white px-4 pt-3 pb-4 pb-safe border-t",
+      "flex-shrink-0 sticky bottom-0 bg-background px-4 pt-3 pb-4 pb-safe border-t",
       "z-10",
       className
     )}
@@ -104,7 +104,7 @@ const BottomSheetTitle = React.forwardRef<
   <DrawerPrimitive.Title
     ref={ref}
     className={cn(
-      "text-lg font-semibold leading-none tracking-tight",
+      "text-lg sm:text-xl font-semibold leading-tight tracking-tight",
       className
     )}
     {...props}
@@ -118,7 +118,7 @@ const BottomSheetDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DrawerPrimitive.Description
     ref={ref}
-    className={cn("text-xs text-muted-foreground mt-1", className)}
+    className={cn("text-sm text-muted-foreground mt-1.5", className)}
     {...props}
   />
 ))

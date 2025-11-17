@@ -65,7 +65,7 @@ const DuesManager: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -74,8 +74,8 @@ const DuesManager: React.FC = () => {
     <div>
       <div className="flex w-full justify-end items-center mb-4">
         <Button
+          variant="default"
           onClick={() => setIsDialogOpen(true)}
-          className="bg-blue-500 hover:bg-blue-600"
         >
           <Plus className="h-4 w-4" />
           Add Due

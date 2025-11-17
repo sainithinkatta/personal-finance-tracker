@@ -74,7 +74,7 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
     <article
       key={due.id}
       className={cn(
-        "bg-white rounded-2xl border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden",
+        "bg-card rounded-2xl border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden",
         due.status === 'Settled' && 'opacity-60'
       )}
     >
@@ -84,15 +84,15 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
           {/* Person Icon Section */}
           <div className={cn(
             "flex-shrink-0 w-16 h-16 flex flex-col items-center justify-center rounded-xl border-2",
-            colorClass === 'text-red-600' ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'
+            colorClass === 'text-destructive' ? 'bg-destructive/10 border-destructive/20' : 'bg-accent-muted border-accent/20'
           )}>
             <User className={cn(
               "h-7 w-7",
-              colorClass === 'text-red-600' ? 'text-red-600' : 'text-green-600'
+              colorClass === 'text-destructive' ? 'text-destructive' : 'text-accent'
             )} />
             <div className={cn(
               "text-xs font-bold mt-1 uppercase",
-              colorClass === 'text-red-600' ? 'text-red-700' : 'text-green-700'
+              colorClass === 'text-destructive' ? 'text-destructive' : 'text-accent'
             )}>
               {due.type === 'I Owe' ? 'Owe' : 'Get'}
             </div>
@@ -103,7 +103,7 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
             {/* Name and Amount Row */}
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <h3 className="text-base font-bold text-gray-900 truncate">
+                <h3 className="text-base font-bold text-foreground truncate">
                   {due.person_name}
                 </h3>
               </div>
@@ -117,22 +117,22 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
 
             {/* Status and Due Date Row */}
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge 
+              <Badge
                 variant={due.status === 'Settled' ? 'secondary' : 'default'}
                 className={cn(
                   'font-semibold text-xs px-2.5 py-1 rounded-lg',
-                  due.status === 'Settled' && 'bg-green-100 text-green-800'
+                  due.status === 'Settled' && 'bg-accent-muted text-accent-foreground'
                 )}
               >
                 {due.status}
               </Badge>
-              
+
               {due.due_date && (
                 <div className={cn(
                   "flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg",
                   isOverdue(due.due_date) && due.status === 'Pending'
-                    ? 'bg-red-100 text-red-700'
-                    : 'bg-gray-100 text-gray-700'
+                    ? 'bg-destructive/10 text-destructive'
+                    : 'bg-muted text-muted-foreground'
                 )}>
                   <Calendar className="h-3 w-3" />
                   <span>{format(new Date(due.due_date), 'MMM d, yyyy')}</span>
@@ -146,7 +146,7 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
             {/* Notes */}
             {due.notes && (
               <div className="pt-1">
-                <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
+                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
                   {due.notes}
                 </p>
               </div>
@@ -156,41 +156,41 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
       </div>
 
       {/* Actions Bar */}
-      <div className="flex items-center border-t border-gray-100 bg-gray-50/50">
+      <div className="flex items-center border-t border-border bg-muted/30">
         {due.status === 'Pending' && (
           <Button
             variant="ghost"
             size="sm"
-            className="flex-1 h-11 rounded-none hover:bg-green-50 flex items-center justify-center gap-2 touch-target transition-colors border-r border-gray-100"
+            className="flex-1 h-11 rounded-none hover:bg-accent/10 flex items-center justify-center gap-2 touch-target transition-colors border-r border-border"
             onClick={() => onMarkAsSettled(due.id)}
           >
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <span className="text-sm font-medium text-green-700">Settle</span>
+            <CheckCircle className="h-4 w-4 text-accent" />
+            <span className="text-sm font-medium text-accent">Settle</span>
           </Button>
         )}
         <Button
           variant="ghost"
           size="sm"
           className={cn(
-            "h-11 rounded-none hover:bg-blue-50 flex items-center justify-center gap-2 touch-target transition-colors border-r border-gray-100",
+            "h-11 rounded-none hover:bg-primary/10 flex items-center justify-center gap-2 touch-target transition-colors border-r border-border",
             due.status === 'Pending' ? 'flex-1' : 'flex-1'
           )}
           onClick={() => onEdit(due)}
         >
-          <Edit2 className="h-4 w-4 text-blue-600" />
-          <span className="text-sm font-medium text-blue-700">Edit</span>
+          <Edit2 className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium text-primary">Edit</span>
         </Button>
         <Button
           variant="ghost"
           size="sm"
           className={cn(
-            "h-11 rounded-none hover:bg-red-50 flex items-center justify-center gap-2 touch-target transition-colors",
+            "h-11 rounded-none hover:bg-destructive/10 flex items-center justify-center gap-2 touch-target transition-colors",
             due.status === 'Pending' ? 'flex-1' : 'flex-1'
           )}
           onClick={() => setDeletingDueId(due.id)}
         >
-          <Trash2 className="h-4 w-4 text-red-600" />
-          <span className="text-sm font-medium text-red-700">Delete</span>
+          <Trash2 className="h-4 w-4 text-destructive" />
+          <span className="text-sm font-medium text-destructive">Delete</span>
         </Button>
       </div>
     </article>
@@ -208,7 +208,7 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
       </CardHeader>
       <CardContent>
         {duesList.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">No dues found</p>
+          <p className="text-muted-foreground text-center py-4">No dues found</p>
         ) : (
           <>
             {/* Desktop Table View */}
@@ -236,7 +236,7 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
                       </TableCell>
                       <TableCell>
                         {due.due_date ? (
-                          <span className={isOverdue(due.due_date) && due.status === 'Pending' ? 'text-red-600 font-semibold' : ''}>
+                          <span className={isOverdue(due.due_date) && due.status === 'Pending' ? 'text-destructive font-semibold' : ''}>
                             {format(new Date(due.due_date), 'MMM d, yyyy')}
                             {isOverdue(due.due_date) && due.status === 'Pending' && (
                               <Badge variant="destructive" className="ml-2 text-xs">
@@ -249,9 +249,9 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge 
+                        <Badge
                           variant={due.status === 'Settled' ? 'secondary' : 'default'}
-                          className={due.status === 'Settled' ? 'bg-green-100 text-green-800' : ''}
+                          className={due.status === 'Settled' ? 'bg-accent-muted text-accent-foreground' : ''}
                         >
                           {due.status}
                         </Badge>
@@ -265,7 +265,7 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-7 w-7 p-0 text-green-600 hover:text-green-700"
+                              className="h-7 w-7 p-0 text-accent hover:text-accent"
                               onClick={() => onMarkAsSettled(due.id)}
                               title="Mark as Settled"
                             >
@@ -284,7 +284,7 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
+                            className="h-7 w-7 p-0 text-destructive hover:text-destructive"
                             onClick={() => setDeletingDueId(due.id)}
                             title="Delete Due"
                           >
@@ -316,8 +316,8 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
 
   return (
     <div className="space-y-6">
-      {renderDuesTable(iOweDues, 'I Owe', 'text-red-600')}
-      {renderDuesTable(theyOweMeDues, 'They Owe Me', 'text-green-600')}
+      {renderDuesTable(iOweDues, 'I Owe', 'text-destructive')}
+      {renderDuesTable(theyOweMeDues, 'They Owe Me', 'text-accent')}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deletingDueId} onOpenChange={() => setDeletingDueId(null)}>
@@ -340,7 +340,7 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
                   setDeletingDueId(null);
                 }
               }}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive hover:bg-destructive/90"
             >
               Delete
             </AlertDialogAction>

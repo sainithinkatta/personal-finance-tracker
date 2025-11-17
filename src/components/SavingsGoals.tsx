@@ -122,8 +122,8 @@ const SavingsGoals: React.FC = () => {
 
   const checkGoalMilestones = (current: number, target: number) => {
     const percentage = (current / target) * 100;
-    if (percentage >= 100) return { milestone: 'completed', color: 'text-green-600' };
-    if (percentage >= 80) return { milestone: 'almost-there', color: 'text-yellow-600' };
+    if (percentage >= 100) return { milestone: 'completed', color: 'text-accent' };
+    if (percentage >= 80) return { milestone: 'almost-there', color: 'text-warning' };
     return null;
   };
 
@@ -136,10 +136,13 @@ const SavingsGoals: React.FC = () => {
           if (!open) setEditingGoal(null);
         }}>
           <DialogTrigger asChild>
-            <Button onClick={() => {
-              setEditingGoal(null);
-              setIsGoalDialogOpen(true);
-            }} className="bg-blue-500 hover:bg-blue-600">
+            <Button
+              variant="default"
+              onClick={() => {
+                setEditingGoal(null);
+                setIsGoalDialogOpen(true);
+              }}
+            >
               <Plus className="h-4 w-4" />
               Add Goal
             </Button>
@@ -266,7 +269,7 @@ const SavingsGoals: React.FC = () => {
                             <span>Edit</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            className="text-red-600"
+                            className="text-destructive"
                             onSelect={(e) => {
                               e.preventDefault();
                               setDeletingGoal(goal);

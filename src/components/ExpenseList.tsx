@@ -142,20 +142,20 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
               <ScrollArea className="h-[500px]">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-gray-100">
-                      <TableHead className="font-semibold text-gray-700">
+                    <TableRow className="bg-muted/50">
+                      <TableHead className="font-semibold text-foreground">
                         Date & Day
                       </TableHead>
-                      <TableHead className="font-semibold text-gray-700">
+                      <TableHead className="font-semibold text-foreground">
                         Category
                       </TableHead>
-                      <TableHead className="font-semibold text-gray-700">
+                      <TableHead className="font-semibold text-foreground">
                         Description
                       </TableHead>
-                      <TableHead className="font-semibold text-gray-700 text-right">
+                      <TableHead className="font-semibold text-foreground text-right">
                         Amount
                       </TableHead>
-                      <TableHead className="font-semibold text-gray-700 text-right">
+                      <TableHead className="font-semibold text-foreground text-right">
                         Actions
                       </TableHead>
                     </TableRow>
@@ -165,8 +165,8 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
                       <TableRow
                         key={expense.id}
                         className={cn(
-                          'hover:bg-gray-50',
-                          index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                          'hover:bg-muted/30 transition-colors',
+                          index % 2 === 0 ? 'bg-background' : 'bg-muted/10'
                         )}
                       >
                         <TableCell className="font-medium">
@@ -174,7 +174,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
                             <span className="text-sm font-medium">
                               {format(expense.date, 'MMM d, yyyy')}
                             </span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-muted-foreground">
                               {format(expense.date, 'EEEE')}
                             </span>
                           </div>
@@ -200,18 +200,18 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-7 w-7 p-0"
+                              className="h-8 w-8 p-0"
                               onClick={() => handleEditExpense(expense)}
                             >
-                              <Edit2 className="h-3 w-3" />
+                              <Edit2 className="h-3.5 w-3.5" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
+                              className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                               onClick={() => setDeletingExpenseId(expense.id)}
                             >
-                              <Trash2 className="h-3 w-3" />
+                              <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </div>
                         </TableCell>
@@ -229,20 +229,20 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
                   {currentExpenses.map((expense) => (
                     <article
                       key={expense.id}
-                      className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
+                      className="bg-card rounded-2xl border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
                     >
                       {/* Main Content */}
                       <div className="p-4">
                         <div className="flex gap-3">
                           {/* Date Section - Calendar Style */}
-                          <div className="flex-shrink-0 w-16 h-16 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-                            <div className="text-2xl font-bold text-gray-900 leading-none">
+                          <div className="flex-shrink-0 w-16 h-16 flex flex-col items-center justify-center bg-gradient-to-br from-info-muted to-info-muted/50 rounded-xl border border-info/20">
+                            <div className="text-2xl font-bold text-foreground leading-none">
                               {format(expense.date, 'dd')}
                             </div>
-                            <div className="text-xs font-semibold text-blue-700 uppercase mt-0.5">
+                            <div className="text-xs font-semibold text-info-foreground uppercase mt-0.5">
                               {format(expense.date, 'MMM')}
                             </div>
-                            <div className="text-xs text-gray-600 capitalize">
+                            <div className="text-xs text-muted-foreground capitalize">
                               {format(expense.date, 'EEE')}
                             </div>
                           </div>
@@ -266,11 +266,11 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
 
                             {/* Description */}
                             {expense.description ? (
-                              <div className="text-sm text-gray-700 leading-relaxed line-clamp-2">
+                              <div className="text-sm text-foreground/80 leading-relaxed line-clamp-2">
                                 {expense.description}
                               </div>
                             ) : (
-                              <div className="text-sm text-gray-400 italic">
+                              <div className="text-sm text-muted-foreground italic">
                                 No description
                               </div>
                             )}
@@ -279,24 +279,24 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
                       </div>
 
                       {/* Actions Bar */}
-                      <div className="flex items-center border-t border-gray-100 bg-gray-50/50">
+                      <div className="flex items-center border-t bg-muted/30">
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="flex-1 h-11 rounded-none hover:bg-blue-50 flex items-center justify-center gap-2 touch-target transition-colors border-r border-gray-100"
+                          className="flex-1 h-11 rounded-none hover:bg-primary/10 flex items-center justify-center gap-2 touch-target transition-colors border-r"
                           onClick={() => handleEditExpense(expense)}
                         >
-                          <Edit2 className="h-4 w-4 text-blue-600" />
-                          <span className="text-sm font-medium text-blue-700">Edit</span>
+                          <Edit2 className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-medium text-primary">Edit</span>
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="flex-1 h-11 rounded-none hover:bg-red-50 flex items-center justify-center gap-2 touch-target transition-colors"
+                          className="flex-1 h-11 rounded-none hover:bg-destructive/10 flex items-center justify-center gap-2 touch-target transition-colors"
                           onClick={() => setDeletingExpenseId(expense.id)}
                         >
-                          <Trash2 className="h-4 w-4 text-red-600" />
-                          <span className="text-sm font-medium text-red-700">Delete</span>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <span className="text-sm font-medium text-destructive">Delete</span>
                         </Button>
                       </div>
                     </article>
@@ -341,7 +341,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
             )}
           </>
         ) : (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-muted-foreground">
             <p className="text-lg mb-2">
               No expenses found for the selected filters.
             </p>
@@ -393,7 +393,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Expense</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this expense{expenseToDelete ? ` for ${formatCurrency(expenseToDelete.amount, expenseToDelete.currency)}` : ''}? 
+              Are you sure you want to delete this expense{expenseToDelete ? ` for ${formatCurrency(expenseToDelete.amount, expenseToDelete.currency)}` : ''}?
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -403,7 +403,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive hover:bg-destructive/90"
             >
               Delete
             </AlertDialogAction>

@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Popover,
@@ -95,20 +96,20 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
   const usdOnlyAccounts = bankAccounts.filter((acct) => acct.currency === 'USD');
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 px-4 sm:px-0">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Date</label>
+    <form onSubmit={handleSubmit} className="space-y-4 px-1 sm:px-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="date" className="text-sm font-medium">Date</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
+                id="date"
                 variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal h-11 rounded-xl border px-3 text-[15px]",
-                )}
+                className="w-full justify-start text-left font-normal min-w-0"
+                size="default"
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {format(date, 'PPP')}
+                <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                <span className="truncate">{format(date, 'PPP')}</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -117,38 +118,36 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
                 selected={date}
                 onSelect={(d) => d && setDate(d)}
                 initialFocus
-                className="pointer-events-auto"
               />
             </PopoverContent>
           </Popover>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">Currency</label>
+        <div className="space-y-2">
+          <Label htmlFor="currency" className="text-sm font-medium">Currency</Label>
           <Select value={currency} onValueChange={setCurrency}>
-            <SelectTrigger className="h-11 rounded-xl border px-3 text-[15px]">
+            <SelectTrigger id="currency">
               <SelectValue placeholder="Select currency" />
             </SelectTrigger>
             <SelectContent>
-                <SelectItem value="USD">
-                  $ US Dollar
-                </SelectItem>
+              <SelectItem value="USD">$ US Dollar</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Amount</label>
+        <Label htmlFor="amount" className="text-sm font-medium">Amount</Label>
         <div className="relative">
-          <span className="absolute left-3 top-2 text-gray-500">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
             $
           </span>
           <Input
+            id="amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="pl-8 border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 h-10"
+            className="pl-8"
             type="number"
             step="0.01"
             min="0"
@@ -157,13 +156,13 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        <label className="text-xs font-medium text-muted-foreground">Category</label>
+      <div className="space-y-2">
+        <Label htmlFor="category" className="text-sm font-medium">Category</Label>
         <Select
           value={category}
           onValueChange={(value) => setCategory(value as ExpenseCategory)}
         >
-          <SelectTrigger className="h-11 rounded-xl border px-3 text-[15px] focus-visible:ring-2 focus-visible:ring-primary">
+          <SelectTrigger id="category">
             <SelectValue placeholder="Select a category" />
           </SelectTrigger>
           <SelectContent>
@@ -176,13 +175,12 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
         </Select>
       </div>
 
-      <div className="space-y-1.5">
-        <label className="text-xs font-medium text-muted-foreground">
+      <div className="space-y-2">
+        <Label htmlFor="bank-account" className="text-sm font-medium">
           Bank Account (USD only)
-        </label>
-
+        </Label>
         <Select value={bankAccountId} onValueChange={setBankAccountId} required>
-          <SelectTrigger className="h-11 rounded-xl border px-3 text-[15px] focus-visible:ring-2 focus-visible:ring-primary">
+          <SelectTrigger id="bank-account">
             <SelectValue placeholder="Select bank account" />
           </SelectTrigger>
           <SelectContent>
@@ -199,16 +197,15 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
             )}
           </SelectContent>
         </Select>
-
       </div>
 
       {activeBudgets.length > 0 && (
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
-            Budget (Optional)
-          </label>
+        <div className="space-y-2">
+          <Label htmlFor="budget" className="text-sm font-medium">
+            Budget <span className="text-muted-foreground">(Optional)</span>
+          </Label>
           <Select value={budgetId} onValueChange={setBudgetId}>
-            <SelectTrigger className="h-11 rounded-xl border px-3 text-[15px] focus-visible:ring-2 focus-visible:ring-primary">
+            <SelectTrigger id="budget">
               <SelectValue placeholder="Select budget" />
             </SelectTrigger>
             <SelectContent>
@@ -223,36 +220,35 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
         </div>
       )}
 
-      <div className="space-y-1.5">
-        <label className="text-xs font-medium text-muted-foreground">
-          Description (Optional)
-        </label>
+      <div className="space-y-2">
+        <Label htmlFor="description" className="text-sm font-medium">
+          Description <span className="text-muted-foreground">(Optional)</span>
+        </Label>
         <Textarea
+          id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Add details about this expense"
-          className="resize-none min-h-[96px] rounded-xl border px-3 text-[15px] focus-visible:ring-2 focus-visible:ring-primary"
+          className="resize-none min-h-[96px]"
           rows={3}
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 pt-2">
+      <div className="flex gap-3 pt-2">
         {onClose && (
           <Button
             type="button"
             variant="outline"
             onClick={onClose}
-            className="h-11 rounded-xl"
+            className="flex-1"
           >
             Cancel
           </Button>
         )}
         <Button
           type="submit"
-          className={cn(
-            "h-11 rounded-xl bg-primary text-white hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary",
-            !onClose && "col-span-2"
-          )}
+          variant="default"
+          className={cn(!onClose && "flex-1")}
         >
           {isEditing ? 'Update Expense' : 'Add Expense'}
         </Button>

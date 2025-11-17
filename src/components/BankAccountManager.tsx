@@ -97,7 +97,7 @@ const BankAccountManager: React.FC = () => {
         <CardTitle>Bank Accounts</CardTitle>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm} className="bg-blue-500 hover:bg-blue-600">
+            <Button variant="default" onClick={resetForm}>
               <Plus className="h-4 w-4 mr-2" />
               Add Account
             </Button>
@@ -258,7 +258,7 @@ const BankAccountManager: React.FC = () => {
               >
                 <div>
                   <h3 className="font-medium">{account.name}</h3>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-2xl font-bold text-accent">
                     {formatCurrency(account.balance, account.currency)}
                   </p>
                   <p className="text-sm text-muted-foreground">
