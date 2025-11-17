@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Bell, Calendar, Edit2, Trash2, Check } from 'lucide-react';
+import { Plus, Bell, Calendar, Edit2, Trash2, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,6 +67,7 @@ const RecurringTransactions: React.FC = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<RecurringTransaction | null>(null);
   const [deletingTransactionId, setDeletingTransactionId] = useState<string | null>(null);
+  const [isUpcomingExpanded, setIsUpcomingExpanded] = useState(false);
   const [formData, setFormData] = useState<RecurringTransactionFormData>({
     name: '',
     amount: 0,
@@ -186,70 +187,105 @@ const RecurringTransactions: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Compact Upcoming Reminders Notification */}
+      {/* Collapsible Upcoming Reminders Notification */}
       {upcomingReminders.length > 0 && (
-        <div className="bg-gradient-to-r from-warning-muted to-warning-muted border border-warning/20 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Bell className="h-5 w-5 text-warning" />
-            <h3 className="font-semibold text-warning-foreground">Upcoming Payments</h3>
-          </div>
-          
-          <div className="grid gap-2">
-            {upcomingReminders.map((tx) => {
-              const daysUntilDue = differenceInDays(
-                parseLocalDate(tx.next_due_date),
-                new Date()
-              );
-              const dueLabel =
-                daysUntilDue === 0
-                  ? 'Today'
-                  : daysUntilDue === 1
-                  ? 'Tomorrow'
-                  : `${daysUntilDue} days`;
+        <div className="bg-gradient-to-r from-warning-muted to-warning-muted border border-warning/20 rounded-lg overflow-hidden">
+          {/* Collapsible Header */}
+          <button
+            onClick={() => setIsUpcomingExpanded(!isUpcomingExpanded)}
+            aria-expanded={isUpcomingExpanded}
+            aria-controls="upcoming-payments-content"
+            className={cn(
+              "w-full flex items-center justify-between p-4",
+              "transition-colors duration-200",
+              "hover:bg-warning-muted/50",
+              "focus:outline-none focus:ring-2 focus:ring-warning focus:ring-inset",
+              "touch-target"
+            )}
+          >
+            <div className="flex items-center gap-2">
+              <Bell className="h-5 w-5 text-warning" />
+              <h3 className="font-semibold text-warning-foreground">Upcoming Payments</h3>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Count Badge */}
+              <span className="inline-flex items-center justify-center min-w-[1.75rem] h-7 px-2 rounded-full bg-warning text-warning-foreground text-xs font-semibold">
+                {upcomingReminders.length}
+              </span>
+              {/* Chevron Icon */}
+              {isUpcomingExpanded ? (
+                <ChevronUp className="h-5 w-5 text-warning transition-transform duration-200" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-warning transition-transform duration-200" />
+              )}
+            </div>
+          </button>
 
-              return (
-                <div
-                  key={tx.id}
-                  className="flex flex-col bg-card rounded-md border border-warning/20 p-3 space-y-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-shrink-0">
-                        <Calendar className="h-4 w-4 text-warning" />
+          {/* Collapsible Content */}
+          <div
+            id="upcoming-payments-content"
+            className={cn(
+              "overflow-hidden transition-all duration-300 ease-in-out",
+              isUpcomingExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+            )}
+          >
+            <div className="px-4 pb-4 grid gap-2">
+              {upcomingReminders.map((tx) => {
+                const daysUntilDue = differenceInDays(
+                  parseLocalDate(tx.next_due_date),
+                  new Date()
+                );
+                const dueLabel =
+                  daysUntilDue === 0
+                    ? 'Today'
+                    : daysUntilDue === 1
+                    ? 'Tomorrow'
+                    : `${daysUntilDue} days`;
+
+                return (
+                  <div
+                    key={tx.id}
+                    className="flex flex-col bg-card rounded-md border border-warning/20 p-3 space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-shrink-0">
+                          <Calendar className="h-4 w-4 text-warning" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground text-sm">{tx.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Due {format(parseLocalDate(tx.next_due_date), 'MMM d')} • {dueLabel}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-foreground text-sm">{tx.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Due {format(parseLocalDate(tx.next_due_date), 'MMM d')} • {dueLabel}
-                        </p>
+
+                      <div className="flex items-center gap-2">
+                        <div className="text-right">
+                          <p className="font-semibold text-foreground text-sm">
+                            {formatCurrency(tx.amount, tx.currency)}
+                          </p>
+                          <Badge
+                            className={`text-xs ${getFrequencyBadgeColor(tx.frequency)}`}
+                          >
+                            {tx.frequency}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <div className="text-right">
-                        <p className="font-semibold text-foreground text-sm">
-                          {formatCurrency(tx.amount, tx.currency)}
-                        </p>
-                        <Badge
-                          className={`text-xs ${getFrequencyBadgeColor(tx.frequency)}`}
-                        >
-                          {tx.frequency}
-                        </Badge>
+                    {tx.last_reminder_sent_at && (
+                      <div className="flex items-center gap-1.5 text-xs text-accent bg-accent-muted px-2 py-1 rounded-md border border-accent/20">
+                        <span className="text-sm">🕓</span>
+                        <span>
+                          Notified via Email at {format(new Date(tx.last_reminder_sent_at), 'h:mm a zzz')}
+                        </span>
                       </div>
-                    </div>
+                    )}
                   </div>
-
-                  {tx.last_reminder_sent_at && (
-                    <div className="flex items-center gap-1.5 text-xs text-accent bg-accent-muted px-2 py-1 rounded-md border border-accent/20">
-                      <span className="text-sm">🕓</span>
-                      <span>
-                        Notified via Email at {format(new Date(tx.last_reminder_sent_at), 'h:mm a zzz')}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       )}

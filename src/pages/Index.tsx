@@ -49,7 +49,7 @@ const Index = () => {
     <AuthWrapper>
       <div className="min-h-dvh bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col w-full">
         {/* Mobile Header - Sticky with safe area */}
-        <header className="lg:hidden sticky top-0 z-40 bg-white/80 backdrop-blur-sm pt-safe border-b border-gray-200">
+        <header className="lg:hidden sticky top-0 z-40 bg-white backdrop-blur-md pt-safe border-b border-gray-200 shadow-sm">
           <div className="flex items-center gap-2 px-3 h-12">
             <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
               <SheetTrigger asChild>
@@ -81,7 +81,7 @@ const Index = () => {
           </div>
 
           {/* Main Content */}
-          <main className="flex-1 flex flex-col min-w-0">
+          <main className="sticky flex-1 flex flex-col min-w-0">
             {/* Content Area */}
             <div className="flex-1 flex flex-col lg:flex-row">
               {/* Main Content */}
@@ -89,7 +89,7 @@ const Index = () => {
                 <div className="mx-auto w-full max-w-screen-sm sm:max-w-7xl">
                   <Tabs defaultValue="dashboard" className="w-full">
                     {/* Mobile: Scrollable pill tabs - Sticky */}
-                    <div className="block md:hidden w-full overflow-x-auto no-scrollbar scroll-px-3 pb-2 pt-3 -mx-3 sticky top-12 z-30 bg-gradient-to-br from-gray-50 to-gray-100">
+                    <div className="block md:hidden w-full overflow-x-auto no-scrollbar scroll-px-3 pb-1 pt-3 -mx-3 sticky top-12 z-30 bg-gradient-to-br from-gray-50 to-gray-100 shadow-sm border-b border-gray-200/40">
                       <TabsList className="flex gap-2.5 w-max bg-transparent border-0 shadow-none p-0 mb-3 pl-3 pr-6">
                         <TabsTrigger
                           value="dashboard"
