@@ -72,7 +72,7 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
           email: signupEmail,
           password: signupPassword,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${window.location.origin}/app`,
           }
         });
         if (error) throw error;

@@ -1,14 +1,16 @@
-
 import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PasswordReset from "./components/PasswordReset";
 import { OfflineIndicator } from "./components/OfflineIndicator";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AuthWrapper from "./components/AuthWrapper";
 
 const App = () => {
   const [queryClient] = React.useState(() => new QueryClient());
@@ -21,7 +23,17 @@ const App = () => {
         <OfflineIndicator />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Landing />} />
+            <Route
+              path="/app"
+              element={
+                <ProtectedRoute>
+                  <AuthWrapper>
+                    <Index />
+                  </AuthWrapper>
+                </ProtectedRoute>
+              }
+            />
             <Route path="/reset-password" element={<PasswordReset />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

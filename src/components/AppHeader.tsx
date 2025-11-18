@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,6 +9,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+
+import { Wallet } from 'lucide-react';
 
 interface AppHeaderProps {
   user?: User | null;
@@ -36,30 +37,33 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ user, showSignOut = false 
     <header className="hidden lg:block bg-white/80 backdrop-blur-sm border-b border-gray-200/60 px-4 py-4 shadow-sm">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-blue-600">
-              Personal Finance Tracker
-            </h1>
-            <p className="text-sm text-gray-600 mt-0.5">
-              Track, analyze, and manage your complete financial picture
-            </p>
+          <div className="flex items-center gap-3">
+            <Wallet className="h-8 w-8 text-blue-600" />
+            <div>
+              <h1 className="text-2xl font-bold text-blue-600">
+                Personal Finance Tracker
+              </h1>
+              <p className="text-sm text-gray-600 mt-0.5">
+                Track, analyze, and manage your complete financial picture
+              </p>
+            </div>
           </div>
           {showSignOut && user && (
-            <div className="hidden md:flex items-center space-x-4">
-                <Button variant="outline" onClick={handleSignOut}>
-                  Sign Out
-                </Button>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Avatar className="h-9 w-9 cursor-pointer">
-                      <AvatarImage src={user.user_metadata?.avatar_url} alt="User avatar" />
-                      <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
-                    </Avatar>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Logged in as: {user.email}</p>
-                  </TooltipContent>
-                </Tooltip>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" onClick={handleSignOut}>
+                Sign Out
+              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Avatar className="h-9 w-9 cursor-pointer">
+                    <AvatarImage src={user.user_metadata?.avatar_url} alt="User avatar" />
+                    <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
+                  </Avatar>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Logged in as: {user.email}</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           )}
         </div>

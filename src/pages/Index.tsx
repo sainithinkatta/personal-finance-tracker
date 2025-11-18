@@ -10,7 +10,6 @@ import BudgetManager from "@/components/BudgetManager";
 import RecurringTransactions from "@/components/RecurringTransactions";
 import SavingsGoals from "@/components/SavingsGoals";
 import DuesManager from "@/components/DuesManager";
-import AuthWrapper from "@/components/AuthWrapper";
 import Sidebar from "@/components/layout/Sidebar";
 import UtilityPanel from "@/components/layout/UtilityPanel";
 import FloatingActionButton from "@/components/layout/FloatingActionButton";
@@ -18,6 +17,8 @@ import  { MobileReminders }from "@/components/layout/MobileReminders";
 import { useExpenses } from "@/hooks/useExpenses";
 import { FilterOptions } from "@/types/expense";
 import { filterExpenses } from "@/utils/expenseUtils";
+
+import {Wallet } from 'lucide-react';
 
 const Index = () => {
   const { expenses, isLoading } = useExpenses();
@@ -46,8 +47,7 @@ const Index = () => {
   }
 
   return (
-    <AuthWrapper>
-      <div className="min-h-dvh bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col w-full">
+    <div className="min-h-dvh bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col w-full">
         {/* Mobile Header - Sticky with safe area */}
         <header className="lg:hidden sticky top-0 z-40 bg-white backdrop-blur-md pt-safe border-b border-gray-200 shadow-sm">
           <div className="flex items-center gap-2 px-3 h-12">
@@ -68,7 +68,8 @@ const Index = () => {
                 </div>
               </SheetContent>
             </Sheet>
-            <h1 className="text-base font-semibold truncate flex-1">
+            <Wallet className="h-5 w-5 text-blue-600 flex-shrink-0" />
+            <h1 className="text-base font-semibold text-blue-600 truncate flex-1">
               Personal Finance Tracker
             </h1>
           </div>
@@ -277,8 +278,7 @@ const Index = () => {
 
         {/* Mobile Reminders */}
         <MobileReminders />
-      </div>
-    </AuthWrapper>
+    </div>
   );
 };
 
