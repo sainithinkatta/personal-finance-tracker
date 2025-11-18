@@ -59,8 +59,8 @@ const BankAccountsList: React.FC = () => {
       <span
         className={`inline-flex items-center px-1 py-0.5 rounded-full text-[10px] font-medium ${
           isCredit
-            ? 'bg-warning-muted text-warning-foreground border border-warning/20'
-            : 'bg-accent-muted text-accent-foreground border border-accent/20'
+            ? 'bg-amber-100 text-amber-700 border border-amber-300'
+            : 'bg-blue-100 text-blue-700 border border-blue-300'
         }`}
       >
         {isCredit ? 'Credit' : 'Debit'}

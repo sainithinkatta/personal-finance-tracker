@@ -53,9 +53,9 @@ const Sidebar: React.FC = () => {
             className="cursor-pointer p-4 pb-2 min-h-[48px] flex items-center touch-target"
             onClick={() => setIsBankAccountsCollapsed(!isBankAccountsCollapsed)}
           >
-            <CardTitle className="flex items-center w-full">
-              <span className='text-sm font-medium'>Bank Accounts</span>
-              <div className="flex items-center ml-auto space-x-2">
+            <CardTitle className="flex items-center justify-between w-full gap-2">
+              <span className='text-sm font-medium whitespace-nowrap'>Bank Accounts</span>
+              <div className="flex items-center space-x-2 flex-shrink-0">
                 <Button
                   size="icon"
                   variant="ghost"
