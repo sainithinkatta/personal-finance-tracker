@@ -5,6 +5,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ExpenseCategoryChartProps {
   expenses: Expense[];
+  isCompact?: boolean; // For landing page preview
 }
 
 const COLORS: Record<ExpenseCategory, string> = {
@@ -35,13 +36,16 @@ const renderActiveShape = (props: any) => {
   );
 };
 
-export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({ expenses }) => {
+export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({ 
+  expenses, 
+  isCompact = false 
+}) => {
   const [activeIndex, setActiveIndex] = React.useState<number | undefined>(undefined);
   const isMobile = useIsMobile();
 
-  // Responsive radii - smaller on mobile to prevent cropping
-  const innerRadius = isMobile ? 50 : 65;
-  const outerRadius = isMobile ? 75 : 95;
+  // Responsive radii - smaller on mobile and for compact mode (landing page preview)
+  const innerRadius = isCompact ? 35 : (isMobile ? 50 : 65);
+  const outerRadius = isCompact ? 55 : (isMobile ? 75 : 95);
 
   const chartData = useMemo(() => {
     if (expenses.length === 0) return [];
@@ -155,27 +159,29 @@ export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({ expe
         {/* Center Total */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
-            <p className="text-[0.65rem] md:text-xs font-medium text-gray-500 uppercase tracking-wide">Total</p>
-            <p className="text-base md:text-lg font-bold text-gray-900">${totalAmount.toFixed(2)}</p>
+            <p className={`${isCompact ? 'text-[0.55rem]' : 'text-[0.65rem] md:text-xs'} font-medium text-gray-500 uppercase tracking-wide`}>Total</p>
+            <p className={`${isCompact ? 'text-sm' : 'text-base md:text-lg'} font-bold text-gray-900`}>${totalAmount.toFixed(2)}</p>
           </div>
         </div>
       </div>
 
-      {/* Custom Legend */}
-      <div className="mt-3 pt-3 border-t border-gray-100 mb-3">
-        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
-          {chartData.map((entry) => (
-            <div key={entry.category} className="flex items-center space-x-2">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: COLORS[entry.category] }}
-              />
-              <span className="text-xs text-gray-700 font-medium">{entry.category}</span>
-              <span className="text-xs text-gray-500">({entry.percentage}%)</span>
-            </div>
-          ))}
+      {/* Custom Legend - Hidden in compact mode */}
+      {!isCompact && (
+        <div className="mt-3 pt-3 border-t border-gray-100 mb-3">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
+            {chartData.map((entry) => (
+              <div key={entry.category} className="flex items-center space-x-2">
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: COLORS[entry.category] }}
+                />
+                <span className="text-xs text-gray-700 font-medium">{entry.category}</span>
+                <span className="text-xs text-gray-500">({entry.percentage}%)</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

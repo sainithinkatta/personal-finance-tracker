@@ -195,10 +195,6 @@ const Landing = () => {
                 </div>
                 <div className="flex items-center justify-center lg:justify-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  <span>No credit card required</span>
-                </div>
-                <div className="flex items-center justify-center lg:justify-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
                   <span>Secure & private</span>
                 </div>
               </div>
@@ -225,9 +221,9 @@ const Landing = () => {
                     </div>
                   </div>
 
-                  {/* Chart Area */}
-                  <div className="bg-gray-50 rounded-lg p-2 h-52">
-                    <ExpenseCategoryChart expenses={mockExpenses} />
+                  {/* Chart Area - Increased height and added padding */}
+                  <div className="bg-gray-50 rounded-lg h-32">
+                    <ExpenseCategoryChart expenses={mockExpenses} isCompact={true} />
                   </div>
 
                   {/* Category List */}
