@@ -121,19 +121,20 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Navigation */}
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+      <nav className="bg-white/95 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-14 sm:h-16">
             {/* Logo */}
-            <div className="flex items-center">
-              <Wallet className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">
-                Personal Finance Tracker
+            <div className="flex items-center gap-2">
+              <Wallet className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
+              <span className="text-lg sm:text-xl font-bold text-gray-900 truncate">
+                <span className="hidden sm:inline">Personal Finance Tracker</span>
+                <span className="sm:hidden">Personal Finance Tracker</span>
               </span>
             </div>
 
             {/* Auth Buttons */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Button
                 variant="ghost"
                 onClick={openLoginModal}
@@ -143,7 +144,7 @@ const Landing = () => {
               </Button>
               <Button
                 onClick={openSignupModal}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-blue-600 hover:bg-blue-700 text-base sm:text-base px-4 sm:px-4"
               >
                 Sign Up
               </Button>
@@ -153,85 +154,86 @@ const Landing = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="py-12 sm:py-20 lg:py-24">
+      <section className="py-8 sm:py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
             {/* Left Content */}
             <div className="text-center lg:text-left">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                Track, analyze, and manage your complete{' '}
-                <span className="text-blue-600">financial picture</span>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+                Track, analyze, and manage your{' '}
+                <span className="text-blue-600">finances</span>
               </h1>
-              <p className="mt-6 text-lg sm:text-xl text-gray-600 leading-relaxed">
-                See all your expenses, budgets, recurring payments, and savings in one clean dashboard.
-                Take control of your money with powerful insights and smart reminders.
+              <p className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl text-gray-600 leading-relaxed">
+                See expenses, budgets, and payments in one clean dashboard. Take control with powerful insights.
               </p>
 
               {/* CTA Buttons */}
-              <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
                 <Button
                   size="lg"
                   onClick={openSignupModal}
-                  className="bg-blue-600 hover:bg-blue-700 text-base px-8 py-6 h-auto"
+                  className="bg-blue-600 hover:bg-blue-700 text-sm sm:text-base px-6 py-5 sm:px-8 sm:py-6 h-auto font-medium"
                 >
-                  Get Started — Sign Up
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <span className="hidden sm:inline">Get Started — Sign Up</span>
+                  <span className="sm:hidden">Get Started Free</span>
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
                 <Button
                   size="lg"
                   variant="outline"
                   onClick={openLoginModal}
-                  className="text-base px-8 py-6 h-auto"
+                  className="text-sm sm:text-base px-6 py-5 sm:px-8 sm:py-6 h-auto font-medium"
                 >
-                  Already have an account? Log in
+                  <span className="hidden sm:inline">Already have an account? Log in</span>
+                  <span className="sm:hidden">Log in</span>
                 </Button>
               </div>
 
               {/* Key Benefits */}
-              <div className="mt-8 flex flex-col sm:flex-row gap-4 text-sm text-gray-600">
-                <div className="flex items-center justify-center lg:justify-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+              <div className="mt-6 sm:mt-8 flex flex-row gap-4 sm:gap-6 text-xs sm:text-sm text-gray-600 justify-center lg:justify-start">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
                   <span>100% Free</span>
                 </div>
-                <div className="flex items-center justify-center lg:justify-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
                   <span>Secure & private</span>
                 </div>
               </div>
             </div>
 
             {/* Right Content - Dashboard Preview */}
-            <div className="relative">
-              <div className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-200">
+            <div className="relative mt-8 lg:mt-0">
+              <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl sm:shadow-2xl p-4 sm:p-6 border border-gray-200">
                 {/* Mock Dashboard */}
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {/* Summary Cards */}
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3">
-                      <div className="text-xs text-blue-600 font-medium">Total</div>
-                      <div className="text-lg font-bold text-blue-900 mt-1">$2,450</div>
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-2 sm:p-3">
+                      <div className="text-[10px] sm:text-xs text-blue-600 font-medium">Total</div>
+                      <div className="text-sm sm:text-lg font-bold text-blue-900 mt-0.5 sm:mt-1">$2,450</div>
                     </div>
-                    <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3">
-                      <div className="text-xs text-green-600 font-medium">Budget</div>
-                      <div className="text-lg font-bold text-green-900 mt-1">$3,000</div>
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-2 sm:p-3">
+                      <div className="text-[10px] sm:text-xs text-green-600 font-medium">Budget</div>
+                      <div className="text-sm sm:text-lg font-bold text-green-900 mt-0.5 sm:mt-1">$3,000</div>
                     </div>
-                    <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-3">
-                      <div className="text-xs text-amber-600 font-medium">Saved</div>
-                      <div className="text-lg font-bold text-amber-900 mt-1">18%</div>
+                    <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-2 sm:p-3">
+                      <div className="text-[10px] sm:text-xs text-amber-600 font-medium">Saved</div>
+                      <div className="text-sm sm:text-lg font-bold text-amber-900 mt-0.5 sm:mt-1">18%</div>
                     </div>
                   </div>
 
-                  {/* Chart Area - Increased height and added padding */}
-                  <div className="bg-gray-50 rounded-lg h-32">
+                  {/* Chart Area */}
+                  <div className="bg-gray-50 rounded-lg h-40 sm:h-32">
                     <ExpenseCategoryChart expenses={mockExpenses} isCompact={true} />
                   </div>
 
                   {/* Category List */}
-                  <div className="space-y-2">
+                  <div className="space-y-1.5 sm:space-y-2">
                     {['Food', 'Transport', 'Bills'].map((cat, idx) => (
-                      <div key={cat} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                        <span className="text-sm text-gray-700">{cat}</span>
-                        <span className="text-sm font-semibold text-gray-900">
+                      <div key={cat} className="flex items-center justify-between p-2 sm:p-2.5 bg-gray-50 rounded">
+                        <span className="text-xs sm:text-sm text-gray-700">{cat}</span>
+                        <span className="text-xs sm:text-sm font-semibold text-gray-900">
                           ${[450, 320, 180][idx]}
                         </span>
                       </div>
@@ -240,34 +242,34 @@ const Landing = () => {
                 </div>
               </div>
 
-              {/* Decorative elements */}
-              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-blue-200 rounded-full opacity-20 blur-2xl"></div>
-              <div className="absolute -top-6 -left-6 w-32 h-32 bg-purple-200 rounded-full opacity-20 blur-2xl"></div>
+              {/* Decorative elements - hidden on mobile */}
+              <div className="hidden sm:block absolute -bottom-6 -right-6 w-32 h-32 bg-blue-200 rounded-full opacity-20 blur-2xl"></div>
+              <div className="hidden sm:block absolute -top-6 -left-6 w-32 h-32 bg-purple-200 rounded-full opacity-20 blur-2xl"></div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-16 sm:py-20 bg-white">
+      <section className="py-12 sm:py-16 lg:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 px-4">
               Everything you need to manage your money
             </h2>
-            <p className="mt-4 text-lg text-gray-600">
-              Powerful features to help you stay in control of your finances
+            <p className="mt-3 sm:mt-4 text-base sm:text-lg text-gray-600 px-4">
+              Powerful features to help you stay in control
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {features.map((feature, index) => (
               <Card key={index} className="border-gray-200 hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-3 sm:mb-4">
                     {feature.icon}
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1.5 sm:mb-2">
                     {feature.title}
                   </h3>
                   <p className="text-gray-600 text-sm leading-relaxed">
@@ -281,28 +283,28 @@ const Landing = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-16 sm:py-20">
+      <section className="py-12 sm:py-16 lg:py-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
               How it works
             </h2>
-            <p className="mt-4 text-lg text-gray-600">
+            <p className="mt-3 sm:mt-4 text-base sm:text-lg text-gray-600">
               Get started in three simple steps
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10 lg:gap-8">
             {steps.map((step, index) => (
               <div key={index} className="relative">
                 <div className="flex flex-col items-center text-center">
-                  <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4 shadow-lg">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl font-bold mb-3 sm:mb-4 shadow-lg">
                     {step.number}
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 px-4">
                     {step.title}
                   </h3>
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-sm sm:text-base text-gray-600 leading-relaxed px-4">
                     {step.description}
                   </p>
                 </div>
@@ -316,27 +318,27 @@ const Landing = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 sm:py-20 bg-gradient-to-r from-blue-600 to-blue-700">
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-blue-600 to-blue-700">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6 px-4">
             Ready to take control of your finances?
           </h2>
           <Button
             size="lg"
             onClick={openSignupModal}
-            className="bg-white text-blue-600 hover:bg-gray-100 text-base px-8 py-6 h-auto"
+            className="bg-white text-blue-600 hover:bg-gray-100 text-sm sm:text-base px-6 py-5 sm:px-8 sm:py-6 h-auto font-medium"
           >
             Get Started for Free
-            <ArrowRight className="ml-2 h-5 w-5" />
+            <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-8">
+      <footer className="bg-gray-900 text-gray-400 py-6 sm:py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <p className="text-sm">
+            <p className="text-xs sm:text-sm">
               © {new Date().getFullYear()} Personal Finance Tracker. All rights reserved.
             </p>
           </div>
