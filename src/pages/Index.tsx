@@ -94,37 +94,37 @@ const Index = () => {
                       <TabsList className="flex gap-2.5 w-max bg-transparent border-0 shadow-none p-0 mb-3 pl-3 pr-6">
                         <TabsTrigger
                           value="dashboard"
-                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-primary data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
+                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
                         >
                           Dashboard
                         </TabsTrigger>
                         <TabsTrigger
                           value="expenses"
-                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-primary data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
+                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
                         >
                           Expenses
                         </TabsTrigger>
                         <TabsTrigger
                           value="dues"
-                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-primary data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
+                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
                         >
                           Dues
                         </TabsTrigger>
                         <TabsTrigger
                           value="budget"
-                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-primary data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
+                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
                         >
                           Budget
                         </TabsTrigger>
                         <TabsTrigger
                           value="recurring"
-                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-primary data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
+                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
                         >
                           Recurring
                         </TabsTrigger>
                         <TabsTrigger
                           value="savings"
-                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-primary data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
+                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
                         >
                           Savings
                         </TabsTrigger>

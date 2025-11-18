@@ -24,7 +24,7 @@ const FloatingActionButton: React.FC = () => {
   return (
     <>
       <Button
-        className="fixed right-4 h-14 w-14 rounded-full shadow-lg lg:hidden z-50 bg-primary hover:bg-primary/90 active:scale-95 transition-transform duration-150 touch-target"
+        className="fixed right-4 h-14 w-14 rounded-full shadow-lg lg:hidden z-50 bg-blue-600 hover:bg-blue-600/90 active:scale-95 transition-transform duration-150 touch-target"
         style={{ bottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}
         onClick={() => setIsOpen(true)}
         aria-label="Add new expense"
