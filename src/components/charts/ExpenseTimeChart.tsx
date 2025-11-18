@@ -62,9 +62,29 @@ export const ExpenseTimeChart: React.FC<ExpenseTimeChartProps> = ({
       );
     });
 
-    return Array.from(expenseMap.entries())
+    // Sort data chronologically
+    const sortedData = Array.from(expenseMap.entries())
       .map(([period, total]) => ({ period, total }))
       .sort((a, b) => a.period.localeCompare(b.period));
+
+    // Limit visible data based on groupBy period
+    let limitedData = sortedData;
+    switch (groupBy) {
+      case 'day':
+        // Show only the most recent 10 days
+        limitedData = sortedData.slice(-10);
+        break;
+      case 'month':
+        // Show only the most recent 5 months
+        limitedData = sortedData.slice(-5);
+        break;
+      case 'year':
+        // Show only the most recent 5 years
+        limitedData = sortedData.slice(-5);
+        break;
+    }
+
+    return limitedData;
   }, [expenses, groupBy]);
 
   // Format functions for X axis ticks and tooltip labels
