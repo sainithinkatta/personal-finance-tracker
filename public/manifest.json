@@ -2,7 +2,7 @@
   "name": "Personal Finance Tracker",
   "short_name": "Finance",
   "description": "Track your income, expenses, and financial goals",
-  "start_url": "/",
+  "start_url": "/app",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
