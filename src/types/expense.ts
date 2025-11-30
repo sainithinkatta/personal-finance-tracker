@@ -43,3 +43,18 @@ export const CURRENCIES = [
   { code: 'USD', name: 'US Dollar', symbol: '$' },
   { code: 'INR', name: 'Indian Rupee', symbol: '₹' },
 ];
+
+// Bank-wise category breakdown types
+export interface BankBreakdown {
+  bank_account_id: string;
+  bank_name: string;
+  account_type: string;
+  total_spent: number;
+  percentage: number; // Percentage of this category's total
+}
+
+export interface CategoryBankBreakdown {
+  category: ExpenseCategory;
+  total: number;
+  banks: BankBreakdown[];
+}

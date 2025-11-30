@@ -138,7 +138,7 @@ export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({
               ))}
             </Pie>
             <Tooltip
-              wrapperStyle={{ zIndex: 1000 }}  /* Ensure tooltip appears above center text */
+              wrapperStyle={{ zIndex: 1000 }}
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   const data = payload[0].payload;
@@ -176,7 +176,7 @@ export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({
                   style={{ backgroundColor: COLORS[entry.category] }}
                 />
                 <span className="text-xs text-gray-700 font-medium">{entry.category}</span>
-                <span className="text-xs text-gray-500">({entry.percentage}%)</span>
+                <span className="text-xs text-gray-500">(${entry.total.toFixed(2)})</span>
               </div>
             ))}
           </div>
