@@ -105,12 +105,6 @@ const Index = () => {
                           Expenses
                         </TabsTrigger>
                         <TabsTrigger
-                          value="dues"
-                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
-                        >
-                          Dues
-                        </TabsTrigger>
-                        <TabsTrigger
                           value="budget"
                           className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
                         >
@@ -121,6 +115,12 @@ const Index = () => {
                           className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
                         >
                           Recurring
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="dues"
+                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
+                        >
+                          Dues
                         </TabsTrigger>
                         <TabsTrigger
                           value="savings"
@@ -146,12 +146,6 @@ const Index = () => {
                         Expenses
                       </TabsTrigger>
                       <TabsTrigger
-                        value="dues"
-                        className="text-xs lg:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600"
-                      >
-                        Dues
-                      </TabsTrigger>
-                      <TabsTrigger
                         value="budget"
                         className="text-xs lg:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600"
                       >
@@ -164,6 +158,12 @@ const Index = () => {
                         Recurring
                       </TabsTrigger>
                       <TabsTrigger
+                        value="dues"
+                        className="text-xs lg:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600"
+                      >
+                        Dues
+                      </TabsTrigger>
+                      <TabsTrigger
                         value="savings"
                         className="text-xs lg:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600"
                       >
@@ -172,7 +172,7 @@ const Index = () => {
                     </TabsList>
 
                   <TabsContent value="dashboard" className="mt-0">
-                    <Dashboard expenses={filteredExpenses} />
+                    <Dashboard expenses={expenses} />
                   </TabsContent>
 
                   <TabsContent value="expenses" className="mt-0">

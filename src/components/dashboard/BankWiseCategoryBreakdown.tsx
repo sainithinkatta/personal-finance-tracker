@@ -79,7 +79,7 @@ export const BankWiseCategoryBreakdown: React.FC<BankWiseCategoryBreakdownProps>
   const grandTotal = bankGroupedData.reduce((sum, bank) => sum + bank.total, 0);
 
   return (
-    <Card className="bg-white/90 backdrop-blur-sm border border-gray-200/60 shadow-sm hover:shadow-md transition-shadow duration-200 h-full flex flex-col">
+    <Card className="bg-white/90 backdrop-blur-sm border border-gray-200/60 shadow-sm hover:shadow-md transition-shadow duration-200 h-full flex flex-col min-h-0 overflow-hidden">
       <CardHeader className="px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm md:text-base font-medium text-gray-800 flex items-center">
@@ -93,7 +93,7 @@ export const BankWiseCategoryBreakdown: React.FC<BankWiseCategoryBreakdownProps>
         </div>
       </CardHeader>
 
-      <CardContent className="p-3 md:p-4 flex-1 overflow-y-auto">
+      <CardContent className="p-3 md:p-4 flex-1 min-h-0 overflow-y-auto">
         {bankGroupedData.length === 0 ? (
           <div className="flex items-center justify-center h-full py-8">
             <div className="text-center">
