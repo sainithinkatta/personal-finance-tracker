@@ -19,9 +19,10 @@ import { BankAccount } from '@/types/bankAccount';
 interface BankAccountFormProps {
   onClose: () => void;
   account?: BankAccount;
+  bankAccounts: BankAccount[];
 }
 
-const BankAccountForm: React.FC<BankAccountFormProps> = ({ onClose, account }) => {
+const BankAccountForm: React.FC<BankAccountFormProps> = ({ onClose, account, bankAccounts }) => {
   const { toast } = useToast();
   const { addBankAccount, updateBankAccount } = useBankAccounts();
   const [name, setName] = useState(account?.name || '');

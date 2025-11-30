@@ -335,4 +335,4 @@ const SavingsGoals: React.FC = () => {
   );
 };
 
-export default SavingsGoals;
+export default React.memo(SavingsGoals);

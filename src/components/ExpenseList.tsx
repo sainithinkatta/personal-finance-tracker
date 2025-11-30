@@ -47,7 +47,10 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { CURRENCIES } from '@/types/expense';
-import { useExpenses } from '@/hooks/useExpenses';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { BankAccount } from '@/types/bankAccount';
+import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import ExpenseEditForm from '@/components/ExpenseEditForm';
 import ExportDataButton from '@/components/ExportDataButton';
@@ -55,6 +58,7 @@ import ExportDataButton from '@/components/ExportDataButton';
 interface ExpenseListProps {
   expenses: Expense[];
   title?: string;
+  bankAccounts: BankAccount[];
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -84,12 +88,116 @@ const formatCurrency = (amount: number, currency: string) => {
 const ExpenseList: React.FC<ExpenseListProps> = ({
   expenses,
   title = 'Recent Expenses',
+  bankAccounts,
 }) => {
-  const { updateExpense, deleteExpense } = useExpenses();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
   const isMobile = useIsMobile();
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Helper function to apply balance changes to bank accounts
+  const applyBalanceChange = async (accountId: string, delta: number) => {
+    const { data: acct, error: fetchErr } = await supabase
+      .from('bank_accounts')
+      .select('balance, available_balance, account_type, due_balance')
+      .eq('id', accountId)
+      .single();
+    if (fetchErr || !acct) throw fetchErr ?? new Error('Account not found');
+
+    const isCredit = acct.account_type?.toLowerCase() === 'credit';
+    const now = new Date().toISOString();
+    const updates: Partial<BankAccount> = { updated_at: now };
+
+    if (isCredit) {
+      const currAvail = acct.available_balance ?? acct.balance;
+      updates.available_balance = currAvail + delta;
+      updates.balance = acct.balance + delta;
+      updates.due_balance = (acct.due_balance ?? 0) - delta;
+    } else {
+      updates.balance = acct.balance + delta;
+    }
+
+    const { error: updErr } = await supabase
+      .from('bank_accounts')
+      .update(updates)
+      .eq('id', accountId);
+    if (updErr) throw updErr;
+  };
+
+  // Update expense mutation
+  const updateExpenseMutation = useMutation<void, unknown, { id: string; data: Partial<Expense> }>({
+    mutationFn: async ({ id, data }) => {
+      const { data: oldExp, error: oldErr } = await supabase
+        .from('expenses')
+        .select('amount, bank_account_id')
+        .eq('id', id)
+        .single();
+      if (oldErr || !oldExp) throw oldErr;
+
+      // Patch the expense record
+      const payload: any = {};
+      if (data.amount != null) payload.amount = data.amount;
+      if (data.date) payload.date = format(data.date, 'yyyy-MM-dd');
+      if (data.category) payload.category = data.category;
+      if (data.description !== undefined) payload.description = data.description;
+      if (data.currency) payload.currency = data.currency;
+      if (data.bank_account_id !== undefined) payload.bank_account_id = data.bank_account_id;
+      if (data.budget_id !== undefined) payload.budget_id = data.budget_id;
+
+      const { error: updErr } = await supabase.from('expenses').update(payload).eq('id', id);
+      if (updErr) throw updErr;
+
+      // Restore the old amount
+      if (oldExp.bank_account_id) {
+        await applyBalanceChange(oldExp.bank_account_id, oldExp.amount);
+      }
+      // Subtract the new amount
+      const newAmt = data.amount ?? oldExp.amount;
+      if (data.bank_account_id) {
+        await applyBalanceChange(data.bank_account_id, -newAmt);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['bank-accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['budgets'] });
+      toast({ title: 'Expense Updated', description: 'Updated successfully.' });
+    },
+    onError: () =>
+      toast({ title: 'Error', description: 'Failed to update expense.', variant: 'destructive' }),
+  });
+
+  // Delete expense mutation
+  const deleteExpenseMutation = useMutation<void, unknown, string>({
+    mutationFn: async (id) => {
+      const { data: exp, error: fetchErr } = await supabase
+        .from('expenses')
+        .select('amount, bank_account_id')
+        .eq('id', id)
+        .single();
+      if (fetchErr || !exp) throw fetchErr;
+
+      const { error: delErr } = await supabase.from('expenses').delete().eq('id', id);
+      if (delErr) throw delErr;
+
+      if (exp.bank_account_id) {
+        await applyBalanceChange(exp.bank_account_id, exp.amount);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['bank-accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['budgets'] });
+      toast({ title: 'Expense Deleted', description: 'Balance restored.' });
+    },
+    onError: () =>
+      toast({ title: 'Error', description: 'Failed to delete expense.', variant: 'destructive' }),
+  });
+
+  const updateExpense = updateExpenseMutation.mutate;
+  const deleteExpense = deleteExpenseMutation.mutate;
 
   // Calculate pagination
   const totalPages = Math.ceil(expenses.length / ITEMS_PER_PAGE);
@@ -365,6 +473,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
                   expense={editingExpense}
                   onUpdateExpense={handleUpdateExpense}
                   onClose={() => setEditingExpense(null)}
+                  bankAccounts={bankAccounts}
                 />
               )}
             </BottomSheetBody>
@@ -381,6 +490,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
                 expense={editingExpense}
                 onUpdateExpense={handleUpdateExpense}
                 onClose={() => setEditingExpense(null)}
+                bankAccounts={bankAccounts}
               />
             )}
           </DialogContent>
@@ -414,4 +524,4 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
   );
 };
 
-export default ExpenseList;
+export default React.memo(ExpenseList);

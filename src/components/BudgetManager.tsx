@@ -159,4 +159,4 @@ const BudgetManager: React.FC = () => {
   );
 };
 
-export default BudgetManager;
+export default React.memo(BudgetManager);

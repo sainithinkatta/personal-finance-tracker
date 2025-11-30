@@ -129,4 +129,4 @@ const DuesManager: React.FC = () => {
   );
 };
 
-export default DuesManager;
+export default React.memo(DuesManager);

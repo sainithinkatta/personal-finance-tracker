@@ -127,4 +127,4 @@ const Dashboard: React.FC<DashboardProps> = ({ expenses }) => {
   );
 };
 
-export default Dashboard;
+export default React.memo(Dashboard);

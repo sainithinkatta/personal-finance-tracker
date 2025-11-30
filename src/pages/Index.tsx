@@ -15,6 +15,7 @@ import UtilityPanel from "@/components/layout/UtilityPanel";
 import FloatingActionButton from "@/components/layout/FloatingActionButton";
 import  { MobileReminders }from "@/components/layout/MobileReminders";
 import { useExpenses } from "@/hooks/useExpenses";
+import { useBankAccounts } from "@/hooks/useBankAccounts";
 import { FilterOptions } from "@/types/expense";
 import { filterExpenses } from "@/utils/expenseUtils";
 
@@ -22,7 +23,9 @@ import {Wallet } from 'lucide-react';
 
 const Index = () => {
   const { expenses, isLoading } = useExpenses();
+  const { bankAccounts } = useBankAccounts();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [filters, setFilters] = useState<FilterOptions>({
     startDate: null,
     endDate: null,
@@ -88,7 +91,7 @@ const Index = () => {
               {/* Main Content */}
               <div className="flex-1 px-3 pb-2 sm:px-4 sm:py-3 lg:px-4 lg:py-4">
                 <div className="mx-auto w-full max-w-screen-sm sm:max-w-7xl">
-                  <Tabs defaultValue="dashboard" className="w-full">
+                  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                     {/* Mobile: Scrollable pill tabs - Sticky */}
                     <div className="block md:hidden w-full overflow-x-auto no-scrollbar scroll-px-3 pb-1 pt-3 -mx-3 sticky top-12 z-30 bg-gradient-to-br from-gray-50 to-gray-100 shadow-sm border-b border-gray-200/40">
                       <TabsList className="flex gap-2.5 w-max bg-transparent border-0 shadow-none p-0 mb-3 pl-3 pr-6">
@@ -172,94 +175,105 @@ const Index = () => {
                     </TabsList>
 
                   <TabsContent value="dashboard" className="mt-0">
-                    <Dashboard expenses={expenses} />
+                    {activeTab === "dashboard" && <Dashboard expenses={expenses} />}
                   </TabsContent>
 
                   <TabsContent value="expenses" className="mt-0">
-                    <div className="space-y-3">
-                      <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm p-3.5 sm:p-4">
-                        <div className="border-b border-gray-200/60 pb-2 mb-3">
-                          <h2 className="text-base sm:text-lg font-semibold text-gray-900">
-                            Expenses
-                          </h2>
+                    {activeTab === "expenses" && (
+                      <div className="space-y-3">
+                        <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm p-3.5 sm:p-4">
+                          <div className="border-b border-gray-200/60 pb-2 mb-3">
+                            <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+                              Expenses
+                            </h2>
+                          </div>
+
+                          <FilterPanel
+                            filters={filters}
+                            onFilterChange={handleFilterChange}
+                          />
+
+                          <ExpenseList
+                            expenses={filteredExpenses}
+                            title={`${
+                              filters.category === "All"
+                                ? "All"
+                                : filters.category
+                            } Expenses`}
+                            bankAccounts={bankAccounts}
+                          />
                         </div>
-
-                        <FilterPanel
-                          filters={filters}
-                          onFilterChange={handleFilterChange}
-                        />
-
-                        <ExpenseList
-                          expenses={filteredExpenses}
-                          title={`${
-                            filters.category === "All"
-                              ? "All"
-                              : filters.category
-                          } Expenses`}
-                        />
                       </div>
-                    </div>
+                    )}
                   </TabsContent>
 
                   <TabsContent value="dues" className="mt-0">
-                    <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
-                      <div className="flex flex-col items-start p-3.5 sm:p-4 border-b border-gray-200/60 gap-1">
-                        <h2 className="text-base sm:text-lg font-semibold text-gray-900">
-                          Dues Management
-                        </h2>
-                        <p className="text-xs sm:text-sm text-gray-600">
-                          Track your personal financial obligations
-                        </p>
-                      </div>
+                    {activeTab === "dues" && (
+                      <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
+                        <div className="flex flex-col items-start p-3.5 sm:p-4 border-b border-gray-200/60 gap-1">
+                          <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+                            Dues Management
+                          </h2>
+                          <p className="text-xs sm:text-sm text-gray-600">
+                            Track your personal financial obligations
+                          </p>
+                        </div>
 
-                      <div className="p-3.5 sm:p-4">
-                        <DuesManager />
+                        <div className="p-3.5 sm:p-4">
+                          <DuesManager />
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </TabsContent>
 
                   <TabsContent value="budget" className="mt-0">
-                    <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
-                      <div className="flex flex-col items-start p-3.5 sm:p-4 border-b border-gray-200/60 gap-1">
-                        <h2 className="text-base sm:text-lg font-semibold text-gray-900">
-                          Budget Manager
-                        </h2>
-                        <p className="text-xs sm:text-sm text-gray-600">
-                          Create and manage your monthly budgets
-                        </p>
-                      </div>
+                    {activeTab === "budget" && (
+                      <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
+                        <div className="flex flex-col items-start p-3.5 sm:p-4 border-b border-gray-200/60 gap-1">
+                          <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+                            Budget Manager
+                          </h2>
+                          <p className="text-xs sm:text-sm text-gray-600">
+                            Create and manage your monthly budgets
+                          </p>
+                        </div>
 
-                      {/* Main content */}
-                      <div className="p-3.5 sm:p-4">
-                        <BudgetManager />
+                        {/* Main content */}
+                        <div className="p-3.5 sm:p-4">
+                          <BudgetManager />
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </TabsContent>
 
                   <TabsContent value="recurring" className="mt-0">
-                    <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
-                      <div className="flex items-center justify-between p-3.5 sm:p-4 border-b border-gray-200/60">
-                        <h2 className="text-base sm:text-lg font-semibold text-gray-900">
-                          Recurring Transactions
-                        </h2>
+                    {activeTab === "recurring" && (
+                      <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
+                        <div className="flex items-center justify-between p-3.5 sm:p-4 border-b border-gray-200/60">
+                          <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+                            Recurring Transactions
+                          </h2>
+                        </div>
+                        <div className="p-3.5 sm:p-4">
+                          <RecurringTransactions />
+                        </div>
                       </div>
-                      <div className="p-3.5 sm:p-4">
-                        <RecurringTransactions />
-                      </div>
-                    </div>
+                    )}
                   </TabsContent>
 
                   <TabsContent value="savings" className="mt-0">
-                    <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
-                      <div className="flex items-center justify-between p-3.5 sm:p-4 border-b border-gray-200/60">
-                        <h2 className="text-base sm:text-lg font-semibold text-gray-900">
-                          Savings Goals
-                        </h2>
+                    {activeTab === "savings" && (
+                      <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
+                        <div className="flex items-center justify-between p-3.5 sm:p-4 border-b border-gray-200/60">
+                          <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+                            Savings Goals
+                          </h2>
+                        </div>
+                        <div className="p-3.5 sm:p-4">
+                          <SavingsGoals />
+                        </div>
                       </div>
-                      <div className="p-3.5 sm:p-4">
-                        <SavingsGoals />
-                      </div>
-                    </div>
+                    )}
                   </TabsContent>
                 </Tabs>
               </div>

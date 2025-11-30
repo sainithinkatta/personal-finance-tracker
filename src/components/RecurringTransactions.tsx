@@ -680,4 +680,4 @@ const RecurringTransactions: React.FC = () => {
   );
 };
 
-export default RecurringTransactions;
+export default React.memo(RecurringTransactions);

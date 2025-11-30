@@ -11,10 +11,12 @@ import {
 } from '@/components/ui/bottom-sheet';
 import ExpenseForm from '@/components/ExpenseForm';
 import { useExpenses } from '@/hooks/useExpenses';
+import { useBankAccounts } from '@/hooks/useBankAccounts';
 
 const FloatingActionButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { addExpense } = useExpenses();
+  const { bankAccounts } = useBankAccounts();
 
   const handleAddExpense = (expense: any) => {
     addExpense(expense);
@@ -41,6 +43,7 @@ const FloatingActionButton: React.FC = () => {
             <ExpenseForm
               onAddExpense={handleAddExpense}
               onClose={() => setIsOpen(false)}
+              bankAccounts={bankAccounts}
             />
           </BottomSheetBody>
         </BottomSheetContent>

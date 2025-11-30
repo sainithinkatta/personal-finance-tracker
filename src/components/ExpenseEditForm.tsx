@@ -21,18 +21,18 @@ import {
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Expense, ExpenseCategory, CURRENCIES } from '@/types/expense';
-import { useBankAccounts } from '@/hooks/useBankAccounts';
+import { BankAccount } from '@/types/bankAccount';
 import { useBudgets } from '@/hooks/useBudgets';
 
 interface ExpenseEditFormProps {
   expense: Expense;
   onUpdateExpense: (id: string, expense: Partial<Expense>) => void;
   onClose: () => void;
+  bankAccounts: BankAccount[];
 }
 
-const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpense, onClose }) => {
+const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpense, onClose, bankAccounts }) => {
   const { toast } = useToast();
-  const { bankAccounts } = useBankAccounts();
   const { getActiveBudgetsForDate } = useBudgets();
   
   // Parse date as local date to prevent timezone issues

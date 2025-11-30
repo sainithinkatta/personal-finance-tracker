@@ -345,6 +345,7 @@ const BankAccountsList: React.FC = () => {
                 <BankAccountForm
                   account={editingAccount}
                   onClose={() => setEditingAccount(null)}
+                  bankAccounts={bankAccounts}
                 />
               )}
             </BottomSheetBody>
@@ -360,6 +361,7 @@ const BankAccountsList: React.FC = () => {
               <BankAccountForm
                 account={editingAccount}
                 onClose={() => setEditingAccount(null)}
+                bankAccounts={bankAccounts}
               />
             )}
           </DialogContent>
@@ -409,4 +411,4 @@ const BankAccountsList: React.FC = () => {
   );
 };
 
-export default BankAccountsList;
+export default React.memo(BankAccountsList);

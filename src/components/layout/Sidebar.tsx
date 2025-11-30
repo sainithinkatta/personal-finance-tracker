@@ -20,6 +20,7 @@ import {
   BottomSheetBody,
 } from '@/components/ui/bottom-sheet';
 import { useExpenses } from '@/hooks/useExpenses';
+import { useBankAccounts } from '@/hooks/useBankAccounts';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Sidebar: React.FC = () => {
@@ -27,6 +28,7 @@ const Sidebar: React.FC = () => {
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [isAddAccountOpen, setIsAddAccountOpen] = useState(false);
   const { addExpense } = useExpenses();
+  const { bankAccounts } = useBankAccounts();
   const isMobile = useIsMobile();
 
   const handleAddExpense = (expense: any) => {
@@ -89,6 +91,7 @@ const Sidebar: React.FC = () => {
                 <ExpenseForm
                   onAddExpense={handleAddExpense}
                   onClose={() => setIsAddExpenseOpen(false)}
+                  bankAccounts={bankAccounts}
                 />
               </BottomSheetBody>
             </BottomSheetContent>
@@ -102,6 +105,7 @@ const Sidebar: React.FC = () => {
               <ExpenseForm
                 onAddExpense={handleAddExpense}
                 onClose={() => setIsAddExpenseOpen(false)}
+                bankAccounts={bankAccounts}
               />
             </DialogContent>
           </Dialog>
@@ -115,7 +119,10 @@ const Sidebar: React.FC = () => {
                 <BottomSheetTitle>Add Bank Account</BottomSheetTitle>
               </BottomSheetHeader>
               <BottomSheetBody>
-                <BankAccountForm onClose={() => setIsAddAccountOpen(false)} />
+                <BankAccountForm
+                  onClose={() => setIsAddAccountOpen(false)}
+                  bankAccounts={bankAccounts}
+                />
               </BottomSheetBody>
             </BottomSheetContent>
           </BottomSheet>
@@ -125,7 +132,10 @@ const Sidebar: React.FC = () => {
               <DialogHeader>
                 <DialogTitle>Add Bank Account</DialogTitle>
               </DialogHeader>
-              <BankAccountForm onClose={() => setIsAddAccountOpen(false)} />
+              <BankAccountForm
+                onClose={() => setIsAddAccountOpen(false)}
+                bankAccounts={bankAccounts}
+              />
             </DialogContent>
           </Dialog>
         )}
