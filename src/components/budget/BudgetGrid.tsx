@@ -45,7 +45,7 @@ export const BudgetGrid: React.FC<BudgetGridProps> = ({
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 auto-rows-fr">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 auto-rows-fr">
       {budgets.map(budget => (
         <BudgetCard
           key={budget.id}

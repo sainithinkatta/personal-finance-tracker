@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import BudgetManagerHeader from '@/components/budget/BudgetManagerHeader';
 import { BudgetGrid } from '@/components/budget/BudgetGrid';
 import { BudgetEmptyState } from '@/components/budget/BudgetEmptyState';
@@ -105,20 +104,16 @@ const BudgetManager: React.FC = () => {
     <>
       <div className="space-y-6">
         <BudgetManagerHeader onAddBudget={handleAddBudget} />
-        <Card>
-          <CardContent className="p-6">
-            {budgets.length === 0 ? (
-              <BudgetEmptyState />
-            ) : (
-              <BudgetGrid 
-                budgets={budgets} 
-                onEdit={handleEditBudget}
-                onAllocate={handleAllocateBudget}
-                onDelete={handleDeleteBudget}
-              />
-            )}
-          </CardContent>
-        </Card>
+        {budgets.length === 0 ? (
+          <BudgetEmptyState />
+        ) : (
+          <BudgetGrid
+            budgets={budgets}
+            onEdit={handleEditBudget}
+            onAllocate={handleAllocateBudget}
+            onDelete={handleDeleteBudget}
+          />
+        )}
       </div>
 
       {/* Create Budget Form */}

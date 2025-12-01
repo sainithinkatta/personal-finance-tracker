@@ -142,8 +142,8 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
       <div className={`h-1 ${isOverBudget ? 'bg-red-500' : progress > 80 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
       
       {/* Header */}
-      <CardHeader className="pb-3 pt-4 px-5">
-        <div className="flex items-start justify-between mb-3">
+      <CardHeader className="pb-2 pt-3 px-4">
+        <div className="flex items-start justify-between mb-2">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1.5">
               <h3 className="text-base font-bold text-gray-900">{budget.name}</h3>
@@ -203,8 +203,8 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
         </div>
 
         {/* Main Budget Stats */}
-        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-200">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {/* Spent Amount */}
             <div>
               <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
@@ -217,9 +217,6 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
                 {isOverBudget && (
                   <TrendingUp className="h-4 w-4 text-red-500" />
                 )}
-              </div>
-              <div className="text-xs text-gray-500 mt-0.5">
-                of {formatCurrency(budget.total_amount, budget.currency)}
               </div>
             </div>
 
@@ -236,8 +233,23 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
                   <TrendingDown className="h-4 w-4 text-red-500" />
                 )}
               </div>
-              <div className="text-xs text-gray-500 mt-0.5">
-                {Math.round(progress)}% used
+            </div>
+
+            {/* Percentage Used */}
+            <div>
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                Used
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className={`text-xl font-bold ${
+                  isOverBudget
+                    ? 'text-red-600'
+                    : progress > 80
+                      ? 'text-amber-600'
+                      : 'text-blue-600'
+                }`}>
+                  {Math.round(progress)}%
+                </span>
               </div>
             </div>
           </div>
@@ -247,8 +259,8 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
             <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
               <div
                 className={`h-2.5 rounded-full transition-all duration-500 ${
-                  isOverBudget 
-                    ? 'bg-gradient-to-r from-red-500 to-red-600' 
+                  isOverBudget
+                    ? 'bg-gradient-to-r from-red-500 to-red-600'
                     : progress > 80
                       ? 'bg-gradient-to-r from-amber-500 to-amber-600'
                       : 'bg-gradient-to-r from-emerald-500 to-emerald-600'
@@ -260,7 +272,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
         </div>
 
         {/* Allocation Status */}
-        <div className="grid grid-cols-2 gap-2.5 mt-3">
+        <div className="grid grid-cols-2 gap-2.5 mt-2">
           <div className="bg-white border border-gray-200 rounded-lg p-2.5">
             <div className="text-xs font-medium text-gray-500 mb-0.5">Budget</div>
             <div className="text-base font-bold text-blue-600">
@@ -276,10 +288,10 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 px-5 pb-5">
+      <CardContent className="flex-1 px-4 pb-4">
         {/* Category Breakdown */}
         <div>
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-semibold text-gray-900">Category Breakdown</h4>
             {!isFullyAllocated && (
               <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50 text-xs">
