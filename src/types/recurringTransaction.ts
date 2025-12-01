@@ -15,6 +15,7 @@ export interface RecurringTransaction {
   status: 'pending' | 'done';
   last_done_date: string | null;
   last_reminder_sent_at: string | null;
+  bank_account_id: string | null;
   created_at: string;
   updated_at: string;
 }

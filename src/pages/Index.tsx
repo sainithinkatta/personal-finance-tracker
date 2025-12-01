@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import Dashboard from "@/components/Dashboard";
 import ExpenseList from "@/components/ExpenseList";
 import FilterPanel from "@/components/FilterPanel";
@@ -25,6 +25,7 @@ const Index = () => {
   const { expenses, isLoading } = useExpenses();
   const { bankAccounts } = useBankAccounts();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDesktopSidebarVisible, setIsDesktopSidebarVisible] = useState(true);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [filters, setFilters] = useState<FilterOptions>({
     startDate: null,
@@ -79,17 +80,36 @@ const Index = () => {
         </header>
 
         <div className="flex flex-1 w-full">
-          {/* Desktop Sidebar */}
-          <div className="hidden lg:block">
-            <Sidebar />
-          </div>
+          {/* Desktop Sidebar - Conditionally Rendered */}
+          {isDesktopSidebarVisible && (
+            <div className="hidden lg:block transition-all duration-300">
+              <Sidebar />
+            </div>
+          )}
 
           {/* Main Content */}
           <main className="sticky flex-1 flex flex-col min-w-0">
+            {/* Desktop Sidebar Toggle Button */}
+            <div className="hidden lg:flex items-center px-4 pt-0.5 pb-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsDesktopSidebarVisible(!isDesktopSidebarVisible)}
+                className="h-9 w-9 rounded-lg hover:bg-muted"
+                title={isDesktopSidebarVisible ? "Hide sidebar" : "Show sidebar"}
+              >
+                {isDesktopSidebarVisible ? (
+                  <PanelLeftClose className="h-5 w-5" />
+                ) : (
+                  <PanelLeftOpen className="h-5 w-5" />
+                )}
+              </Button>
+            </div>
+
             {/* Content Area */}
             <div className="flex-1 flex flex-col lg:flex-row">
               {/* Main Content */}
-              <div className="flex-1 px-3 pb-2 sm:px-4 sm:py-3 lg:px-4 lg:py-4">
+              <div className="flex-1 px-3 pb-2 sm:px-4 sm:py-3 lg:px-4 lg:pt-0 lg:pb-4">
                 <div className="mx-auto w-full max-w-screen-sm sm:max-w-7xl">
                   <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                     {/* Mobile: Scrollable pill tabs - Sticky */}

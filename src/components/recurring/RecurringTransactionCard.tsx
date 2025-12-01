@@ -2,40 +2,19 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Edit, RotateCcw, DollarSign, ShoppingCart, Zap, Package, Check } from 'lucide-react';
+import { Trash2, Edit, Check } from 'lucide-react';
 import { RecurringTransaction } from '@/types/recurringTransaction';
 import { CURRENCIES } from '@/types/expense';
-import { format } from 'date-fns';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { format, differenceInDays } from 'date-fns';
 import { parseLocalDate } from '@/utils/dateUtils';
 
 interface RecurringTransactionCardProps {
   transaction: RecurringTransaction;
   onEdit: (transaction: RecurringTransaction) => void;
   onDelete: (id: string) => void;
-  onMarkAsDone: (id: string) => void;
+  onMarkAsDone: () => void;
   isMarkingDone?: boolean;
 }
-
-const getCategoryIcon = (category: string) => {
-  switch (category) {
-    case 'Travel':
-      return <DollarSign className="h-4 w-4 text-info" />;
-    case 'Groceries':
-      return <ShoppingCart className="h-4 w-4 text-accent" />;
-    case 'Bills':
-      return <Zap className="h-4 w-4 text-warning" />;
-    case 'Others':
-      return <Package className="h-4 w-4 text-muted-foreground" />;
-    default:
-      return <Package className="h-4 w-4 text-muted-foreground" />;
-  }
-};
 
 const getFrequencyBadgeColor = (frequency: string) => {
   switch (frequency) {
@@ -65,105 +44,121 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
   isMarkingDone = false,
 }) => {
   const isDone = transaction.status === 'done';
+  const dueDate = parseLocalDate(transaction.next_due_date);
+  const daysUntilDue = differenceInDays(dueDate, new Date());
+
+  const getDueText = () => {
+    if (daysUntilDue < 0) {
+      return `Overdue by ${Math.abs(daysUntilDue)} day${Math.abs(daysUntilDue) === 1 ? '' : 's'}`;
+    } else if (daysUntilDue === 0) {
+      return 'Due today';
+    } else if (daysUntilDue === 1) {
+      return 'Due tomorrow';
+    } else {
+      return `Due in ${daysUntilDue} day${daysUntilDue === 1 ? '' : 's'}`;
+    }
+  };
 
   return (
-    <div className={`bg-card rounded-lg border p-6 hover:shadow-md transition-shadow ${isDone ? 'opacity-75' : ''}`}>
-      <div className="flex items-start justify-between gap-4">
-        {/* Left side - Icon, Title, and Details */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-3">
-            <RotateCcw className={`h-5 w-5 flex-shrink-0 ${isDone ? 'text-accent' : 'text-muted-foreground'}`} />
-            <h3 className="text-lg font-semibold text-foreground truncate">{transaction.name}</h3>
-            {isDone && (
-              <Badge variant="outline" className="bg-accent-muted text-accent-foreground border-accent/20 flex-shrink-0">
-                ✓ Done
-              </Badge>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Next due: {format(parseLocalDate(transaction.next_due_date), 'MMM d, yyyy')}
-            </p>
-            <div className="flex items-center gap-2">
-              {getCategoryIcon(transaction.category)}
-              <span className="text-sm text-muted-foreground">Category: {transaction.category}</span>
+    <article className={`bg-card rounded-2xl border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden ${isDone ? 'opacity-75' : ''}`}>
+      {/* Main Content */}
+      <div className="p-4">
+        <div className="flex gap-3">
+          {/* Date Section - Calendar Style */}
+          <div className="flex-shrink-0 w-16 h-16 flex flex-col items-center justify-center bg-gradient-to-br from-info-muted to-info-muted/50 rounded-xl border border-info/20">
+            <div className="text-2xl font-bold text-foreground leading-none">
+              {format(dueDate, 'dd')}
             </div>
-            {isDone && transaction.last_done_date && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <p className="text-xs text-accent cursor-help">
-                      Marked as done on {format(parseLocalDate(transaction.last_done_date), 'MM/dd/yyyy')}
-                    </p>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>This transaction was manually marked as completed</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-          </div>
-        </div>
-
-        {/* Right side - Amount, Frequency, and Actions */}
-        <div className="flex flex-col items-end gap-3 flex-shrink-0">
-          <div className="text-right">
-            <p className="text-xl font-bold text-foreground">
-              {formatCurrency(transaction.amount, transaction.currency)}
-            </p>
-            <Badge
-              variant="outline"
-              className={`mt-2 ${getFrequencyBadgeColor(transaction.frequency)}`}
-            >
-              {transaction.frequency.charAt(0).toUpperCase() + transaction.frequency.slice(1)}
-            </Badge>
+            <div className="text-xs font-semibold text-info-foreground uppercase mt-0.5">
+              {format(dueDate, 'MMM')}
+            </div>
+            <div className="text-xs text-muted-foreground capitalize">
+              {format(dueDate, 'EEE')}
+            </div>
           </div>
 
-          {/* Action Icons */}
-          <div className="flex items-center gap-2">
-            {!isDone && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onMarkAsDone(transaction.id)}
-                      disabled={isMarkingDone}
-                      className="h-9 w-9 hover:bg-accent/20 rounded-full"
-                      aria-label={`Mark ${transaction.name} as done`}
-                    >
-                      <Check className="h-4 w-4 text-accent" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Mark as Done</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onEdit(transaction)}
-              className="h-9 w-9 hover:bg-muted rounded-full"
-              aria-label={`Edit ${transaction.name} recurring transaction`}
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onDelete(transaction.id)}
-              className="h-9 w-9 hover:bg-destructive/10 rounded-full"
-              aria-label={`Delete ${transaction.name} recurring transaction`}
-            >
-              <Trash2 className="h-4 w-4 text-destructive" />
-            </Button>
+          {/* Content Section */}
+          <div className="flex-1 min-w-0 flex flex-col gap-2">
+            {/* Amount and Category Row */}
+            <div className="flex items-start justify-between gap-2">
+              <Badge
+                className={`font-semibold text-xs px-3 py-1 rounded-lg ${
+                  transaction.category === 'Groceries' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
+                  transaction.category === 'Food' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' :
+                  transaction.category === 'Travel' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
+                  transaction.category === 'Bills' ? 'bg-red-100 text-red-800 hover:bg-red-200' :
+                  transaction.category === 'Others' ? 'bg-purple-100 text-purple-800 hover:bg-purple-200' :
+                  'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                }`}
+              >
+                {transaction.category}
+              </Badge>
+              <div className="text-xl font-bold text-gray-900 whitespace-nowrap">
+                {formatCurrency(transaction.amount, transaction.currency)}
+              </div>
+            </div>
+
+            {/* Transaction Name */}
+            <div className="text-sm text-foreground/80 leading-relaxed line-clamp-2">
+              {transaction.name}
+            </div>
+
+            {/* Next Due Date and Frequency */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs text-muted-foreground">
+                {getDueText()}
+              </span>
+              <Badge
+                variant="outline"
+                className={`text-xs ${getFrequencyBadgeColor(transaction.frequency)}`}
+              >
+                {transaction.frequency.charAt(0).toUpperCase() + transaction.frequency.slice(1)}
+              </Badge>
+              {isDone && (
+                <Badge variant="outline" className="bg-accent-muted text-accent-foreground text-xs">
+                  ✓ Done
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Actions Bar */}
+      <div className="flex items-center border-t bg-muted/30">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex-1 h-11 rounded-none hover:bg-primary/10 flex items-center justify-center gap-2 touch-target transition-colors border-r"
+          onClick={() => onEdit(transaction)}
+        >
+          <Edit className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium text-primary">Edit</span>
+        </Button>
+
+        {!isDone && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="flex-1 h-11 rounded-none hover:bg-accent/10 flex items-center justify-center gap-2 touch-target transition-colors border-r"
+            onClick={onMarkAsDone}
+            disabled={isMarkingDone}
+          >
+            <Check className="h-4 w-4 text-accent" />
+            <span className="text-sm font-medium text-accent">Done</span>
+          </Button>
+        )}
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex-1 h-11 rounded-none hover:bg-destructive/10 flex items-center justify-center gap-2 touch-target transition-colors"
+          onClick={() => onDelete(transaction.id)}
+        >
+          <Trash2 className="h-4 w-4 text-destructive" />
+          <span className="text-sm font-medium text-destructive">Delete</span>
+        </Button>
+      </div>
+    </article>
   );
 };

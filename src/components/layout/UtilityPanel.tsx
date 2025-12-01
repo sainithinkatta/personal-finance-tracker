@@ -1,20 +1,30 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bell, Check } from 'lucide-react';
+import { Bell, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
+import { useExpenses } from '@/hooks/useExpenses';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { CURRENCIES } from '@/types/expense';
 import { parseLocalDate } from '@/utils/dateUtils';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import ExpenseForm from '@/components/ExpenseForm';
 
 const UtilityPanel: React.FC = () => {
   const navigate = useNavigate();
   const { getUpcomingReminders } = useRecurringTransactions();
   const { bankAccounts } = useBankAccounts();
-  
+  const { addExpense } = useExpenses();
+  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+
   // Filter out transactions that are marked as 'done' from upcoming reminders
   const upcomingReminders = getUpcomingReminders().filter(tx => tx.status !== 'done');
 
@@ -24,6 +34,11 @@ const UtilityPanel: React.FC = () => {
 
   const handleAddGoal = () => {
     navigate('/?tab=savings');
+  };
+
+  const handleAddExpense = (expense: any) => {
+    addExpense(expense);
+    setIsAddExpenseOpen(false);
   };
 
   const formatCurrency = (amount: number, currency: string) => {
@@ -71,6 +86,16 @@ const UtilityPanel: React.FC = () => {
 
   return (
     <aside className="hidden xl:flex flex-col w-64 p-4 space-y-6">
+      {/* Add Expense Button */}
+      <Button
+        onClick={() => setIsAddExpenseOpen(true)}
+        variant="default"
+        className="w-full h-11 text-sm font-medium shadow-lg"
+      >
+        <Plus className="h-5 w-5 mr-2" />
+        Add Expense
+      </Button>
+
       {/* Upcoming Payments & Reminders */}
       <Card className="rounded-lg shadow-sm">
         <CardHeader className="p-4 pb-2">
@@ -115,6 +140,20 @@ const UtilityPanel: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Add Expense Dialog */}
+      <Dialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add Expense</DialogTitle>
+          </DialogHeader>
+          <ExpenseForm
+            onAddExpense={handleAddExpense}
+            onClose={() => setIsAddExpenseOpen(false)}
+            bankAccounts={bankAccounts}
+          />
+        </DialogContent>
+      </Dialog>
     </aside>
   );
 };

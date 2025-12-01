@@ -35,7 +35,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
   onSave,
   isLoading,
 }) => {
-  const [formData, setFormData] = useState<RecurringTransactionFormData>({
+  const [formData, setFormData] = useState<RecurringTransactionFormData & { status?: 'pending' | 'done' }>({
     name: '',
     amount: 0,
     category: 'Bills' as ExpenseCategory,
@@ -44,6 +44,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
     currency: 'USD',
     email_reminder: true,
     reminder_days_before: 2,
+    status: 'pending',
   });
 
   useEffect(() => {
@@ -57,6 +58,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
         currency: transaction.currency,
         email_reminder: transaction.email_reminder,
         reminder_days_before: transaction.reminder_days_before,
+        status: transaction.status,
       });
     }
   }, [transaction]);
@@ -241,6 +243,30 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
               }
               className="text-sm"
             />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="edit-status" className="text-sm font-medium">
+              Status
+            </Label>
+            <Select
+              value={formData.status}
+              onValueChange={(val: 'pending' | 'done') =>
+                setFormData({ ...formData, status: val })
+              }
+            >
+              <SelectTrigger className="text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="text-sm">
+                <SelectItem value="pending" className="text-sm">
+                  Pending
+                </SelectItem>
+                <SelectItem value="done" className="text-sm">
+                  Completed
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <DialogFooter>

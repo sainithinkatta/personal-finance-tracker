@@ -69,6 +69,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
         aria-expanded={isExpanded}
         aria-controls="filter-panel-content"
         className={cn(
+          "md:hidden",
           "w-full flex items-center justify-between",
           "p-3 md:p-3.5 rounded-lg",
           "bg-secondary/50 hover:bg-secondary/70",
@@ -105,6 +106,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
         id="filter-panel-content"
         className={cn(
           "overflow-hidden transition-all duration-300 ease-in-out",
+          "md:max-h-[800px] md:opacity-100 md:mt-3",
           isExpanded ? "max-h-[800px] opacity-100 mt-3" : "max-h-0 opacity-0"
         )}
       >

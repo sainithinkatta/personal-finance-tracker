@@ -39,11 +39,11 @@ const Sidebar: React.FC = () => {
   return (
     <aside className="w-full lg:w-[15rem] bg-background border-r h-full overflow-y-auto">
       <div className="p-4 lg:p-6 space-y-4 lg:space-y-6 flex flex-col items-center">
-        {/* Standalone Add Expense Button - Touch Friendly */}
+        {/* Standalone Add Expense Button - Touch Friendly - Hidden on Desktop (moved to UtilityPanel) */}
         <Button
           onClick={() => setIsAddExpenseOpen(true)}
           variant="default"
-          className="h-12 w-full max-w-[200px] text-sm font-medium"
+          className="h-12 w-full max-w-[200px] text-sm font-medium lg:hidden"
         >
           <Plus className="h-5 w-5 mr-2" />
           Add Expense
