@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Edit, Check } from 'lucide-react';
+import { Trash2, Edit, Check, AlertCircle } from 'lucide-react';
 import { RecurringTransaction } from '@/types/recurringTransaction';
 import { CURRENCIES } from '@/types/expense';
 import { format, differenceInDays } from 'date-fns';
@@ -59,6 +59,18 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
     }
   };
 
+  const getDueColorClass = () => {
+    if (daysUntilDue < 0) {
+      return 'text-destructive font-semibold'; // Red for overdue
+    } else if (daysUntilDue <= 1) {
+      return 'text-destructive font-semibold'; // Red for today/tomorrow
+    } else if (daysUntilDue <= 7) {
+      return 'text-warning font-semibold'; // Yellow for 2-7 days
+    } else {
+      return 'text-muted-foreground'; // Gray for 8+ days
+    }
+  };
+
   return (
     <article className={`bg-card rounded-2xl border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden ${isDone ? 'opacity-75' : ''}`}>
       {/* Main Content */}
@@ -105,7 +117,10 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
 
             {/* Next Due Date and Frequency */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-muted-foreground">
+              <span className={`text-xs flex items-center gap-1 ${getDueColorClass()}`}>
+                {daysUntilDue < 0 && (
+                  <AlertCircle className="h-3 w-3" />
+                )}
                 {getDueText()}
               </span>
               <Badge
