@@ -43,7 +43,7 @@ import { useBankAccounts } from '@/hooks/useBankAccounts';
 import { RecurringTransaction, RecurringTransactionFormData } from '@/types/recurringTransaction';
 import { CURRENCIES, ExpenseCategory } from '@/types/expense';
 import { useToast } from '@/hooks/use-toast';
-import { format, differenceInDays } from 'date-fns';
+import { format, differenceInDays, addDays } from 'date-fns';
 import { RecurringTransactionCard } from '@/components/recurring/RecurringTransactionCard';
 import { EditRecurringTransactionForm } from '@/components/recurring/EditRecurringTransactionForm';
 import { MarkAsDoneDialog } from '@/components/recurring/MarkAsDoneDialog';
@@ -232,6 +232,16 @@ const RecurringTransactions: React.FC = () => {
 
   const transactionToDelete = recurringTransactions.find(t => t.id === deletingTransactionId);
   const hasMore = recurringTransactions.length === itemsPerPage;
+
+  // Calculate display status for a transaction
+  const getDisplayStatus = (transaction: RecurringTransaction): 'done' | 'pending' | 'upcoming' => {
+    if (transaction.status === 'done') return 'done';
+    const dueDate = parseLocalDate(transaction.next_due_date);
+    const reminderDate = addDays(dueDate, -transaction.reminder_days_before);
+    const today = new Date();
+    const isPending = reminderDate <= today && dueDate >= today;
+    return isPending ? 'pending' : 'upcoming';
+  };
 
   return (
     <div className="space-y-6">
@@ -758,11 +768,28 @@ const RecurringTransactions: React.FC = () => {
                               {formatCurrency(transaction.amount, transaction.currency)}
                             </TableCell>
                             <TableCell>
-                              {isDone && (
-                                <Badge variant="outline" className="bg-accent-muted text-accent-foreground">
-                                  ✓ Done
-                                </Badge>
-                              )}
+                              {(() => {
+                                const displayStatus = getDisplayStatus(transaction);
+                                if (displayStatus === 'done') {
+                                  return (
+                                    <Badge variant="outline" className="bg-accent-muted text-accent-foreground">
+                                      ✓ Done
+                                    </Badge>
+                                  );
+                                } else if (displayStatus === 'pending') {
+                                  return (
+                                    <Badge variant="outline" className="bg-warning-muted text-warning-foreground">
+                                      Pending
+                                    </Badge>
+                                  );
+                                } else {
+                                  return (
+                                    <Badge variant="outline" className="bg-info-muted text-info-foreground">
+                                      Upcoming
+                                    </Badge>
+                                  );
+                                }
+                              })()}
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end space-x-1">
