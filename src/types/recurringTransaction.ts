@@ -29,6 +29,7 @@ export interface RecurringTransactionFormData {
   currency: string;
   email_reminder: boolean;
   reminder_days_before: number;
+  bank_account_id: string; // Required - must select a bank account
 }
 
 export interface EditRecurringTransactionData {

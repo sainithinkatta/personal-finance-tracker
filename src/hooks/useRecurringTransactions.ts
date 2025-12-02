@@ -2,12 +2,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { RecurringTransaction, RecurringTransactionFormData, EditRecurringTransactionData } from '@/types/recurringTransaction';
 import { useToast } from '@/hooks/use-toast';
-import { addDays, addWeeks, addMonths, addYears, format, startOfMonth, endOfMonth } from 'date-fns';
+import { addDays, addWeeks, addMonths, addYears, format } from 'date-fns';
 import { parseLocalDate } from '@/utils/dateUtils';
 
 interface RecurringTransactionsFilters {
   searchText?: string;
-  month?: string; // Format: "YYYY-MM"
   status?: 'pending' | 'upcoming' | 'done' | 'all';
   bankAccountId?: string;
   includeCompleted?: boolean;
@@ -36,15 +35,6 @@ export const useRecurringTransactions = (filters?: RecurringTransactionsFilters)
         query = query.ilike('name', `%${filters.searchText}%`);
       }
 
-      // Apply month filter
-      if (filters?.month) {
-        const monthStart = startOfMonth(new Date(filters.month));
-        const monthEnd = endOfMonth(new Date(filters.month));
-        query = query
-          .gte('next_due_date', format(monthStart, 'yyyy-MM-dd'))
-          .lte('next_due_date', format(monthEnd, 'yyyy-MM-dd'));
-      }
-
       // Apply status filter
       if (filters?.status && filters.status !== 'all') {
         if (filters.status === 'done') {
@@ -58,8 +48,8 @@ export const useRecurringTransactions = (filters?: RecurringTransactionsFilters)
         query = query.eq('status', 'pending');
       }
 
-      // Apply bank account filter
-      if (filters?.bankAccountId) {
+      // Apply bank account filter - only if it's a valid UUID (36 chars)
+      if (filters?.bankAccountId && filters.bankAccountId.length === 36) {
         query = query.eq('bank_account_id', filters.bankAccountId);
       }
 
@@ -75,10 +65,16 @@ export const useRecurringTransactions = (filters?: RecurringTransactionsFilters)
 
       if (error) throw error;
 
+      // Map data to ensure bank_account_id is properly typed
+      const mappedData = (data || []).map(item => ({
+        ...item,
+        bank_account_id: item.bank_account_id || null,
+      })) as RecurringTransaction[];
+
       // Further filter for pending vs upcoming if needed
       if (filters?.status === 'pending' || filters?.status === 'upcoming') {
         const today = new Date();
-        return (data as RecurringTransaction[]).filter(transaction => {
+        return mappedData.filter(transaction => {
           const dueDate = parseLocalDate(transaction.next_due_date);
           const reminderDate = addDays(dueDate, -transaction.reminder_days_before);
           const isPending = reminderDate <= today && dueDate >= today;
@@ -87,7 +83,7 @@ export const useRecurringTransactions = (filters?: RecurringTransactionsFilters)
         });
       }
 
-      return data as RecurringTransaction[];
+      return mappedData;
     },
   });
 

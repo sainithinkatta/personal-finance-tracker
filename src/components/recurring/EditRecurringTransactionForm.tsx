@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { RecurringTransaction, RecurringTransactionFormData } from '@/types/recurringTransaction';
 import { CURRENCIES, ExpenseCategory } from '@/types/expense';
+import { useBankAccounts } from '@/hooks/useBankAccounts';
 
 interface EditRecurringTransactionFormProps {
   transaction: RecurringTransaction | null;
@@ -35,6 +35,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
   onSave,
   isLoading,
 }) => {
+  const { bankAccounts } = useBankAccounts();
   const [formData, setFormData] = useState<RecurringTransactionFormData & { status?: 'pending' | 'done' }>({
     name: '',
     amount: 0,
@@ -44,6 +45,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
     currency: 'USD',
     email_reminder: true,
     reminder_days_before: 2,
+    bank_account_id: '',
     status: 'pending',
   });
 
@@ -58,6 +60,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
         currency: transaction.currency,
         email_reminder: transaction.email_reminder,
         reminder_days_before: transaction.reminder_days_before,
+        bank_account_id: transaction.bank_account_id || '',
         status: transaction.status,
       });
     }
@@ -220,6 +223,27 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
               required
               className="text-sm"
             />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="edit-bank_account_id" className="text-sm font-medium">
+              Bank Account <span className="text-destructive">*</span>
+            </Label>
+            <Select
+              value={formData.bank_account_id}
+              onValueChange={(val) => setFormData({ ...formData, bank_account_id: val })}
+            >
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="Select bank account" />
+              </SelectTrigger>
+              <SelectContent className="text-sm">
+                {bankAccounts.map((account) => (
+                  <SelectItem key={account.id} value={account.id} className="text-sm">
+                    {account.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-1">

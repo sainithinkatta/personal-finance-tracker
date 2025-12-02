@@ -1,12 +1,12 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Edit, Check, AlertCircle } from 'lucide-react';
+import { Trash2, Edit, Check, AlertCircle, Building2 } from 'lucide-react';
 import { RecurringTransaction } from '@/types/recurringTransaction';
 import { CURRENCIES } from '@/types/expense';
 import { format, differenceInDays } from 'date-fns';
 import { parseLocalDate } from '@/utils/dateUtils';
+import { BankAccount } from '@/types/bankAccount';
 
 interface RecurringTransactionCardProps {
   transaction: RecurringTransaction;
@@ -14,6 +14,7 @@ interface RecurringTransactionCardProps {
   onDelete: (id: string) => void;
   onMarkAsDone: () => void;
   isMarkingDone?: boolean;
+  bankAccounts?: BankAccount[];
 }
 
 const getFrequencyBadgeColor = (frequency: string) => {
@@ -42,10 +43,15 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
   onDelete,
   onMarkAsDone,
   isMarkingDone = false,
+  bankAccounts = [],
 }) => {
   const isDone = transaction.status === 'done';
   const dueDate = parseLocalDate(transaction.next_due_date);
   const daysUntilDue = differenceInDays(dueDate, new Date());
+
+  // Find the bank account name
+  const bankAccount = bankAccounts.find(ba => ba.id === transaction.bank_account_id);
+  const bankName = bankAccount?.name || 'No bank assigned';
 
   const getDueText = () => {
     if (daysUntilDue < 0) {
@@ -113,6 +119,12 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
             {/* Transaction Name */}
             <div className="text-sm text-foreground/80 leading-relaxed line-clamp-2">
               {transaction.name}
+            </div>
+
+            {/* Bank Account Info */}
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Building2 className="h-3 w-3" />
+              <span className="truncate">{bankName}</span>
             </div>
 
             {/* Next Due Date and Frequency */}
