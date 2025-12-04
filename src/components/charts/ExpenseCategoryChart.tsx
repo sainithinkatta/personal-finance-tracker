@@ -6,6 +6,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 interface ExpenseCategoryChartProps {
   expenses: Expense[];
   isCompact?: boolean; // For landing page preview
+  currency?: string;
 }
 
 const COLORS: Record<ExpenseCategory, string> = {
@@ -15,6 +16,9 @@ const COLORS: Record<ExpenseCategory, string> = {
   Bills: '#ef4444',     // red-500
   Others: '#6b7280',    // gray-500
 };
+
+// Helper to get currency symbol
+const getCurrencySymbol = (currency: string) => currency === 'INR' ? '₹' : '$';
 
 const renderActiveShape = (props: any) => {
   const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
@@ -38,10 +42,12 @@ const renderActiveShape = (props: any) => {
 
 export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({ 
   expenses, 
-  isCompact = false 
+  isCompact = false,
+  currency = 'USD'
 }) => {
   const [activeIndex, setActiveIndex] = React.useState<number | undefined>(undefined);
   const isMobile = useIsMobile();
+  const symbol = getCurrencySymbol(currency);
 
   // Responsive radii - smaller on mobile and for compact mode (landing page preview)
   const innerRadius = isCompact ? 35 : (isMobile ? 50 : 65);
@@ -145,7 +151,7 @@ export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({
                   return (
                     <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
                       <p className="text-sm font-semibold text-gray-900">{data.category}</p>
-                      <p className="text-sm text-gray-600">${data.total.toFixed(2)}</p>
+                      <p className="text-sm text-gray-600">{symbol}{data.total.toFixed(2)}</p>
                       <p className="text-xs text-gray-500">{data.percentage}% of total</p>
                     </div>
                   );
@@ -160,7 +166,7 @@ export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
             <p className={`${isCompact ? 'text-[0.55rem]' : 'text-[0.65rem] md:text-xs'} font-medium text-gray-500 uppercase tracking-wide`}>Total</p>
-            <p className={`${isCompact ? 'text-sm' : 'text-base md:text-lg'} font-bold text-gray-900`}>${totalAmount.toFixed(2)}</p>
+            <p className={`${isCompact ? 'text-sm' : 'text-base md:text-lg'} font-bold text-gray-900`}>{symbol}{totalAmount.toFixed(2)}</p>
           </div>
         </div>
       </div>
@@ -176,7 +182,7 @@ export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({
                   style={{ backgroundColor: COLORS[entry.category] }}
                 />
                 <span className="text-xs text-gray-700 font-medium">{entry.category}</span>
-                <span className="text-xs text-gray-500">(${entry.total.toFixed(2)})</span>
+                <span className="text-xs text-gray-500">({symbol}{entry.total.toFixed(2)})</span>
               </div>
             ))}
           </div>

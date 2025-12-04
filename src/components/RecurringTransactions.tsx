@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Plus, Bell, Calendar, Search, ChevronDown, ChevronUp, Edit2, Trash2, Check, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,7 +41,7 @@ import {
 import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
 import { RecurringTransaction, RecurringTransactionFormData } from '@/types/recurringTransaction';
-import { CURRENCIES, ExpenseCategory } from '@/types/expense';
+import { ExpenseCategory } from '@/types/expense';
 import { useToast } from '@/hooks/use-toast';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { RecurringTransactionCard } from '@/components/recurring/RecurringTransactionCard';
@@ -56,20 +56,22 @@ const RecurringTransactions: React.FC = () => {
   
   // Filter states
   const [searchText, setSearchText] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'upcoming' | 'done'>('all');
-  const [selectedBank, setSelectedBank] = useState('all');
+  const [selectedBank, setSelectedBank] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
 
   // Build filters object
   const filters = useMemo(() => ({
     searchText: searchText || undefined,
+    month: selectedMonth || undefined,
     status: selectedStatus,
     bankAccountId: selectedBank || undefined,
     includeCompleted: selectedStatus === 'done',
     limit: itemsPerPage,
     offset: currentPage * itemsPerPage,
-  }), [searchText, selectedStatus, selectedBank, currentPage]);
+  }), [searchText, selectedMonth, selectedStatus, selectedBank, currentPage]);
 
   const {
     recurringTransactions,
@@ -141,6 +143,33 @@ const RecurringTransactions: React.FC = () => {
     setIsAddDialogOpen(false);
   };
 
+  // Filter bank accounts by selected currency for add form
+  const filteredBankAccountsForAdd = useMemo(() => 
+    bankAccounts.filter(account => account.currency === formData.currency),
+    [bankAccounts, formData.currency]
+  );
+
+  // Track previous currency to detect changes
+  const prevCurrencyRef = useRef(formData.currency);
+
+  // Clear bank selection when currency changes and bank is incompatible
+  useEffect(() => {
+    // Only run if currency actually changed (not on initial mount)
+    if (prevCurrencyRef.current !== formData.currency) {
+      if (formData.bank_account_id) {
+        const selectedBank = bankAccounts.find(b => b.id === formData.bank_account_id);
+        if (selectedBank && selectedBank.currency !== formData.currency) {
+          setFormData(prev => ({ ...prev, bank_account_id: '' }));
+          toast({
+            title: 'Bank Selection Reset',
+            description: 'Bank selection cleared because currency changed.',
+          });
+        }
+      }
+      prevCurrencyRef.current = formData.currency;
+    }
+  }, [formData.currency, formData.bank_account_id, bankAccounts, toast]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.bank_account_id) {
@@ -151,6 +180,18 @@ const RecurringTransactions: React.FC = () => {
       });
       return;
     }
+
+    // Validate currency-bank match
+    const selectedBank = bankAccounts.find(b => b.id === formData.bank_account_id);
+    if (selectedBank && selectedBank.currency !== formData.currency) {
+      toast({
+        title: 'Currency Mismatch',
+        description: 'Selected bank currency does not match the chosen currency.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     addRecurringTransaction(formData);
     resetForm();
   };
@@ -186,14 +227,15 @@ const RecurringTransactions: React.FC = () => {
 
   const clearFilters = () => {
     setSearchText('');
+    setSelectedMonth('');
     setSelectedStatus('all');
-    setSelectedBank('all');
+    setSelectedBank('');
     setCurrentPage(0);
   };
 
   const formatCurrency = (amount: number, currency: string) => {
-    const currencyInfo = CURRENCIES.find((c) => c.code === currency);
-    return `${currencyInfo?.symbol || currency}${amount.toFixed(2)}`;
+    const symbol = currency === 'INR' ? '₹' : '$';
+    return `${symbol}${amount.toFixed(2)}`;
   };
 
   const getFrequencyBadgeColor = (freq: string) => {
@@ -316,32 +358,31 @@ const RecurringTransactions: React.FC = () => {
             className={cn(
               "md:hidden",
               "w-full flex items-center justify-between",
-              "p-4 mb-3 rounded-lg",
-              "bg-primary/10 hover:bg-primary/20",
-              "transition-all duration-200",
-              "border-2 border-primary/30 hover:border-primary/50",
-              "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-              "shadow-sm hover:shadow-md"
+              "p-3 mb-3 rounded-lg",
+              "bg-secondary/50 hover:bg-secondary/70",
+              "transition-colors duration-200",
+              "border border-transparent hover:border-gray-300",
+              "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             )}
           >
             <div className="flex items-center gap-2">
-              <Search className="h-5 w-5 text-primary" />
-              <span className="text-sm md:text-base font-semibold text-foreground">Filter Transactions</span>
+              <span className="text-sm md:text-base font-medium text-foreground">Filters</span>
               {/* Active Filter Indicator */}
-              {(searchText || selectedStatus !== 'all' || selectedBank !== 'all') && (
-                <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-md">
+              {(searchText || selectedMonth || selectedStatus !== 'all' || selectedBank) && (
+                <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
                   {[
                     !!searchText,
+                    !!selectedMonth,
                     selectedStatus !== 'all',
-                    selectedBank !== 'all'
+                    !!selectedBank
                   ].filter(Boolean).length}
                 </span>
               )}
             </div>
             {isFiltersExpanded ? (
-              <ChevronUp className="h-5 w-5 text-primary transition-transform duration-200 font-bold" />
+              <ChevronUp className="h-5 w-5 text-muted-foreground transition-transform duration-200" />
             ) : (
-              <ChevronDown className="h-5 w-5 text-primary transition-transform duration-200 font-bold" />
+              <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200" />
             )}
           </button>
 
@@ -431,9 +472,8 @@ const RecurringTransactions: React.FC = () => {
               </div>
 
               {/* Desktop: Horizontal Layout */}
-              <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Search</Label>
+              <div className="hidden md:flex flex-wrap items-center gap-4">
+                <div className="flex-1 min-w-[200px]">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -472,8 +512,7 @@ const RecurringTransactions: React.FC = () => {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Bank Account</Label>
+                <div className="flex-1 min-w-[160px]">
                   <Select value={selectedBank} onValueChange={(val) => {
                     setSelectedBank(val);
                     setCurrentPage(0);
@@ -492,12 +531,7 @@ const RecurringTransactions: React.FC = () => {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium opacity-0">Clear</Label>
-                  <Button variant="outline" onClick={clearFilters} className="w-full">
-                    Clear Filters
-                  </Button>
-                </div>
+                <Button variant="ghost" onClick={clearFilters}>Clear</Button>
               </div>
             </div>
           </div>
@@ -555,12 +589,9 @@ const RecurringTransactions: React.FC = () => {
                     <SelectTrigger className="text-sm">
                       <SelectValue placeholder="USD" />
                     </SelectTrigger>
-                    <SelectContent className="text-sm">
-                      {CURRENCIES.map((c) => (
-                        <SelectItem key={c.code} value={c.code} className="text-sm">
-                          {c.symbol} {c.name}
-                        </SelectItem>
-                      ))}
+                    <SelectContent className="text-sm bg-background">
+                      <SelectItem value="USD" className="text-sm">$ US Dollar</SelectItem>
+                      <SelectItem value="INR" className="text-sm">₹ Indian Rupee</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -623,19 +654,24 @@ const RecurringTransactions: React.FC = () => {
                   <Select
                     value={formData.bank_account_id}
                     onValueChange={(val) => setFormData({ ...formData, bank_account_id: val })}
+                    disabled={filteredBankAccountsForAdd.length === 0}
                   >
                     <SelectTrigger className="text-sm">
-                      <SelectValue placeholder="Select bank account" />
+                      <SelectValue placeholder={filteredBankAccountsForAdd.length === 0 ? `No ${formData.currency} accounts` : "Select bank account"} />
                     </SelectTrigger>
-                    <SelectContent className="text-sm">
-                      {bankAccounts.map((account) => (
+                    <SelectContent className="text-sm bg-background">
+                      {filteredBankAccountsForAdd.map((account) => (
                         <SelectItem key={account.id} value={account.id} className="text-sm">
-                          {account.name}
+                          {account.name} ({account.account_type || 'Debit'})
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  {!formData.bank_account_id && (
+                  {filteredBankAccountsForAdd.length === 0 ? (
+                    <p className="text-xs text-amber-600 mt-1">
+                      No bank accounts available for {formData.currency}. Add a {formData.currency} account first.
+                    </p>
+                  ) : !formData.bank_account_id && (
                     <p className="text-xs text-muted-foreground">Required - select where this payment will be made from</p>
                   )}
                 </div>
@@ -658,7 +694,7 @@ const RecurringTransactions: React.FC = () => {
                 </div>
 
                 <DialogFooter>
-                  <Button type="submit" size="sm" disabled={isAdding}>Save</Button>
+                  <Button type="submit" size="sm" disabled={isAdding || filteredBankAccountsForAdd.length === 0}>Save</Button>
                   <Button variant="outline" size="sm" onClick={resetForm} type="button">
                     Cancel
                   </Button>

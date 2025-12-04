@@ -20,12 +20,19 @@ import { Expense, GroupByPeriod } from '@/types/expense';
 interface ExpenseTimeChartProps {
   expenses: Expense[];
   groupBy: GroupByPeriod;
+  currency?: string;
 }
+
+// Helper to get currency symbol
+const getCurrencySymbol = (currency: string) => currency === 'INR' ? '₹' : '$';
 
 export const ExpenseTimeChart: React.FC<ExpenseTimeChartProps> = ({
   expenses,
   groupBy,
+  currency = 'USD',
 }) => {
+  const symbol = getCurrencySymbol(currency);
+
   // Aggregate and sort expenses into chartData
   const chartData = useMemo(() => {
     if (!expenses.length) return [];
@@ -166,7 +173,7 @@ export const ExpenseTimeChart: React.FC<ExpenseTimeChartProps> = ({
         />
 
         <YAxis
-          tickFormatter={(value) => `$${value}`}
+          tickFormatter={(value) => `${symbol}${value}`}
           tick={{ 
             fill: '#6b7280', 
             fontSize: 11, 
@@ -197,7 +204,7 @@ export const ExpenseTimeChart: React.FC<ExpenseTimeChartProps> = ({
             fontWeight: 600,
             fontSize: '14px'
           }}
-          formatter={(value: number) => [`$${value.toFixed(2)}`, 'Amount']}
+          formatter={(value: number) => [`${symbol}${value.toFixed(2)}`, 'Amount']}
           labelFormatter={(label) => formatTooltipLabel(label as string)}
         />
 

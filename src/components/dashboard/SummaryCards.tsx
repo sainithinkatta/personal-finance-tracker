@@ -6,10 +6,15 @@ import { Expense } from '@/types/expense';
 interface SummaryCardsProps {
   expenses: Expense[];
   currentMonthLabel: string;
+  currency: string;
 }
 
-const SummaryCards: React.FC<SummaryCardsProps> = ({ expenses, currentMonthLabel }) => {
+// Helper to get currency symbol
+const getCurrencySymbol = (currency: string) => currency === 'INR' ? '₹' : '$';
+
+const SummaryCards: React.FC<SummaryCardsProps> = ({ expenses, currentMonthLabel, currency }) => {
   const totalSpent = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const symbol = getCurrencySymbol(currency);
   
   const categoryTotals = expenses.reduce((acc, expense) => {
     acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
@@ -29,7 +34,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ expenses, currentMonthLabel
                 Total Expenses — {currentMonthLabel}
               </p>
               <p className="text-base sm:text-lg font-bold text-info-foreground mt-1 truncate">
-                {expenses.length > 0 ? `$${totalSpent.toFixed(2)}` : `No data`}
+                {expenses.length > 0 ? `${symbol}${totalSpent.toFixed(2)}` : `No data`}
               </p>
             </div>
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-info rounded-full flex items-center justify-center flex-shrink-0">
@@ -52,7 +57,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ expenses, currentMonthLabel
                 <p className="text-base sm:text-lg font-bold text-accent-foreground mt-1 flex items-baseline gap-2 min-w-0">
                   <span className="truncate">{highestCategory[0]}</span>
                   <span className="text-xs sm:text-sm text-accent-foreground/70 flex-shrink-0">
-                    ${Number(highestCategory[1]).toFixed(2)}
+                    {symbol}{Number(highestCategory[1]).toFixed(2)}
                   </span>
                 </p>
               ) : (

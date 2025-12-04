@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, DollarSign, IndianRupee } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { Expense, ExpenseCategory, CURRENCIES } from '@/types/expense';
+import { Expense, ExpenseCategory } from '@/types/expense';
 import { BankAccount } from '@/types/bankAccount';
 import { useBudgets } from '@/hooks/useBudgets';
 
@@ -44,7 +44,37 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
   const [bankAccountId, setBankAccountId] = useState<string>(expense?.bank_account_id || '');
   const [budgetId, setBudgetId] = useState<string>(expense?.budget_id || 'none');
 
-  const activeBudgets = getActiveBudgetsForDate(date);
+  // Filter bank accounts by selected currency
+  const filteredBankAccounts = bankAccounts.filter(
+    (acct) => acct.currency === currency
+  );
+
+  // Clear bank selection when currency changes if current bank doesn't match
+  useEffect(() => {
+    if (bankAccountId) {
+      const selectedBank = bankAccounts.find((b) => b.id === bankAccountId);
+      if (selectedBank && selectedBank.currency !== currency) {
+        setBankAccountId('');
+        toast({
+          title: 'Bank Selection Reset',
+          description: 'Bank selection cleared because currency changed.',
+        });
+      }
+    }
+  }, [currency, bankAccountId, bankAccounts, toast]);
+
+  // Filter budgets by selected currency
+  const activeBudgets = getActiveBudgetsForDate(date).filter(
+    (b) => b.currency === currency
+  );
+
+  const getCurrencySymbol = (code: string) => {
+    return code === 'INR' ? (
+      <IndianRupee className="h-4 w-4" />
+    ) : (
+      <DollarSign className="h-4 w-4" />
+    );
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,16 +82,29 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
       toast({
         title: 'Invalid Amount',
-        description: 'Please enter a valid amount',
+        description: 'Please enter a valid amount greater than 0.',
         variant: 'destructive',
       });
       return;
     }
 
+    // Validate currency-bank match if bank is selected
+    if (bankAccountId) {
+      const selectedBank = bankAccounts.find((b) => b.id === bankAccountId);
+      if (selectedBank && selectedBank.currency !== currency) {
+        toast({
+          title: 'Currency Mismatch',
+          description: 'Selected bank currency does not match expense currency.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
     if (!bankAccountId) {
       toast({
         title: 'Bank Account Required',
-        description: 'Please select a bank account (USD only)',
+        description: 'Please select a bank account.',
         variant: 'destructive',
       });
       return;
@@ -91,9 +134,6 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
       onClose();
     }
   };
-
-  // Filter bank accounts to only those with USD currency:
-  const usdOnlyAccounts = bankAccounts.filter((acct) => acct.currency === 'USD');
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 px-1 sm:px-0">
@@ -131,6 +171,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="USD">$ US Dollar</SelectItem>
+              <SelectItem value="INR">₹ Indian Rupee</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -140,14 +181,14 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
         <Label htmlFor="amount" className="text-sm font-medium">Amount</Label>
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-            $
+            {getCurrencySymbol(currency)}
           </span>
           <Input
             id="amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="pl-8"
+            className="pl-9"
             type="number"
             step="0.01"
             min="0"
@@ -177,26 +218,29 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
 
       <div className="space-y-2">
         <Label htmlFor="bank-account" className="text-sm font-medium">
-          Bank Account (USD only)
+          Bank Account *
         </Label>
-        <Select value={bankAccountId} onValueChange={setBankAccountId} required>
+        <Select
+          value={bankAccountId}
+          onValueChange={setBankAccountId}
+          disabled={filteredBankAccounts.length === 0}
+        >
           <SelectTrigger id="bank-account">
-            <SelectValue placeholder="Select bank account" />
+            <SelectValue placeholder={filteredBankAccounts.length === 0 ? `No ${currency} accounts` : "Select bank account"} />
           </SelectTrigger>
           <SelectContent>
-            {usdOnlyAccounts.length > 0 ? (
-              usdOnlyAccounts.map((account) => (
-                <SelectItem key={account.id} value={account.id}>
-                  {account.name} ({account.currency})
-                </SelectItem>
-              ))
-            ) : (
-              <SelectItem value="no_usd_accounts" disabled>
-                No USD accounts available
+            {filteredBankAccounts.map((account) => (
+              <SelectItem key={account.id} value={account.id}>
+                {account.name} ({account.account_type || 'Debit'})
               </SelectItem>
-            )}
+            ))}
           </SelectContent>
         </Select>
+        {filteredBankAccounts.length === 0 && (
+          <p className="text-sm text-amber-600">
+            No bank accounts available for {currency}. Add a {currency} account first.
+          </p>
+        )}
       </div>
 
       {activeBudgets.length > 0 && (
@@ -212,7 +256,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
               <SelectItem value="none">No budget</SelectItem>
               {activeBudgets.map((budget) => (
                 <SelectItem key={budget.id} value={budget.id}>
-                  {budget.name} ({budget.currency})
+                  {budget.name}
                 </SelectItem>
               ))}
             </SelectContent>

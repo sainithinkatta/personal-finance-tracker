@@ -1,6 +1,13 @@
-import React from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ExpenseTimeChart } from './charts/ExpenseTimeChart';
 import { ExpenseCategoryChart } from './charts/ExpenseCategoryChart';
 import SummaryCards from './dashboard/SummaryCards';
@@ -14,30 +21,91 @@ interface DashboardProps {
   expenses: Expense[];
 }
 
+// Helper to get currency symbol
+const getCurrencySymbol = (currency: string) => currency === 'INR' ? '₹' : '$';
+
 const Dashboard: React.FC<DashboardProps> = ({ expenses }) => {
   const currentMonthLabel = format(new Date(), 'MMM yyyy').toUpperCase();
 
-  // Filter expenses to current month for summary cards and category chart
+  // Currency filter state - default will be set based on user's data
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
+  const [hasInitialized, setHasInitialized] = useState(false);
+
+  // Determine default currency based on user's expense data (run once)
+  useEffect(() => {
+    if (!hasInitialized && expenses.length > 0) {
+      const currencies = [...new Set(expenses.map(e => e.currency))];
+      if (currencies.length === 1) {
+        setSelectedCurrency(currencies[0]);
+      } else {
+        setSelectedCurrency('USD');
+      }
+      setHasInitialized(true);
+    } else if (!hasInitialized && expenses.length === 0) {
+      setHasInitialized(true);
+    }
+  }, [expenses, hasInitialized]);
+
+  // Filter expenses by selected currency
+  const currencyFilteredExpenses = useMemo(() => 
+    expenses.filter(e => e.currency === selectedCurrency),
+    [expenses, selectedCurrency]
+  );
+
+  // Filter to current month for summary cards and category chart
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
 
-  const currentMonthExpenses = expenses.filter(expense => {
-    const expenseDate = new Date(expense.date);
-    return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
-  });
+  const currentMonthExpenses = useMemo(() => 
+    currencyFilteredExpenses.filter(expense => {
+      const expenseDate = new Date(expense.date);
+      return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
+    }),
+    [currencyFilteredExpenses, currentMonth, currentYear]
+  );
 
   // Fetch bank accounts for bank-wise breakdown
   const { bankAccounts } = useBankAccounts();
 
-  // Calculate bank-wise category breakdown for current month
+  // Calculate bank-wise category breakdown for current month (filtered by currency)
   const bankWiseBreakdown = useBankWiseBreakdown(currentMonthExpenses, bankAccounts);
 
   return (
     <div className="p-3 md:p-6 space-y-4 md:space-y-6 bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200/60 shadow-sm">
+      {/* Header with Currency Filter */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-gray-800">Dashboard</h2>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground hidden sm:inline">Currency:</span>
+          <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+            <SelectTrigger className="w-[100px] h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-background">
+              <SelectItem value="USD">$ USD</SelectItem>
+              <SelectItem value="INR">₹ INR</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Empty State Message */}
+      {currencyFilteredExpenses.length === 0 && (
+        <div className="text-center py-8 bg-muted/30 rounded-lg border border-dashed border-muted-foreground/30">
+          <p className="text-muted-foreground">
+            No {selectedCurrency} transactions yet. Add an expense or income in {selectedCurrency} to see analytics.
+          </p>
+        </div>
+      )}
+
       {/* Summary Cards */}
       <div className="mb-6 md:mb-8">
-        <SummaryCards expenses={currentMonthExpenses} currentMonthLabel={currentMonthLabel} />
+        <SummaryCards 
+          expenses={currentMonthExpenses} 
+          currentMonthLabel={currentMonthLabel} 
+          currency={selectedCurrency}
+        />
       </div>
 
       {/* Charts Section - Mobile Responsive */}
@@ -55,7 +123,7 @@ const Dashboard: React.FC<DashboardProps> = ({ expenses }) => {
             <CardContent className="p-2 md:p-3">
               <div className="h-[300px] md:h-[340px] w-full bg-gray-50/30 rounded-md p-2 md:p-2 flex items-center justify-center">
                 {currentMonthExpenses.length > 0 ? (
-                  <ExpenseCategoryChart expenses={currentMonthExpenses} />
+                  <ExpenseCategoryChart expenses={currentMonthExpenses} currency={selectedCurrency} />
                 ) : (
                   <div className="text-center text-gray-500">
                     <p className="text-xs md:text-sm">No data for {currentMonthLabel}</p>
@@ -70,6 +138,7 @@ const Dashboard: React.FC<DashboardProps> = ({ expenses }) => {
             <BankWiseCategoryBreakdown
               data={bankWiseBreakdown}
               currentMonthLabel={currentMonthLabel}
+              currency={selectedCurrency}
             />
           </div>
         </div>
@@ -106,17 +175,17 @@ const Dashboard: React.FC<DashboardProps> = ({ expenses }) => {
               </TabsList>
               <TabsContent value="daily" className="mt-0">
                 <div className="h-[250px] md:h-[300px] w-full bg-gray-50/30 rounded-md p-1 md:p-2">
-                  <ExpenseTimeChart expenses={expenses} groupBy="day" />
+                  <ExpenseTimeChart expenses={currencyFilteredExpenses} groupBy="day" currency={selectedCurrency} />
                 </div>
               </TabsContent>
               <TabsContent value="monthly" className="mt-0">
                 <div className="h-[250px] md:h-[300px] w-full bg-gray-50/30 rounded-md p-1 md:p-2">
-                  <ExpenseTimeChart expenses={expenses} groupBy="month" />
+                  <ExpenseTimeChart expenses={currencyFilteredExpenses} groupBy="month" currency={selectedCurrency} />
                 </div>
               </TabsContent>
               <TabsContent value="yearly" className="mt-0">
                 <div className="h-[250px] md:h-[300px] w-full bg-gray-50/30 rounded-md p-1 md:p-2">
-                  <ExpenseTimeChart expenses={expenses} groupBy="year" />
+                  <ExpenseTimeChart expenses={currencyFilteredExpenses} groupBy="year" currency={selectedCurrency} />
                 </div>
               </TabsContent>
             </Tabs>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,8 +17,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { RecurringTransaction, RecurringTransactionFormData } from '@/types/recurringTransaction';
-import { CURRENCIES, ExpenseCategory } from '@/types/expense';
+import { ExpenseCategory } from '@/types/expense';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
+import { useToast } from '@/hooks/use-toast';
 
 interface EditRecurringTransactionFormProps {
   transaction: RecurringTransaction | null;
@@ -36,6 +37,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
   isLoading,
 }) => {
   const { bankAccounts } = useBankAccounts();
+  const { toast } = useToast();
   const [formData, setFormData] = useState<RecurringTransactionFormData & { status?: 'pending' | 'done' }>({
     name: '',
     amount: 0,
@@ -49,8 +51,11 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
     status: 'pending',
   });
 
+  // Track if form is initialized to avoid resetting on every render
+  const [isInitialized, setIsInitialized] = useState(false);
+
   useEffect(() => {
-    if (transaction) {
+    if (transaction && isOpen) {
       setFormData({
         name: transaction.name,
         amount: transaction.amount,
@@ -63,21 +68,69 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
         bank_account_id: transaction.bank_account_id || '',
         status: transaction.status,
       });
+      setIsInitialized(true);
     }
-  }, [transaction]);
+  }, [transaction, isOpen]);
+
+  // Filter bank accounts by selected currency
+  const filteredBankAccounts = useMemo(() => 
+    bankAccounts.filter(account => account.currency === formData.currency),
+    [bankAccounts, formData.currency]
+  );
+
+  // Clear bank selection when currency changes and bank is incompatible
+  useEffect(() => {
+    if (!isInitialized) return;
+    
+    if (formData.bank_account_id) {
+      const selectedBank = bankAccounts.find(b => b.id === formData.bank_account_id);
+      if (selectedBank && selectedBank.currency !== formData.currency) {
+        setFormData(prev => ({ ...prev, bank_account_id: '' }));
+        toast({
+          title: 'Bank Selection Reset',
+          description: 'Bank selection cleared because currency changed.',
+        });
+      }
+    }
+  }, [formData.currency, bankAccounts, isInitialized]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate bank account is selected
+    if (!formData.bank_account_id) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please select a bank account.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate currency-bank match
+    const selectedBank = bankAccounts.find(b => b.id === formData.bank_account_id);
+    if (selectedBank && selectedBank.currency !== formData.currency) {
+      toast({
+        title: 'Currency Mismatch',
+        description: 'Selected bank currency does not match the chosen currency.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (transaction) {
       onSave(transaction.id, formData);
     }
   };
 
   const handleClose = () => {
+    setIsInitialized(false);
     onClose();
   };
 
   if (!transaction) return null;
+
+  const noBanksForCurrency = filteredBankAccounts.length === 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -136,12 +189,13 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
               <SelectTrigger className="text-sm">
                 <SelectValue placeholder="USD" />
               </SelectTrigger>
-              <SelectContent className="text-sm">
-                {CURRENCIES.map((c) => (
-                  <SelectItem key={c.code} value={c.code} className="text-sm">
-                    {c.symbol} {c.name}
-                  </SelectItem>
-                ))}
+              <SelectContent className="text-sm bg-background">
+                <SelectItem value="USD" className="text-sm">
+                  $ US Dollar
+                </SelectItem>
+                <SelectItem value="INR" className="text-sm">
+                  ₹ Indian Rupee
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -159,7 +213,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
               <SelectTrigger className="text-sm">
                 <SelectValue placeholder="Bills" />
               </SelectTrigger>
-              <SelectContent className="text-sm">
+              <SelectContent className="text-sm bg-background">
                 <SelectItem value="Groceries" className="text-sm">
                   Groceries
                 </SelectItem>
@@ -192,7 +246,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
               <SelectTrigger className="text-sm">
                 <SelectValue placeholder="Monthly" />
               </SelectTrigger>
-              <SelectContent className="text-sm">
+              <SelectContent className="text-sm bg-background">
                 <SelectItem value="daily" className="text-sm">
                   Daily
                 </SelectItem>
@@ -232,18 +286,24 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
             <Select
               value={formData.bank_account_id}
               onValueChange={(val) => setFormData({ ...formData, bank_account_id: val })}
+              disabled={noBanksForCurrency}
             >
               <SelectTrigger className="text-sm">
-                <SelectValue placeholder="Select bank account" />
+                <SelectValue placeholder={noBanksForCurrency ? `No ${formData.currency} accounts` : "Select bank account"} />
               </SelectTrigger>
-              <SelectContent className="text-sm">
-                {bankAccounts.map((account) => (
+              <SelectContent className="text-sm bg-background">
+                {filteredBankAccounts.map((account) => (
                   <SelectItem key={account.id} value={account.id} className="text-sm">
-                    {account.name}
+                    {account.name} ({account.account_type || 'Debit'})
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {noBanksForCurrency && (
+              <p className="text-xs text-amber-600 mt-1">
+                No bank accounts available for {formData.currency}. Add a {formData.currency} account first.
+              </p>
+            )}
           </div>
 
           <div className="space-y-1">
@@ -282,7 +342,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
               <SelectTrigger className="text-sm">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="text-sm">
+              <SelectContent className="text-sm bg-background">
                 <SelectItem value="pending" className="text-sm">
                   Pending
                 </SelectItem>
@@ -294,7 +354,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
           </div>
 
           <DialogFooter>
-            <Button type="submit" size="sm" disabled={isLoading}>
+            <Button type="submit" size="sm" disabled={isLoading || noBanksForCurrency}>
               Save Changes
             </Button>
             <Button

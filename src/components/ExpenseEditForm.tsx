@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, DollarSign, IndianRupee } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { Expense, ExpenseCategory, CURRENCIES } from '@/types/expense';
+import { Expense, ExpenseCategory } from '@/types/expense';
 import { BankAccount } from '@/types/bankAccount';
 import { useBudgets } from '@/hooks/useBudgets';
 
@@ -48,12 +48,41 @@ const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpe
   const [amount, setAmount] = useState<string>(expense.amount.toString());
   const [category, setCategory] = useState<ExpenseCategory>(expense.category);
   const [description, setDescription] = useState<string>(expense.description || '');
-  const [currency, setCurrency] = useState<string>(expense.currency);
-  const [bankAccountId, setBankAccountId] = useState<string>(expense.bank_account_id || 'none');
+  const [currency, setCurrency] = useState<string>(expense.currency || 'USD');
+  const [bankAccountId, setBankAccountId] = useState<string>(expense.bank_account_id || '');
   const [budgetId, setBudgetId] = useState<string>(expense.budget_id || 'none');
 
-  const selectedCurrency = CURRENCIES.find(c => c.code === currency);
-  const activeBudgets = getActiveBudgetsForDate(date);
+  // Filter bank accounts by selected currency
+  const filteredBankAccounts = bankAccounts.filter(
+    (acct) => acct.currency === currency
+  );
+
+  // Clear bank selection when currency changes if current bank doesn't match
+  useEffect(() => {
+    if (bankAccountId) {
+      const selectedBank = bankAccounts.find((b) => b.id === bankAccountId);
+      if (selectedBank && selectedBank.currency !== currency) {
+        setBankAccountId('');
+        toast({
+          title: 'Bank Selection Reset',
+          description: 'Bank selection cleared because currency changed.',
+        });
+      }
+    }
+  }, [currency, bankAccountId, bankAccounts, toast]);
+
+  // Filter budgets by selected currency
+  const activeBudgets = getActiveBudgetsForDate(date).filter(
+    (b) => b.currency === currency
+  );
+
+  const getCurrencySymbol = (code: string) => {
+    return code === 'INR' ? (
+      <IndianRupee className="h-4 w-4" />
+    ) : (
+      <DollarSign className="h-4 w-4" />
+    );
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +90,30 @@ const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpe
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
       toast({
         title: 'Invalid Amount',
-        description: 'Please enter a valid amount',
+        description: 'Please enter a valid amount greater than 0.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate currency-bank match if bank is selected
+    if (bankAccountId) {
+      const selectedBank = bankAccounts.find((b) => b.id === bankAccountId);
+      if (selectedBank && selectedBank.currency !== currency) {
+        toast({
+          title: 'Currency Mismatch',
+          description: 'Selected bank currency does not match expense currency.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
+    // Bank account is required
+    if (!bankAccountId) {
+      toast({
+        title: 'Bank Account Required',
+        description: 'Please select a bank account.',
         variant: 'destructive',
       });
       return;
@@ -73,7 +125,7 @@ const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpe
       category,
       description,
       currency,
-      bank_account_id: bankAccountId === 'none' ? undefined : bankAccountId,
+      bank_account_id: bankAccountId,
       budget_id: budgetId === 'none' ? undefined : budgetId,
     };
 
@@ -115,11 +167,8 @@ const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpe
               <SelectValue placeholder="Select currency" />
             </SelectTrigger>
             <SelectContent>
-              {CURRENCIES.map((curr) => (
-                <SelectItem key={curr.code} value={curr.code}>
-                  {curr.symbol} {curr.name}
-                </SelectItem>
-              ))}
+              <SelectItem value="USD">$ US Dollar</SelectItem>
+              <SelectItem value="INR">₹ Indian Rupee</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -129,14 +178,14 @@ const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpe
         <Label htmlFor="edit-amount">Amount</Label>
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-            $
+            {getCurrencySymbol(currency)}
           </span>
           <Input
             id="edit-amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="pl-8"
+            className="pl-9"
             type="number"
             step="0.01"
             min="0"
@@ -161,26 +210,30 @@ const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpe
         </Select>
       </div>
 
-      {bankAccounts.length > 0 && (
-        <div className="space-y-2">
-          <Label htmlFor="edit-bank-account">
-            Bank Account <span className="text-muted-foreground">(Optional)</span>
-          </Label>
-          <Select value={bankAccountId} onValueChange={setBankAccountId}>
-            <SelectTrigger id="edit-bank-account">
-              <SelectValue placeholder="Select bank account" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">No bank account</SelectItem>
-              {bankAccounts.map((account) => (
-                <SelectItem key={account.id} value={account.id}>
-                  {account.name} ({account.currency})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+      <div className="space-y-2">
+        <Label htmlFor="edit-bank-account">Bank Account *</Label>
+        <Select
+          value={bankAccountId}
+          onValueChange={setBankAccountId}
+          disabled={filteredBankAccounts.length === 0}
+        >
+          <SelectTrigger id="edit-bank-account">
+            <SelectValue placeholder={filteredBankAccounts.length === 0 ? `No ${currency} accounts` : "Select bank account"} />
+          </SelectTrigger>
+          <SelectContent>
+            {filteredBankAccounts.map((account) => (
+              <SelectItem key={account.id} value={account.id}>
+                {account.name} ({account.account_type || 'Debit'})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {filteredBankAccounts.length === 0 && (
+          <p className="text-sm text-amber-600">
+            No bank accounts available for {currency}. Add a {currency} account first.
+          </p>
+        )}
+      </div>
 
       {activeBudgets.length > 0 && (
         <div className="space-y-2">
@@ -195,7 +248,7 @@ const ExpenseEditForm: React.FC<ExpenseEditFormProps> = ({ expense, onUpdateExpe
               <SelectItem value="none">No budget</SelectItem>
               {activeBudgets.map((budget) => (
                 <SelectItem key={budget.id} value={budget.id}>
-                  {budget.name} ({budget.currency})
+                  {budget.name}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -6,7 +6,11 @@ import { ExpenseCategory, CategoryBankBreakdown } from '@/types/expense';
 interface BankWiseCategoryBreakdownProps {
   data: CategoryBankBreakdown[];
   currentMonthLabel: string;
+  currency?: string;
 }
+
+// Helper to get currency symbol
+const getCurrencySymbol = (currency: string) => currency === 'INR' ? '₹' : '$';
 
 // Category colors
 const COLORS: Record<ExpenseCategory, string> = {
@@ -74,9 +78,11 @@ const transformToBankGrouped = (data: CategoryBankBreakdown[]): BankCategorySpen
 export const BankWiseCategoryBreakdown: React.FC<BankWiseCategoryBreakdownProps> = ({
   data,
   currentMonthLabel,
+  currency = 'USD',
 }) => {
   const bankGroupedData = transformToBankGrouped(data);
   const grandTotal = bankGroupedData.reduce((sum, bank) => sum + bank.total, 0);
+  const symbol = getCurrencySymbol(currency);
 
   return (
     <Card className="bg-white/90 backdrop-blur-sm border border-gray-200/60 shadow-sm hover:shadow-md transition-shadow duration-200 h-full flex flex-col min-h-0 overflow-hidden">
@@ -88,7 +94,7 @@ export const BankWiseCategoryBreakdown: React.FC<BankWiseCategoryBreakdownProps>
             <span className="ml-2 text-xs font-normal text-gray-500">({currentMonthLabel})</span>
           </CardTitle>
           {grandTotal > 0 && (
-            <span className="text-sm font-bold text-gray-900">${grandTotal.toFixed(2)}</span>
+            <span className="text-sm font-bold text-gray-900">{symbol}{grandTotal.toFixed(2)}</span>
           )}
         </div>
       </CardHeader>
@@ -134,7 +140,7 @@ export const BankWiseCategoryBreakdown: React.FC<BankWiseCategoryBreakdownProps>
                     </div>
                   </div>
                   <span className="text-sm font-bold text-gray-900">
-                    ${bank.total.toFixed(2)}
+                    {symbol}{bank.total.toFixed(2)}
                   </span>
                 </div>
 
@@ -151,7 +157,7 @@ export const BankWiseCategoryBreakdown: React.FC<BankWiseCategoryBreakdownProps>
                       />
                       <span className="text-xs text-gray-700 font-medium">{category}</span>
                       <span className="text-xs font-semibold text-gray-900">
-                        ${amount.toFixed(2)}
+                        {symbol}{amount.toFixed(2)}
                       </span>
                     </div>
                   ))}

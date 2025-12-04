@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bell, Plus } from 'lucide-react';
+import { Bell, Plus, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
@@ -17,6 +16,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import ExpenseForm from '@/components/ExpenseForm';
+import AddIncomeModal from '@/components/AddIncomeModal';
 
 const UtilityPanel: React.FC = () => {
   const navigate = useNavigate();
@@ -24,6 +24,7 @@ const UtilityPanel: React.FC = () => {
   const { bankAccounts } = useBankAccounts();
   const { addExpense } = useExpenses();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const [isAddIncomeOpen, setIsAddIncomeOpen] = useState(false);
 
   // Filter out transactions that are marked as 'done' from upcoming reminders
   const upcomingReminders = getUpcomingReminders().filter(tx => tx.status !== 'done');
@@ -96,6 +97,16 @@ const UtilityPanel: React.FC = () => {
         Add Expense
       </Button>
 
+      {/* Add Income Button */}
+      <Button
+        onClick={() => setIsAddIncomeOpen(true)}
+        variant="outline"
+        className="w-full h-11 text-sm font-medium"
+      >
+        <TrendingUp className="h-5 w-5 mr-2" />
+        Add Income
+      </Button>
+
       {/* Upcoming Payments & Reminders */}
       <Card className="rounded-lg shadow-sm">
         <CardHeader className="p-4 pb-2">
@@ -154,6 +165,12 @@ const UtilityPanel: React.FC = () => {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Add Income Modal */}
+      <AddIncomeModal
+        open={isAddIncomeOpen}
+        onOpenChange={setIsAddIncomeOpen}
+      />
     </aside>
   );
 };
