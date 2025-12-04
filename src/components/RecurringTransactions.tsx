@@ -488,29 +488,26 @@ const RecurringTransactions: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Status</Label>
-                  <Select value={selectedStatus} onValueChange={(val: 'all' | 'pending' | 'upcoming' | 'done') => {
-                    setSelectedStatus(val);
-                    setCurrentPage(0);
-                  }}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="pending">
-                        <Badge variant="outline" className="bg-warning-muted text-warning-foreground">Pending</Badge>
-                      </SelectItem>
-                      <SelectItem value="upcoming">
-                        <Badge variant="outline" className="bg-info-muted text-info-foreground">Upcoming</Badge>
-                      </SelectItem>
-                      <SelectItem value="done">
-                        <Badge variant="outline" className="bg-accent-muted text-accent-foreground">Completed</Badge>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Select value={selectedStatus} onValueChange={(val: 'all' | 'pending' | 'upcoming' | 'done') => {
+                  setSelectedStatus(val);
+                  setCurrentPage(0);
+                }}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="pending">
+                      <Badge variant="outline" className="bg-warning-muted text-warning-foreground">Pending</Badge>
+                    </SelectItem>
+                    <SelectItem value="upcoming">
+                      <Badge variant="outline" className="bg-info-muted text-info-foreground">Upcoming</Badge>
+                    </SelectItem>
+                    <SelectItem value="done">
+                      <Badge variant="outline" className="bg-accent-muted text-accent-foreground">Completed</Badge>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
 
                 <div className="flex-1 min-w-[160px]">
                   <Select value={selectedBank} onValueChange={(val) => {
