@@ -87,8 +87,9 @@ export const useIncome = () => {
       return { success: true };
     },
     onSuccess: () => {
-      // Only invalidate bank-accounts as requested
+      // Invalidate bank-accounts to refresh balances
       queryClient.invalidateQueries({ queryKey: ['bank-accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['expenses'] }); // Refresh dashboard data
       toast({
         title: 'Income Added',
         description: 'Bank balance updated successfully.',

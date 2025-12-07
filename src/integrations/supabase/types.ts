@@ -17,6 +17,7 @@ export type Database = {
       bank_accounts: {
         Row: {
           account_type: string | null
+          apr: number | null
           available_balance: number | null
           balance: number
           created_at: string
@@ -24,6 +25,7 @@ export type Database = {
           currency: string
           due_balance: number | null
           id: string
+          minimum_payment: number | null
           name: string
           payment_due_date: number | null
           updated_at: string
@@ -31,6 +33,7 @@ export type Database = {
         }
         Insert: {
           account_type?: string | null
+          apr?: number | null
           available_balance?: number | null
           balance?: number
           created_at?: string
@@ -38,6 +41,7 @@ export type Database = {
           currency?: string
           due_balance?: number | null
           id?: string
+          minimum_payment?: number | null
           name: string
           payment_due_date?: number | null
           updated_at?: string
@@ -45,6 +49,7 @@ export type Database = {
         }
         Update: {
           account_type?: string | null
+          apr?: number | null
           available_balance?: number | null
           balance?: number
           created_at?: string
@@ -52,6 +57,7 @@ export type Database = {
           currency?: string
           due_balance?: number | null
           id?: string
+          minimum_payment?: number | null
           name?: string
           payment_due_date?: number | null
           updated_at?: string
@@ -134,6 +140,107 @@ export type Database = {
         }
         Relationships: []
       }
+      debt_payments: {
+        Row: {
+          created_at: string
+          debt_id: string
+          id: string
+          interest_paid: number
+          notes: string | null
+          payment_amount: number
+          payment_date: string
+          principal_paid: number
+        }
+        Insert: {
+          created_at?: string
+          debt_id: string
+          id?: string
+          interest_paid: number
+          notes?: string | null
+          payment_amount: number
+          payment_date?: string
+          principal_paid: number
+        }
+        Update: {
+          created_at?: string
+          debt_id?: string
+          id?: string
+          interest_paid?: number
+          notes?: string | null
+          payment_amount?: number
+          payment_date?: string
+          principal_paid?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "debt_payments_debt_id_fkey"
+            columns: ["debt_id"]
+            isOneToOne: false
+            referencedRelation: "debts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      debts: {
+        Row: {
+          created_at: string
+          currency: string
+          current_balance: number
+          debt_name: string
+          debt_type: string
+          id: string
+          interest_rate: number
+          minimum_payment: number
+          notes: string | null
+          payment_due_day: number | null
+          payoff_strategy: string | null
+          principal_amount: number
+          start_date: string
+          status: string
+          target_payoff_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          current_balance: number
+          debt_name: string
+          debt_type?: string
+          id?: string
+          interest_rate?: number
+          minimum_payment: number
+          notes?: string | null
+          payment_due_day?: number | null
+          payoff_strategy?: string | null
+          principal_amount: number
+          start_date?: string
+          status?: string
+          target_payoff_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          current_balance?: number
+          debt_name?: string
+          debt_type?: string
+          id?: string
+          interest_rate?: number
+          minimum_payment?: number
+          notes?: string | null
+          payment_due_day?: number | null
+          payoff_strategy?: string | null
+          principal_amount?: number
+          start_date?: string
+          status?: string
+          target_payoff_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       dues: {
         Row: {
           amount: number
@@ -179,7 +286,7 @@ export type Database = {
         }
         Relationships: []
       }
-        expenses: {
+      expenses: {
         Row: {
           amount: number
           bank_account_id: string | null
@@ -236,9 +343,48 @@ export type Database = {
           },
         ]
       }
+      income: {
+        Row: {
+          amount: number
+          bank_account_id: string
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          bank_account_id: string
+          created_at?: string
+          currency: string
+          description?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          bank_account_id?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "income_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recurring_transactions: {
         Row: {
           amount: number
+          bank_account_id: string | null
           category: Database["public"]["Enums"]["expense_category"]
           created_at: string
           currency: string
@@ -257,6 +403,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          bank_account_id?: string | null
           category: Database["public"]["Enums"]["expense_category"]
           created_at?: string
           currency?: string
@@ -275,6 +422,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          bank_account_id?: string | null
           category?: Database["public"]["Enums"]["expense_category"]
           created_at?: string
           currency?: string
@@ -291,7 +439,15 @@ export type Database = {
           user_id?: string | null
           user_timezone?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "recurring_transactions_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       savings_contributions: {
         Row: {

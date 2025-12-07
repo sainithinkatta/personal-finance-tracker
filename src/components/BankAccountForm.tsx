@@ -32,6 +32,8 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ onClose, account, ban
   const [creditLimit, setCreditLimit] = useState(account?.credit_limit?.toString() || '');
   const [availableBalance, setAvailableBalance] = useState(account?.available_balance?.toString() || '');
   const [paymentDueDate, setPaymentDueDate] = useState(account?.payment_due_date?.toString() || '');
+  const [apr, setApr] = useState(account?.apr?.toString() || '0');
+  const [minimumPayment, setMinimumPayment] = useState(account?.minimum_payment?.toString() || '');
   const [availableBalanceError, setAvailableBalanceError] = useState('');
 
   const isEditing = !!account;
@@ -115,6 +117,8 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ onClose, account, ban
         available_balance: Number(availableBalance),
         due_balance: computedDueBalance,
         payment_due_date: Number(paymentDueDate),
+        apr: Number(apr) || 0,
+        minimum_payment: Number(minimumPayment) || 0,
       }),
     };
 
@@ -216,6 +220,35 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ onClose, account, ban
               required
             />
             <p className="text-xs text-muted-foreground">Day of month when payment is due (1-31)</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="apr">APR (Annual Percentage Rate)</Label>
+            <Input
+              id="apr"
+              value={apr}
+              onChange={(e) => setApr(e.target.value)}
+              placeholder="e.g., 18.99"
+              type="number"
+              step="0.01"
+              min="0"
+              max="100"
+            />
+            <p className="text-xs text-muted-foreground">Interest rate for payoff calculations</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="minimum-payment">Minimum Payment</Label>
+            <Input
+              id="minimum-payment"
+              value={minimumPayment}
+              onChange={(e) => setMinimumPayment(e.target.value)}
+              placeholder="e.g., 500"
+              type="number"
+              step="0.01"
+              min="0"
+            />
+            <p className="text-xs text-muted-foreground">Monthly minimum payment amount</p>
           </div>
 
           {creditLimit && availableBalance && (

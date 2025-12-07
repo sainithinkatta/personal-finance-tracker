@@ -2,15 +2,15 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Trash2, Edit, Check, AlertCircle, Building2 } from 'lucide-react';
-import { RecurringTransaction } from '@/types/recurringTransaction';
-import { CURRENCIES } from '@/types/expense';
+import { RecurringTransactionWithStatus } from '@/hooks/useRecurringTransactions';
 import { format, differenceInDays } from 'date-fns';
 import { parseLocalDate } from '@/utils/dateUtils';
 import { BankAccount } from '@/types/bankAccount';
+import { getStatusDisplayText, getStatusBadgeClass, ComputedStatus } from '@/utils/recurringStatusUtils';
 
 interface RecurringTransactionCardProps {
-  transaction: RecurringTransaction;
-  onEdit: (transaction: RecurringTransaction) => void;
+  transaction: RecurringTransactionWithStatus;
+  onEdit: (transaction: RecurringTransactionWithStatus) => void;
   onDelete: (id: string) => void;
   onMarkAsDone: () => void;
   isMarkingDone?: boolean;
@@ -32,9 +32,10 @@ const getFrequencyBadgeColor = (frequency: string) => {
   }
 };
 
+const getCurrencySymbol = (currency: string) => currency === 'INR' ? '₹' : '$';
+
 const formatCurrency = (amount: number, currency: string) => {
-  const currencyInfo = CURRENCIES.find((c) => c.code === currency);
-  return `${currencyInfo?.symbol || currency}${amount.toFixed(2)}`;
+  return `${getCurrencySymbol(currency)}${amount.toFixed(2)}`;
 };
 
 export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> = ({
@@ -45,7 +46,11 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
   isMarkingDone = false,
   bankAccounts = [],
 }) => {
-  const isDone = transaction.status === 'done';
+  // Use computed status instead of DB status
+  const computedStatus = transaction.computedStatus;
+  const isDone = computedStatus === 'done';
+  const isPending = computedStatus === 'pending';
+  
   const dueDate = parseLocalDate(transaction.next_due_date);
   const daysUntilDue = differenceInDays(dueDate, new Date());
 
@@ -54,6 +59,9 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
   const bankName = bankAccount?.name || 'No bank assigned';
 
   const getDueText = () => {
+    if (isDone) {
+      return 'Completed';
+    }
     if (daysUntilDue < 0) {
       return `Overdue by ${Math.abs(daysUntilDue)} day${Math.abs(daysUntilDue) === 1 ? '' : 's'}`;
     } else if (daysUntilDue === 0) {
@@ -66,6 +74,9 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
   };
 
   const getDueColorClass = () => {
+    if (isDone) {
+      return 'text-accent font-semibold';
+    }
     if (daysUntilDue < 0) {
       return 'text-destructive font-semibold'; // Red for overdue
     } else if (daysUntilDue <= 1) {
@@ -83,11 +94,19 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
       <div className="p-4">
         <div className="flex gap-3">
           {/* Date Section - Calendar Style */}
-          <div className="flex-shrink-0 w-16 h-16 flex flex-col items-center justify-center bg-gradient-to-br from-info-muted to-info-muted/50 rounded-xl border border-info/20">
+          <div className={`flex-shrink-0 w-16 h-16 flex flex-col items-center justify-center rounded-xl border ${
+            isDone 
+              ? 'bg-accent-muted/50 border-accent/20' 
+              : isPending 
+                ? 'bg-destructive/10 border-destructive/20' 
+                : 'bg-gradient-to-br from-info-muted to-info-muted/50 border-info/20'
+          }`}>
             <div className="text-2xl font-bold text-foreground leading-none">
               {format(dueDate, 'dd')}
             </div>
-            <div className="text-xs font-semibold text-info-foreground uppercase mt-0.5">
+            <div className={`text-xs font-semibold uppercase mt-0.5 ${
+              isDone ? 'text-accent' : isPending ? 'text-destructive' : 'text-info-foreground'
+            }`}>
               {format(dueDate, 'MMM')}
             </div>
             <div className="text-xs text-muted-foreground capitalize">
@@ -127,25 +146,28 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
               <span className="truncate">{bankName}</span>
             </div>
 
-            {/* Next Due Date and Frequency */}
+            {/* Status, Due Date and Frequency */}
             <div className="flex items-center gap-2 flex-wrap">
+              {/* Status Badge */}
+              <Badge
+                variant="outline"
+                className={`text-xs ${getStatusBadgeClass(computedStatus)}`}
+              >
+                {isPending && <AlertCircle className="h-3 w-3 mr-1" />}
+                {isDone && <Check className="h-3 w-3 mr-1" />}
+                {getStatusDisplayText(computedStatus)}
+              </Badge>
+              
               <span className={`text-xs flex items-center gap-1 ${getDueColorClass()}`}>
-                {daysUntilDue < 0 && (
-                  <AlertCircle className="h-3 w-3" />
-                )}
                 {getDueText()}
               </span>
+              
               <Badge
                 variant="outline"
                 className={`text-xs ${getFrequencyBadgeColor(transaction.frequency)}`}
               >
                 {transaction.frequency.charAt(0).toUpperCase() + transaction.frequency.slice(1)}
               </Badge>
-              {isDone && (
-                <Badge variant="outline" className="bg-accent-muted text-accent-foreground text-xs">
-                  ✓ Done
-                </Badge>
-              )}
             </div>
           </div>
         </div>

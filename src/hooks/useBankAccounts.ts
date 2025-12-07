@@ -38,6 +38,8 @@ export const useBankAccounts = () => {
       const processedData = {
         ...accountData,
         balance: accountData.account_type === 'Credit' ? (accountData.credit_limit || 0) : accountData.balance,
+        apr: accountData.account_type === 'Credit' ? (accountData.apr ?? 0) : null,
+        minimum_payment: accountData.account_type === 'Credit' ? (accountData.minimum_payment ?? 0) : null,
         user_id: user.id,
       };
 
@@ -73,6 +75,8 @@ export const useBankAccounts = () => {
       const processedData = {
         ...data,
         balance: data.account_type === 'Credit' ? (data.credit_limit || 0) : data.balance,
+        apr: data.account_type === 'Credit' ? (data.apr ?? 0) : null,
+        minimum_payment: data.account_type === 'Credit' ? (data.minimum_payment ?? 0) : null,
         updated_at: new Date().toISOString(),
       };
 

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Menu, PanelLeftClose, PanelLeftOpen, Wallet } from "lucide-react";
 import Dashboard from "@/components/Dashboard";
 import ExpenseList from "@/components/ExpenseList";
 import FilterPanel from "@/components/FilterPanel";
@@ -10,16 +10,15 @@ import BudgetManager from "@/components/BudgetManager";
 import RecurringTransactions from "@/components/RecurringTransactions";
 import SavingsGoals from "@/components/SavingsGoals";
 import DuesManager from "@/components/DuesManager";
+import CreditAnalysisDashboard from "@/components/credit-analysis/CreditAnalysisDashboard";
 import Sidebar from "@/components/layout/Sidebar";
 import UtilityPanel from "@/components/layout/UtilityPanel";
 import FloatingActionButton from "@/components/layout/FloatingActionButton";
-import  { MobileReminders }from "@/components/layout/MobileReminders";
+import { MobileReminders } from "@/components/layout/MobileReminders";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useBankAccounts } from "@/hooks/useBankAccounts";
 import { FilterOptions } from "@/types/expense";
 import { filterExpenses } from "@/utils/expenseUtils";
-
-import {Wallet } from 'lucide-react';
 
 const Index = () => {
   const { expenses, isLoading } = useExpenses();
@@ -151,11 +150,17 @@ const Index = () => {
                         >
                           Savings
                         </TabsTrigger>
+                        <TabsTrigger
+                          value="credit"
+                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
+                        >
+                          Credit Analysis
+                        </TabsTrigger>
                       </TabsList>
                     </div>
 
                     {/* Desktop: inline tabs */}
-                    <TabsList className="hidden md:grid w-full grid-cols-6 mb-4 bg-white/60 backdrop-blur-sm border border-gray-200/60 shadow-sm rounded-lg p-1">
+                    <TabsList className="hidden md:grid w-full grid-cols-7 mb-4 bg-white/60 backdrop-blur-sm border border-gray-200/60 shadow-sm rounded-lg p-1">
                       <TabsTrigger
                         value="dashboard"
                         className="text-xs lg:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600"
@@ -191,6 +196,12 @@ const Index = () => {
                         className="text-xs lg:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600"
                       >
                         Savings
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="credit"
+                        className="text-xs lg:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600"
+                      >
+                        Credit
                       </TabsTrigger>
                     </TabsList>
 
@@ -291,6 +302,24 @@ const Index = () => {
                         </div>
                         <div className="p-3.5 sm:p-4">
                           <SavingsGoals />
+                        </div>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="credit" className="mt-0">
+                    {activeTab === "credit" && (
+                      <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
+                        <div className="flex flex-col items-start p-3.5 sm:p-4 border-b border-gray-200/60 gap-1">
+                          <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+                            Credit Analysis
+                          </h2>
+                          <p className="text-xs sm:text-sm text-gray-600">
+                            Payoff planner for your credit card dues
+                          </p>
+                        </div>
+                        <div className="p-3.5 sm:p-4">
+                          <CreditAnalysisDashboard />
                         </div>
                       </div>
                     )}

@@ -80,6 +80,8 @@ const BankAccountManager: React.FC = () => {
         available_balance: account.available_balance,
         due_balance: account.due_balance,
         payment_due_date: account.payment_due_date,
+        apr: account.apr ?? 0,
+        minimum_payment: account.minimum_payment ?? 0,
       }),
     });
     setEditingAccount(account.id);
@@ -202,7 +204,7 @@ const BankAccountManager: React.FC = () => {
                     
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="payment_due_date" className="text-right">
-                        Payment Due Date
+                        Due Date (Day)
                       </Label>
                       <Input
                         id="payment_due_date"
@@ -214,6 +216,39 @@ const BankAccountManager: React.FC = () => {
                         className="col-span-3"
                         placeholder="20"
                         required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="apr" className="text-right">
+                        APR (%)
+                      </Label>
+                      <Input
+                        id="apr"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        value={formData.apr ?? ''}
+                        onChange={(e) => setFormData({ ...formData, apr: parseFloat(e.target.value) || 0 })}
+                        className="col-span-3"
+                        placeholder="18.99"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="minimum_payment" className="text-right">
+                        Min. Payment
+                      </Label>
+                      <Input
+                        id="minimum_payment"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={formData.minimum_payment ?? ''}
+                        onChange={(e) => setFormData({ ...formData, minimum_payment: parseFloat(e.target.value) || 0 })}
+                        className="col-span-3"
+                        placeholder="500"
                       />
                     </div>
                   </>

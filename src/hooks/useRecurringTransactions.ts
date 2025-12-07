@@ -4,14 +4,22 @@ import { RecurringTransaction, RecurringTransactionFormData, EditRecurringTransa
 import { useToast } from '@/hooks/use-toast';
 import { addDays, addWeeks, addMonths, addYears, format } from 'date-fns';
 import { parseLocalDate } from '@/utils/dateUtils';
+import { computeRecurringStatus, ComputedStatus } from '@/utils/recurringStatusUtils';
 
 interface RecurringTransactionsFilters {
   searchText?: string;
   status?: 'pending' | 'upcoming' | 'done' | 'all';
   bankAccountId?: string;
+  startDate?: string; // YYYY-MM-DD format
+  endDate?: string;   // YYYY-MM-DD format
   includeCompleted?: boolean;
   limit?: number;
   offset?: number;
+}
+
+// Extended type with computed status
+export interface RecurringTransactionWithStatus extends RecurringTransaction {
+  computedStatus: ComputedStatus;
 }
 
 export const useRecurringTransactions = (filters?: RecurringTransactionsFilters) => {
@@ -24,7 +32,7 @@ export const useRecurringTransactions = (filters?: RecurringTransactionsFilters)
     error,
   } = useQuery({
     queryKey: ['recurring-transactions', filters],
-    queryFn: async () => {
+    queryFn: async (): Promise<RecurringTransactionWithStatus[]> => {
       let query = supabase
         .from('recurring_transactions')
         .select('*')
@@ -35,22 +43,17 @@ export const useRecurringTransactions = (filters?: RecurringTransactionsFilters)
         query = query.ilike('name', `%${filters.searchText}%`);
       }
 
-      // Apply status filter
-      if (filters?.status && filters.status !== 'all') {
-        if (filters.status === 'done') {
-          query = query.eq('status', 'done');
-        } else {
-          // For pending and upcoming, we need pending status
-          query = query.eq('status', 'pending');
-        }
-      } else if (!filters?.includeCompleted) {
-        // Default: exclude completed unless explicitly requested
-        query = query.eq('status', 'pending');
-      }
-
       // Apply bank account filter - only if it's a valid UUID (36 chars)
       if (filters?.bankAccountId && filters.bankAccountId.length === 36) {
         query = query.eq('bank_account_id', filters.bankAccountId);
+      }
+
+      // Apply date range filters on next_due_date
+      if (filters?.startDate) {
+        query = query.gte('next_due_date', filters.startDate);
+      }
+      if (filters?.endDate) {
+        query = query.lte('next_due_date', filters.endDate);
       }
 
       // Apply pagination
@@ -65,22 +68,45 @@ export const useRecurringTransactions = (filters?: RecurringTransactionsFilters)
 
       if (error) throw error;
 
-      // Map data to ensure bank_account_id is properly typed
-      const mappedData = (data || []).map(item => ({
-        ...item,
-        bank_account_id: item.bank_account_id || null,
-      })) as RecurringTransaction[];
+      // Map data and compute status dynamically
+      const mappedData: RecurringTransactionWithStatus[] = (data || []).map(item => {
+        const computedStatus = computeRecurringStatus(item.status, item.next_due_date);
+        return {
+          id: item.id,
+          user_id: item.user_id || '',
+          name: item.name,
+          amount: item.amount,
+          category: item.category,
+          frequency: item.frequency as 'daily' | 'weekly' | 'monthly' | 'yearly',
+          next_due_date: item.next_due_date,
+          currency: item.currency,
+          email_reminder: item.email_reminder ?? true,
+          reminder_days_before: item.reminder_days_before ?? 2,
+          status: item.status as 'pending' | 'done',
+          last_done_date: item.last_done_date,
+          last_reminder_sent_at: item.last_reminder_sent_at,
+          bank_account_id: item.bank_account_id || null,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+          computedStatus,
+        };
+      });
 
-      // Further filter for pending vs upcoming if needed
-      if (filters?.status === 'pending' || filters?.status === 'upcoming') {
-        const today = new Date();
+      // Filter based on computed status
+      if (filters?.status && filters.status !== 'all') {
         return mappedData.filter(transaction => {
-          const dueDate = parseLocalDate(transaction.next_due_date);
-          const reminderDate = addDays(dueDate, -transaction.reminder_days_before);
-          const isPending = reminderDate <= today && dueDate >= today;
-          
-          return filters.status === 'pending' ? isPending : !isPending;
+          if (filters.status === 'done') {
+            return transaction.computedStatus === 'done';
+          } else if (filters.status === 'pending') {
+            return transaction.computedStatus === 'pending';
+          } else if (filters.status === 'upcoming') {
+            return transaction.computedStatus === 'upcoming';
+          }
+          return true;
         });
+      } else if (!filters?.includeCompleted) {
+        // Default: exclude completed unless explicitly requested
+        return mappedData.filter(t => t.computedStatus !== 'done');
       }
 
       return mappedData;
@@ -94,7 +120,11 @@ export const useRecurringTransactions = (filters?: RecurringTransactionsFilters)
 
       const { data, error } = await supabase
         .from('recurring_transactions')
-        .insert([{ ...transactionData, user_id: user.id }])
+        .insert([{ 
+          ...transactionData, 
+          user_id: user.id,
+          status: 'pending' // New transactions start as pending (will be computed as upcoming/pending based on date)
+        }])
         .select()
         .single();
 
@@ -108,7 +138,7 @@ export const useRecurringTransactions = (filters?: RecurringTransactionsFilters)
         description: 'Your recurring transaction has been set up successfully.',
       });
     },
-    onError: (error) => {
+    onError: () => {
       toast({
         title: 'Error',
         description: 'Failed to add recurring transaction. Please try again.',
@@ -133,7 +163,7 @@ export const useRecurringTransactions = (filters?: RecurringTransactionsFilters)
         description: 'Your recurring transaction has been updated.',
       });
     },
-    onError: (error) => {
+    onError: () => {
       toast({
         title: 'Error',
         description: 'Failed to update recurring transaction. Please try again.',
@@ -164,7 +194,7 @@ export const useRecurringTransactions = (filters?: RecurringTransactionsFilters)
         description: 'Transaction has been marked as completed.',
       });
     },
-    onError: (error) => {
+    onError: () => {
       toast({
         title: 'Error',
         description: 'Failed to mark transaction as done. Please try again.',
@@ -189,7 +219,7 @@ export const useRecurringTransactions = (filters?: RecurringTransactionsFilters)
         description: 'The recurring transaction has been removed.',
       });
     },
-    onError: (error) => {
+    onError: () => {
       toast({
         title: 'Error',
         description: 'Failed to delete recurring transaction. Please try again.',
@@ -204,7 +234,7 @@ export const useRecurringTransactions = (filters?: RecurringTransactionsFilters)
     const nextWeek = addDays(today, 7);
 
     return recurringTransactions.filter(transaction => {
-      if (transaction.status === 'done') return false;
+      if (transaction.computedStatus === 'done') return false;
       const dueDate = parseLocalDate(transaction.next_due_date);
       const reminderDate = addDays(dueDate, -transaction.reminder_days_before);
       return reminderDate <= today && dueDate <= nextWeek;
@@ -214,7 +244,7 @@ export const useRecurringTransactions = (filters?: RecurringTransactionsFilters)
   const processRecurringTransactions = async () => {
     const today = format(new Date(), 'yyyy-MM-dd');
     const dueTodayTransactions = recurringTransactions.filter(
-      transaction => transaction.next_due_date === today && transaction.status === 'pending'
+      transaction => transaction.next_due_date === today && transaction.computedStatus !== 'done'
     );
 
     for (const transaction of dueTodayTransactions) {

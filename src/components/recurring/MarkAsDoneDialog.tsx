@@ -15,15 +15,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { RecurringTransaction } from '@/types/recurringTransaction';
+import { RecurringTransactionWithStatus } from '@/hooks/useRecurringTransactions';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
-import { CURRENCIES } from '@/types/expense';
 import { format } from 'date-fns';
 import { parseLocalDate } from '@/utils/dateUtils';
 import { Badge } from '@/components/ui/badge';
+import { getStatusDisplayText, getStatusBadgeClass } from '@/utils/recurringStatusUtils';
 
 interface MarkAsDoneDialogProps {
-  transaction: RecurringTransaction | null;
+  transaction: RecurringTransactionWithStatus | null;
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (id: string, bankAccountId: string) => void;
@@ -40,6 +40,13 @@ export const MarkAsDoneDialog: React.FC<MarkAsDoneDialogProps> = ({
   const [selectedBankId, setSelectedBankId] = useState<string>('');
   const { bankAccounts } = useBankAccounts();
 
+  // Auto-select the saved bank when dialog opens
+  React.useEffect(() => {
+    if (isOpen && transaction?.bank_account_id) {
+      setSelectedBankId(transaction.bank_account_id);
+    }
+  }, [isOpen, transaction?.bank_account_id]);
+
   const handleConfirm = () => {
     if (!transaction || !selectedBankId) return;
     onConfirm(transaction.id, selectedBankId);
@@ -54,7 +61,7 @@ export const MarkAsDoneDialog: React.FC<MarkAsDoneDialogProps> = ({
 
   if (!transaction) return null;
 
-  const currencyInfo = CURRENCIES.find((c) => c.code === transaction.currency);
+  const currencySymbol = transaction.currency === 'INR' ? '₹' : '$';
   const dueDate = parseLocalDate(transaction.next_due_date);
   const dayOfMonth = format(dueDate, 'd');
   const dueDateLabel = `Due around: ${dayOfMonth}${getDaySuffix(parseInt(dayOfMonth))} of each month`;
@@ -77,7 +84,7 @@ export const MarkAsDoneDialog: React.FC<MarkAsDoneDialogProps> = ({
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Amount:</span>
               <span className="font-semibold text-lg">
-                {currencyInfo?.symbol || transaction.currency}
+                {currencySymbol}
                 {transaction.amount.toFixed(2)}
               </span>
             </div>
@@ -89,8 +96,8 @@ export const MarkAsDoneDialog: React.FC<MarkAsDoneDialogProps> = ({
 
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Status:</span>
-              <Badge variant="outline" className="bg-warning-muted text-warning-foreground">
-                {transaction.status === 'pending' ? 'Pending' : 'Done'}
+              <Badge variant="outline" className={getStatusBadgeClass(transaction.computedStatus)}>
+                {getStatusDisplayText(transaction.computedStatus)}
               </Badge>
             </div>
           </div>

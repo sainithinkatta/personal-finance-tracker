@@ -1,9 +1,15 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Plus, Bell, Calendar, Search, ChevronDown, ChevronUp, Edit2, Trash2, Check, RotateCcw } from 'lucide-react';
+import { Plus, Bell, Calendar, CalendarIcon, Search, ChevronDown, ChevronUp, Edit2, Trash2, Check, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   Table,
   TableBody,
@@ -38,9 +44,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
+import { useRecurringTransactions, RecurringTransactionWithStatus } from '@/hooks/useRecurringTransactions';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
-import { RecurringTransaction, RecurringTransactionFormData } from '@/types/recurringTransaction';
+import { RecurringTransactionFormData } from '@/types/recurringTransaction';
+import { getStatusDisplayText, getStatusBadgeClass } from '@/utils/recurringStatusUtils';
 import { ExpenseCategory } from '@/types/expense';
 import { useToast } from '@/hooks/use-toast';
 import { format, differenceInDays, addDays } from 'date-fns';
@@ -56,7 +63,8 @@ const RecurringTransactions: React.FC = () => {
   
   // Filter states
   const [searchText, setSearchText] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState('');
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'upcoming' | 'done'>('all');
   const [selectedBank, setSelectedBank] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
@@ -65,13 +73,14 @@ const RecurringTransactions: React.FC = () => {
   // Build filters object
   const filters = useMemo(() => ({
     searchText: searchText || undefined,
-    month: selectedMonth || undefined,
+    startDate: startDate ? format(startDate, 'yyyy-MM-dd') : undefined,
+    endDate: endDate ? format(endDate, 'yyyy-MM-dd') : undefined,
     status: selectedStatus,
     bankAccountId: selectedBank || undefined,
     includeCompleted: selectedStatus === 'done',
     limit: itemsPerPage,
     offset: currentPage * itemsPerPage,
-  }), [searchText, selectedMonth, selectedStatus, selectedBank, currentPage]);
+  }), [searchText, startDate, endDate, selectedStatus, selectedBank, currentPage]);
 
   const {
     recurringTransactions,
@@ -88,9 +97,9 @@ const RecurringTransactions: React.FC = () => {
 
   // UI states
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<RecurringTransaction | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<RecurringTransactionWithStatus | null>(null);
   const [deletingTransactionId, setDeletingTransactionId] = useState<string | null>(null);
-  const [markingTransaction, setMarkingTransaction] = useState<RecurringTransaction | null>(null);
+  const [markingTransaction, setMarkingTransaction] = useState<RecurringTransactionWithStatus | null>(null);
   const [isUpcomingExpanded, setIsUpcomingExpanded] = useState(false);
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
   const [formData, setFormData] = useState<RecurringTransactionFormData>({
@@ -105,8 +114,8 @@ const RecurringTransactions: React.FC = () => {
     bank_account_id: '',
   });
 
-  // Get upcoming reminders separately (always pending status)
-  const upcomingReminders = getUpcomingReminders().filter(tx => tx.status !== 'done');
+  // Get upcoming reminders separately (exclude completed)
+  const upcomingReminders = getUpcomingReminders().filter(tx => tx.computedStatus !== 'done');
 
   useEffect(() => {
     processRecurringTransactions();
@@ -196,7 +205,7 @@ const RecurringTransactions: React.FC = () => {
     resetForm();
   };
 
-  const handleEdit = (transaction: RecurringTransaction) => {
+  const handleEdit = (transaction: RecurringTransactionWithStatus) => {
     setEditingTransaction(transaction);
   };
 
@@ -216,7 +225,7 @@ const RecurringTransactions: React.FC = () => {
     }
   };
 
-  const handleMarkAsDone = (transaction: RecurringTransaction) => {
+  const handleMarkAsDone = (transaction: RecurringTransactionWithStatus) => {
     setMarkingTransaction(transaction);
   };
 
@@ -227,7 +236,8 @@ const RecurringTransactions: React.FC = () => {
 
   const clearFilters = () => {
     setSearchText('');
-    setSelectedMonth('');
+    setStartDate(null);
+    setEndDate(null);
     setSelectedStatus('all');
     setSelectedBank('');
     setCurrentPage(0);
@@ -272,16 +282,6 @@ const RecurringTransactions: React.FC = () => {
 
   const transactionToDelete = recurringTransactions.find(t => t.id === deletingTransactionId);
   const hasMore = recurringTransactions.length === itemsPerPage;
-
-  // Calculate display status for a transaction
-  const getDisplayStatus = (transaction: RecurringTransaction): 'done' | 'pending' | 'upcoming' => {
-    if (transaction.status === 'done') return 'done';
-    const dueDate = parseLocalDate(transaction.next_due_date);
-    const reminderDate = addDays(dueDate, -transaction.reminder_days_before);
-    const today = new Date();
-    const isPending = reminderDate <= today && dueDate >= today;
-    return isPending ? 'pending' : 'upcoming';
-  };
 
   return (
     <div className="space-y-6">
@@ -368,11 +368,11 @@ const RecurringTransactions: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="text-sm md:text-base font-medium text-foreground">Filters</span>
               {/* Active Filter Indicator */}
-              {(searchText || selectedMonth || selectedStatus !== 'all' || selectedBank) && (
+              {(searchText || startDate || endDate || selectedStatus !== 'all' || selectedBank) && (
                 <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
                   {[
                     !!searchText,
-                    !!selectedMonth,
+                    !!startDate || !!endDate,
                     selectedStatus !== 'all',
                     !!selectedBank
                   ].filter(Boolean).length}
@@ -461,6 +461,66 @@ const RecurringTransactions: React.FC = () => {
                   </Select>
                 </div>
 
+                {/* Date Range Filter */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Date Range (Due Date)</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Start Date */}
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left touch-target min-w-0"
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                          <span className="truncate text-sm">
+                            {startDate ? format(startDate, 'MMM d') : "Start"}
+                          </span>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={startDate || undefined}
+                          onSelect={(date) => {
+                            setStartDate(date || null);
+                            setCurrentPage(0);
+                          }}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+
+                    {/* End Date */}
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left touch-target min-w-0"
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                          <span className="truncate text-sm">
+                            {endDate ? format(endDate, 'MMM d') : "End"}
+                          </span>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={endDate || undefined}
+                          onSelect={(date) => {
+                            setEndDate(date || null);
+                            setCurrentPage(0);
+                          }}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+
                 {/* Clear Filters Button */}
                 <Button
                   variant="outline"
@@ -472,8 +532,9 @@ const RecurringTransactions: React.FC = () => {
               </div>
 
               {/* Desktop: Horizontal Layout */}
-              <div className="hidden md:flex flex-wrap items-center gap-4">
-                <div className="flex-1 min-w-[200px]">
+              <div className="hidden md:flex flex-wrap items-center gap-3">
+                {/* Search */}
+                <div className="flex-1 min-w-[180px]">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -488,11 +549,12 @@ const RecurringTransactions: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Status */}
                 <Select value={selectedStatus} onValueChange={(val: 'all' | 'pending' | 'upcoming' | 'done') => {
                   setSelectedStatus(val);
                   setCurrentPage(0);
                 }}>
-                  <SelectTrigger className="w-[140px]">
+                  <SelectTrigger className="w-[130px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -509,26 +571,73 @@ const RecurringTransactions: React.FC = () => {
                   </SelectContent>
                 </Select>
 
-                <div className="flex-1 min-w-[160px]">
-                  <Select value={selectedBank} onValueChange={(val) => {
-                    setSelectedBank(val);
-                    setCurrentPage(0);
-                  }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All banks" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All banks</SelectItem>
-                      {bankAccounts.map((account) => (
-                        <SelectItem key={account.id} value={account.id}>
-                          {account.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* Bank */}
+                <Select value={selectedBank} onValueChange={(val) => {
+                  setSelectedBank(val);
+                  setCurrentPage(0);
+                }}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="All banks" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All banks</SelectItem>
+                    {bankAccounts.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        {account.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-                <Button variant="ghost" onClick={clearFilters}>Clear</Button>
+                {/* Start Date */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-[130px] justify-start text-left">
+                      <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                      <span className="truncate text-sm">
+                        {startDate ? format(startDate, 'MMM d') : "Start Date"}
+                      </span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={startDate || undefined}
+                      onSelect={(date) => {
+                        setStartDate(date || null);
+                        setCurrentPage(0);
+                      }}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                {/* End Date */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-[130px] justify-start text-left">
+                      <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                      <span className="truncate text-sm">
+                        {endDate ? format(endDate, 'MMM d') : "End Date"}
+                      </span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={endDate || undefined}
+                      onSelect={(date) => {
+                        setEndDate(date || null);
+                        setCurrentPage(0);
+                      }}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                <Button variant="ghost" size="sm" onClick={clearFilters}>Clear</Button>
               </div>
             </div>
           </div>
@@ -744,7 +853,8 @@ const RecurringTransactions: React.FC = () => {
                     </TableHeader>
                     <TableBody>
                       {recurringTransactions.map((transaction, index) => {
-                        const isDone = transaction.status === 'done';
+                        const isDone = transaction.computedStatus === 'done';
+                        const isPending = transaction.computedStatus === 'pending';
                         const bankAccount = bankAccounts.find(ba => ba.id === transaction.bank_account_id);
                         return (
                           <TableRow
@@ -801,28 +911,12 @@ const RecurringTransactions: React.FC = () => {
                               {formatCurrency(transaction.amount, transaction.currency)}
                             </TableCell>
                             <TableCell>
-                              {(() => {
-                                const displayStatus = getDisplayStatus(transaction);
-                                if (displayStatus === 'done') {
-                                  return (
-                                    <Badge variant="outline" className="bg-accent-muted text-accent-foreground">
-                                      ✓ Done
-                                    </Badge>
-                                  );
-                                } else if (displayStatus === 'pending') {
-                                  return (
-                                    <Badge variant="outline" className="bg-warning-muted text-warning-foreground">
-                                      Pending
-                                    </Badge>
-                                  );
-                                } else {
-                                  return (
-                                    <Badge variant="outline" className="bg-info-muted text-info-foreground">
-                                      Upcoming
-                                    </Badge>
-                                  );
-                                }
-                              })()}
+                              <Badge 
+                                variant="outline" 
+                                className={getStatusBadgeClass(transaction.computedStatus)}
+                              >
+                                {isDone && '✓ '}{getStatusDisplayText(transaction.computedStatus)}
+                              </Badge>
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end space-x-1">

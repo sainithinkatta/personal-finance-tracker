@@ -10,6 +10,8 @@ export interface BankAccount {
   available_balance?: number;
   due_balance?: number;
   payment_due_date?: number;
+  apr?: number;
+  minimum_payment?: number;
   created_at: string;
   updated_at: string;
 }
@@ -23,4 +25,6 @@ export interface BankAccountFormData {
   available_balance?: number;
   due_balance?: number;
   payment_due_date?: number;
+  apr?: number;
+  minimum_payment?: number;
 }

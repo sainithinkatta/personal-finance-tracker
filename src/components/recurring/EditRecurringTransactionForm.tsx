@@ -16,13 +16,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { RecurringTransaction, RecurringTransactionFormData } from '@/types/recurringTransaction';
+import { RecurringTransactionFormData } from '@/types/recurringTransaction';
+import { RecurringTransactionWithStatus } from '@/hooks/useRecurringTransactions';
 import { ExpenseCategory } from '@/types/expense';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
 import { useToast } from '@/hooks/use-toast';
 
 interface EditRecurringTransactionFormProps {
-  transaction: RecurringTransaction | null;
+  transaction: RecurringTransactionWithStatus | null;
   isOpen: boolean;
   onClose: () => void;
   onSave: (id: string, data: Partial<RecurringTransactionFormData>) => void;
