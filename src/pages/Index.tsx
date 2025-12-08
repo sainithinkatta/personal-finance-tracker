@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -15,10 +15,12 @@ import Sidebar from "@/components/layout/Sidebar";
 import UtilityPanel from "@/components/layout/UtilityPanel";
 import FloatingActionButton from "@/components/layout/FloatingActionButton";
 import { MobileReminders } from "@/components/layout/MobileReminders";
+import { UserMenu } from "@/components/layout/UserMenu";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useBankAccounts } from "@/hooks/useBankAccounts";
 import { FilterOptions } from "@/types/expense";
 import { filterExpenses } from "@/utils/expenseUtils";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const { expenses, isLoading } = useExpenses();
@@ -31,6 +33,15 @@ const Index = () => {
     endDate: null,
     category: "All",
   });
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+  }, []);
 
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
@@ -52,7 +63,7 @@ const Index = () => {
   return (
     <div className="min-h-dvh bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col w-full">
         {/* Mobile Header - Sticky with safe area */}
-        <header className="lg:hidden sticky top-0 z-40 bg-white backdrop-blur-md pt-safe border-b border-gray-200 shadow-sm">
+        <header className="lg:hidden sticky top-0 z-40 bg-card backdrop-blur-md pt-safe border-b border-border shadow-sm">
           <div className="flex items-center gap-2 px-3 h-12">
             <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
               <SheetTrigger asChild>
@@ -71,10 +82,11 @@ const Index = () => {
                 </div>
               </SheetContent>
             </Sheet>
-            <Wallet className="h-5 w-5 text-blue-600 flex-shrink-0" />
-            <h1 className="text-base font-semibold text-blue-600 truncate flex-1">
+            <Wallet className="h-5 w-5 text-primary flex-shrink-0" />
+            <h1 className="text-base font-semibold text-primary truncate flex-1">
               Personal Finance Tracker
             </h1>
+            {user && <UserMenu user={user} />}
           </div>
         </header>
 

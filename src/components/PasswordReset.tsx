@@ -91,10 +91,10 @@ const PasswordReset: React.FC = () => {
       return;
     }
 
-    if (password.length < 6) {
+    if (password.length < 8) {
       toast({
         title: 'Password Too Short',
-        description: 'Password must be at least 6 characters long.',
+        description: 'Password must be at least 8 characters long.',
         variant: 'destructive',
       });
       return;
@@ -114,8 +114,8 @@ const PasswordReset: React.FC = () => {
         description: 'Your password has been successfully updated. You are now logged in.',
       });
 
-      // Redirect to dashboard after successful password reset
-      navigate('/');
+      // Redirect to app after successful password reset (user is now authenticated)
+      navigate('/app');
     } catch (error: any) {
       toast({
         title: 'Reset Error',
@@ -179,7 +179,7 @@ const PasswordReset: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={8}
               />
               <Input
                 type="password"
@@ -187,7 +187,7 @@ const PasswordReset: React.FC = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={8}
               />
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? 'Updating...' : 'Update Password'}

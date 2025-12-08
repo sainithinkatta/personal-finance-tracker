@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -7,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { useSignOut } from '@/hooks/useSignOut';
 import { AppHeader } from './AppHeader';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -20,21 +19,22 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
-  
+
   // Separate state for login form
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [showLoginPassword, setShowLoginPassword] = useState(false);
-  
+
   // Separate state for signup form
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [showSignupPassword, setShowSignupPassword] = useState(false);
-  
+
   // Forgot password email state
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
-  
+
   const { toast } = useToast();
+  const { signOut } = useSignOut();
 
   useEffect(() => {
     // Get initial session
@@ -119,13 +119,6 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
     }
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    toast({
-      title: 'Signed out',
-      description: 'You have been signed out successfully.',
-    });
-  };
 
   if (loading) {
     return (
