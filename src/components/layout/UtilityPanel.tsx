@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Bell, Plus, TrendingUp } from 'lucide-react';
@@ -9,6 +9,7 @@ import { useExpenses } from '@/hooks/useExpenses';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { CURRENCIES } from '@/types/expense';
 import { parseLocalDate } from '@/utils/dateUtils';
+import { RecentTransactions } from '../dashboard/RecentTransactions';
 import {
   Dialog,
   DialogContent,
@@ -22,20 +23,25 @@ const UtilityPanel: React.FC = () => {
   const navigate = useNavigate();
   const { getUpcomingReminders } = useRecurringTransactions();
   const { bankAccounts } = useBankAccounts();
-  const { addExpense } = useExpenses();
+  const { expenses, addExpense } = useExpenses();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [isAddIncomeOpen, setIsAddIncomeOpen] = useState(false);
 
   // Filter out transactions that are marked as 'done' from upcoming reminders
   const upcomingReminders = getUpcomingReminders().filter(tx => tx.status !== 'done');
 
-  const handleAddBudget = () => {
-    navigate('/?tab=budget');
-  };
+  // Get current month expenses
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
 
-  const handleAddGoal = () => {
-    navigate('/?tab=savings');
-  };
+  const currentMonthExpenses = useMemo(() => 
+    expenses.filter(expense => {
+      const expenseDate = new Date(expense.date);
+      return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
+    }),
+    [expenses, currentMonth, currentYear]
+  );
 
   const handleAddExpense = (expense: any) => {
     addExpense(expense);
@@ -151,6 +157,12 @@ const UtilityPanel: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Recent Transactions */}
+      <RecentTransactions
+        expenses={currentMonthExpenses}
+        bankAccounts={bankAccounts}
+      />
 
       {/* Add Expense Dialog */}
       <Dialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen}>

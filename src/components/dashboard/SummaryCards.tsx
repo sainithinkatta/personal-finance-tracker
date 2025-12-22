@@ -1,7 +1,8 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Expense } from '@/types/expense';
+import { DollarSign, TrendingUp, Receipt, ArrowUpRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface SummaryCardsProps {
   expenses: Expense[];
@@ -9,7 +10,6 @@ interface SummaryCardsProps {
   currency: string;
 }
 
-// Helper to get currency symbol
 const getCurrencySymbol = (currency: string) => currency === 'INR' ? '₹' : '$';
 
 const SummaryCards: React.FC<SummaryCardsProps> = ({ expenses, currentMonthLabel, currency }) => {
@@ -24,76 +24,79 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ expenses, currentMonthLabel
   const highestCategory = Object.entries(categoryTotals)
     .sort((a, b) => b[1] - a[1])[0] || ['None', 0];
 
+  // Calculate average transaction
+  const avgTransaction = expenses.length > 0 ? totalSpent / expenses.length : 0;
+
+  const cards = [
+    {
+      title: 'Total Expenses',
+      value: expenses.length > 0 ? `${symbol}${totalSpent.toFixed(2)}` : 'No data',
+      subtitle: currentMonthLabel,
+      icon: DollarSign,
+      iconBg: 'bg-primary/10',
+      iconColor: 'text-primary',
+    },
+    {
+      title: 'Highest Category',
+      value: expenses.length > 0 ? highestCategory[0] : 'No data',
+      subtitle: expenses.length > 0 ? `${symbol}${Number(highestCategory[1]).toFixed(2)}` : '',
+      icon: TrendingUp,
+      iconBg: 'bg-accent/10',
+      iconColor: 'text-accent',
+    },
+    {
+      title: 'Transactions',
+      value: expenses.length > 0 ? expenses.length.toString() : 'No data',
+      subtitle: currentMonthLabel,
+      icon: Receipt,
+      iconBg: 'bg-warning/10',
+      iconColor: 'text-warning',
+    },
+    {
+      title: 'Avg Transaction',
+      value: expenses.length > 0 ? `${symbol}${avgTransaction.toFixed(2)}` : 'No data',
+      subtitle: 'Per expense',
+      icon: ArrowUpRight,
+      iconBg: 'bg-info/10',
+      iconColor: 'text-info',
+    },
+  ];
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-      <Card className="bg-gradient-to-br from-info-muted to-info-muted/50 border-info/20 hover:shadow-md transition-shadow">
-        <CardContent className="p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm md:text-[0.65rem] lg:text-xs font-medium text-info-foreground uppercase tracking-wide truncate">
-                Total Expenses — {currentMonthLabel}
-              </p>
-              <p className="text-base sm:text-lg font-bold text-info-foreground mt-1 truncate">
-                {expenses.length > 0 ? `${symbol}${totalSpent.toFixed(2)}` : `No data`}
-              </p>
-            </div>
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-info rounded-full flex items-center justify-center flex-shrink-0">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-              </svg>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-gradient-to-br from-accent-muted to-accent-muted/50 border-accent/20 hover:shadow-md transition-shadow">
-        <CardContent className="p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm md:text-[0.65rem] lg:text-xs font-medium text-accent-foreground uppercase tracking-wide truncate">
-                Highest Category — {currentMonthLabel}
-              </p>
-              {expenses.length > 0 ? (
-                <p className="text-base sm:text-lg font-bold text-accent-foreground mt-1 flex items-baseline gap-2 min-w-0">
-                  <span className="truncate">{highestCategory[0]}</span>
-                  <span className="text-xs sm:text-sm text-accent-foreground/70 flex-shrink-0">
-                    {symbol}{Number(highestCategory[1]).toFixed(2)}
-                  </span>
-                </p>
-              ) : (
-                <p className="text-base sm:text-lg font-bold text-accent-foreground mt-1 truncate">
-                  No data
-                </p>
-              )}
-            </div>
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-accent rounded-full flex items-center justify-center flex-shrink-0">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-accent-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-gradient-to-br from-warning-muted to-warning-muted/50 border-warning/20 hover:shadow-md transition-shadow">
-        <CardContent className="p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm md:text-[0.65rem] lg:text-xs font-medium text-warning-foreground uppercase tracking-wide truncate">
-                Total Transactions — {currentMonthLabel}
-              </p>
-              <p className="text-base sm:text-lg font-bold text-warning-foreground mt-1 truncate">
-                {expenses.length > 0 ? expenses.length : `No data`}
-              </p>
-            </div>
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-warning rounded-full flex items-center justify-center flex-shrink-0">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-warning-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+      {cards.map((card, index) => {
+        const Icon = card.icon;
+        return (
+          <Card 
+            key={index} 
+            className="bg-card border border-border/60 shadow-sm hover:shadow-md transition-shadow duration-200"
+          >
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">
+                    {card.title}
+                  </p>
+                  <p className="text-lg lg:text-xl font-bold text-foreground mt-1 truncate">
+                    {card.value}
+                  </p>
+                  {card.subtitle && (
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      {card.subtitle}
+                    </p>
+                  )}
+                </div>
+                <div className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
+                  card.iconBg
+                )}>
+                  <Icon className={cn("h-5 w-5", card.iconColor)} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 };
