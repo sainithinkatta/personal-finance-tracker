@@ -36,6 +36,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useLoans } from '@/hooks/useLoans';
 import { useLoanContributions } from '@/hooks/useLoanContributions';
 import { Loan, LoanFormData, LoanContributionFormData } from '@/types/loan';
+import { calculateCurrentOutstanding } from '@/utils/loanCalculations';
 import LoanForm from './LoanForm';
 import LoanSummaryCard from './LoanSummaryCard';
 import LoanProjectionTable from './LoanProjectionTable';
@@ -99,6 +100,11 @@ const LoanDashboard: React.FC = () => {
   const handleAddContribution = (data: LoanContributionFormData) => {
     addContribution(data);
   };
+
+  // Check if loan is paid off
+  const isLoanPaidOff = selectedLoan
+    ? calculateCurrentOutstanding(selectedLoan, contributions) <= 0
+    : false;
 
   // Form modal for loan
   const FormModal = () => {
@@ -265,8 +271,10 @@ const LoanDashboard: React.FC = () => {
             <CardContent>
               <LoanContributionForm
                 loanId={selectedLoan.id}
+                loan={selectedLoan}
                 onSubmit={handleAddContribution}
                 isSubmitting={isAddingContribution}
+                disabled={isLoanPaidOff}
               />
             </CardContent>
           </Card>
@@ -284,6 +292,7 @@ const LoanDashboard: React.FC = () => {
             <CardContent className="pt-0">
               <LoanContributionsList
                 loanId={selectedLoan.id}
+                loan={selectedLoan}
                 contributions={contributions}
                 currency={selectedLoan.currency}
                 onUpdate={updateContribution}

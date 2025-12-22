@@ -32,12 +32,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { LoanContribution, LoanContributionFormData } from '@/types/loan';
+import { Loan, LoanContribution, LoanContributionFormData } from '@/types/loan';
 import { formatLoanCurrency } from '@/utils/loanCalculations';
 import LoanContributionForm from './LoanContributionForm';
 
 interface LoanContributionsListProps {
   loanId: string;
+  loan: Loan;
   contributions: LoanContribution[];
   currency: string;
   onUpdate: (data: { id: string; formData: Partial<LoanContributionFormData> }) => void;
@@ -47,6 +48,7 @@ interface LoanContributionsListProps {
 
 const LoanContributionsList: React.FC<LoanContributionsListProps> = ({
   loanId,
+  loan,
   contributions,
   currency,
   onUpdate,
@@ -131,8 +133,8 @@ const LoanContributionsList: React.FC<LoanContributionsListProps> = ({
       </div>
 
       {/* Edit Dialog */}
-      <Dialog 
-        open={!!editingContribution} 
+      <Dialog
+        open={!!editingContribution}
         onOpenChange={(open) => !open && setEditingContribution(null)}
       >
         <DialogContent>
@@ -142,6 +144,7 @@ const LoanContributionsList: React.FC<LoanContributionsListProps> = ({
           {editingContribution && (
             <LoanContributionForm
               loanId={loanId}
+              loan={loan}
               contribution={editingContribution}
               onSubmit={handleUpdate}
               onCancel={() => setEditingContribution(null)}
