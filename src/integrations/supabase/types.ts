@@ -19,14 +19,14 @@ export type Database = {
           account_type: string | null
           apr: number | null
           available_balance: number | null
-          balance: number
+          balance: number | null
           created_at: string
           credit_limit: number | null
-          currency: string
+          currency: string | null
           due_balance: number | null
           id: string
           minimum_payment: number | null
-          name: string
+          name: string | null
           payment_due_date: number | null
           updated_at: string
           user_id: string | null
@@ -35,14 +35,14 @@ export type Database = {
           account_type?: string | null
           apr?: number | null
           available_balance?: number | null
-          balance?: number
+          balance?: number | null
           created_at?: string
           credit_limit?: number | null
-          currency?: string
+          currency?: string | null
           due_balance?: number | null
           id?: string
           minimum_payment?: number | null
-          name: string
+          name?: string | null
           payment_due_date?: number | null
           updated_at?: string
           user_id?: string | null
@@ -51,14 +51,14 @@ export type Database = {
           account_type?: string | null
           apr?: number | null
           available_balance?: number | null
-          balance?: number
+          balance?: number | null
           created_at?: string
           credit_limit?: number | null
-          currency?: string
+          currency?: string | null
           due_balance?: number | null
           id?: string
           minimum_payment?: number | null
-          name?: string
+          name?: string | null
           payment_due_date?: number | null
           updated_at?: string
           user_id?: string | null
@@ -77,18 +77,18 @@ export type Database = {
           groceries_allocated: number | null
           groceries_spent: number | null
           id: string
-          month: number
-          name: string
+          month: number | null
+          name: string | null
           notes: string | null
           others_allocated: number | null
           others_spent: number | null
           start_date: string | null
-          total_amount: number
+          total_amount: number | null
           travel_allocated: number | null
           travel_spent: number | null
           updated_at: string
           user_id: string
-          year: number
+          year: number | null
         }
         Insert: {
           bills_allocated?: number | null
@@ -101,18 +101,18 @@ export type Database = {
           groceries_allocated?: number | null
           groceries_spent?: number | null
           id?: string
-          month: number
-          name: string
+          month?: number | null
+          name?: string | null
           notes?: string | null
           others_allocated?: number | null
           others_spent?: number | null
           start_date?: string | null
-          total_amount: number
+          total_amount?: number | null
           travel_allocated?: number | null
           travel_spent?: number | null
           updated_at?: string
           user_id: string
-          year: number
+          year?: number | null
         }
         Update: {
           bills_allocated?: number | null
@@ -125,18 +125,18 @@ export type Database = {
           groceries_allocated?: number | null
           groceries_spent?: number | null
           id?: string
-          month?: number
-          name?: string
+          month?: number | null
+          name?: string | null
           notes?: string | null
           others_allocated?: number | null
           others_spent?: number | null
           start_date?: string | null
-          total_amount?: number
+          total_amount?: number | null
           travel_allocated?: number | null
           travel_spent?: number | null
           updated_at?: string
           user_id?: string
-          year?: number
+          year?: number | null
         }
         Relationships: []
       }
@@ -145,31 +145,31 @@ export type Database = {
           created_at: string
           debt_id: string
           id: string
-          interest_paid: number
+          interest_paid: number | null
           notes: string | null
-          payment_amount: number
+          payment_amount: number | null
           payment_date: string
-          principal_paid: number
+          principal_paid: number | null
         }
         Insert: {
           created_at?: string
           debt_id: string
           id?: string
-          interest_paid: number
+          interest_paid?: number | null
           notes?: string | null
-          payment_amount: number
+          payment_amount?: number | null
           payment_date?: string
-          principal_paid: number
+          principal_paid?: number | null
         }
         Update: {
           created_at?: string
           debt_id?: string
           id?: string
-          interest_paid?: number
+          interest_paid?: number | null
           notes?: string | null
-          payment_amount?: number
+          payment_amount?: number | null
           payment_date?: string
-          principal_paid?: number
+          principal_paid?: number | null
         }
         Relationships: [
           {
@@ -185,16 +185,16 @@ export type Database = {
         Row: {
           created_at: string
           currency: string
-          current_balance: number
-          debt_name: string
+          current_balance: number | null
+          debt_name: string | null
           debt_type: string
           id: string
           interest_rate: number
-          minimum_payment: number
+          minimum_payment: number | null
           notes: string | null
           payment_due_day: number | null
           payoff_strategy: string | null
-          principal_amount: number
+          principal_amount: number | null
           start_date: string
           status: string
           target_payoff_date: string | null
@@ -204,16 +204,16 @@ export type Database = {
         Insert: {
           created_at?: string
           currency?: string
-          current_balance: number
-          debt_name: string
+          current_balance?: number | null
+          debt_name?: string | null
           debt_type?: string
           id?: string
           interest_rate?: number
-          minimum_payment: number
+          minimum_payment?: number | null
           notes?: string | null
           payment_due_day?: number | null
           payoff_strategy?: string | null
-          principal_amount: number
+          principal_amount?: number | null
           start_date?: string
           status?: string
           target_payoff_date?: string | null
@@ -223,16 +223,16 @@ export type Database = {
         Update: {
           created_at?: string
           currency?: string
-          current_balance?: number
-          debt_name?: string
+          current_balance?: number | null
+          debt_name?: string | null
           debt_type?: string
           id?: string
           interest_rate?: number
-          minimum_payment?: number
+          minimum_payment?: number | null
           notes?: string | null
           payment_due_day?: number | null
           payoff_strategy?: string | null
-          principal_amount?: number
+          principal_amount?: number | null
           start_date?: string
           status?: string
           target_payoff_date?: string | null
@@ -243,44 +243,44 @@ export type Database = {
       }
       dues: {
         Row: {
-          amount: number
+          amount: number | null
           created_at: string
           currency: string
           due_date: string | null
           id: string
           notes: string | null
-          person_name: string
+          person_name: string | null
           settled_date: string | null
           status: string
-          type: string
+          type: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
-          amount: number
+          amount?: number | null
           created_at?: string
           currency?: string
           due_date?: string | null
           id?: string
           notes?: string | null
-          person_name: string
+          person_name?: string | null
           settled_date?: string | null
           status?: string
-          type: string
+          type?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
-          amount?: number
+          amount?: number | null
           created_at?: string
           currency?: string
           due_date?: string | null
           id?: string
           notes?: string | null
-          person_name?: string
+          person_name?: string | null
           settled_date?: string | null
           status?: string
-          type?: string
+          type?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -288,10 +288,10 @@ export type Database = {
       }
       expenses: {
         Row: {
-          amount: number
+          amount: number | null
           bank_account_id: string | null
           budget_id: string | null
-          category: Database["public"]["Enums"]["expense_category"]
+          category: Database["public"]["Enums"]["expense_category"] | null
           created_at: string
           currency: string
           date: string
@@ -301,10 +301,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          amount: number
+          amount?: number | null
           bank_account_id?: string | null
           budget_id?: string | null
-          category: Database["public"]["Enums"]["expense_category"]
+          category?: Database["public"]["Enums"]["expense_category"] | null
           created_at?: string
           currency?: string
           date?: string
@@ -314,10 +314,10 @@ export type Database = {
           user_id: string
         }
         Update: {
-          amount?: number
+          amount?: number | null
           bank_account_id?: string | null
           budget_id?: string | null
-          category?: Database["public"]["Enums"]["expense_category"]
+          category?: Database["public"]["Enums"]["expense_category"] | null
           created_at?: string
           currency?: string
           date?: string
@@ -343,30 +343,74 @@ export type Database = {
           },
         ]
       }
+      import_history: {
+        Row: {
+          bank_account_id: string
+          duplicate_count: number
+          file_name: string
+          file_size: number
+          id: string
+          imported_at: string
+          imported_count: number
+          skipped_count: number
+          user_id: string
+        }
+        Insert: {
+          bank_account_id: string
+          duplicate_count?: number
+          file_name: string
+          file_size: number
+          id?: string
+          imported_at?: string
+          imported_count?: number
+          skipped_count?: number
+          user_id: string
+        }
+        Update: {
+          bank_account_id?: string
+          duplicate_count?: number
+          file_name?: string
+          file_size?: number
+          id?: string
+          imported_at?: string
+          imported_count?: number
+          skipped_count?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_history_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       income: {
         Row: {
-          amount: number
+          amount: number | null
           bank_account_id: string
           created_at: string
-          currency: string
+          currency: string | null
           description: string | null
           id: string
           user_id: string
         }
         Insert: {
-          amount: number
+          amount?: number | null
           bank_account_id: string
           created_at?: string
-          currency: string
+          currency?: string | null
           description?: string | null
           id?: string
           user_id: string
         }
         Update: {
-          amount?: number
+          amount?: number | null
           bank_account_id?: string
           created_at?: string
-          currency?: string
+          currency?: string | null
           description?: string | null
           id?: string
           user_id?: string
@@ -380,6 +424,130 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      loan_contributions: {
+        Row: {
+          amount: number
+          contribution_date: string
+          created_at: string
+          id: string
+          loan_id: string
+          note: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          contribution_date: string
+          created_at?: string
+          id?: string
+          loan_id: string
+          note?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          contribution_date?: string
+          created_at?: string
+          id?: string
+          loan_id?: string
+          note?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_contributions_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loan_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          loan_id: string
+          payment_month: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          loan_id: string
+          payment_month: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          loan_id?: string
+          payment_month?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_payments_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loans: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          name: string
+          notes: string | null
+          principal: number
+          reference_date: string
+          reference_outstanding: number
+          roi: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          name: string
+          notes?: string | null
+          principal: number
+          reference_date: string
+          reference_outstanding: number
+          roi?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          principal?: number
+          reference_date?: string
+          reference_outstanding?: number
+          roi?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -413,17 +581,17 @@ export type Database = {
       }
       recurring_transactions: {
         Row: {
-          amount: number
+          amount: number | null
           bank_account_id: string | null
-          category: Database["public"]["Enums"]["expense_category"]
+          category: Database["public"]["Enums"]["expense_category"] | null
           created_at: string
           currency: string
           email_reminder: boolean | null
-          frequency: string
+          frequency: string | null
           id: string
           last_done_date: string | null
           last_reminder_sent_at: string | null
-          name: string
+          name: string | null
           next_due_date: string
           reminder_days_before: number | null
           status: string | null
@@ -432,17 +600,17 @@ export type Database = {
           user_timezone: string | null
         }
         Insert: {
-          amount: number
+          amount?: number | null
           bank_account_id?: string | null
-          category: Database["public"]["Enums"]["expense_category"]
+          category?: Database["public"]["Enums"]["expense_category"] | null
           created_at?: string
           currency?: string
           email_reminder?: boolean | null
-          frequency: string
+          frequency?: string | null
           id?: string
           last_done_date?: string | null
           last_reminder_sent_at?: string | null
-          name: string
+          name?: string | null
           next_due_date: string
           reminder_days_before?: number | null
           status?: string | null
@@ -451,17 +619,17 @@ export type Database = {
           user_timezone?: string | null
         }
         Update: {
-          amount?: number
+          amount?: number | null
           bank_account_id?: string | null
-          category?: Database["public"]["Enums"]["expense_category"]
+          category?: Database["public"]["Enums"]["expense_category"] | null
           created_at?: string
           currency?: string
           email_reminder?: boolean | null
-          frequency?: string
+          frequency?: string | null
           id?: string
           last_done_date?: string | null
           last_reminder_sent_at?: string | null
-          name?: string
+          name?: string | null
           next_due_date?: string
           reminder_days_before?: number | null
           status?: string | null
@@ -520,8 +688,8 @@ export type Database = {
           currency: string
           current_amount: number | null
           id: string
-          name: string
-          target_amount: number
+          name: string | null
+          target_amount: number | null
           target_date: string | null
           updated_at: string
           user_id: string | null
@@ -531,8 +699,8 @@ export type Database = {
           currency?: string
           current_amount?: number | null
           id?: string
-          name: string
-          target_amount: number
+          name?: string | null
+          target_amount?: number | null
           target_date?: string | null
           updated_at?: string
           user_id?: string | null
@@ -542,8 +710,8 @@ export type Database = {
           currency?: string
           current_amount?: number | null
           id?: string
-          name?: string
-          target_amount?: number
+          name?: string | null
+          target_amount?: number | null
           target_date?: string | null
           updated_at?: string
           user_id?: string | null

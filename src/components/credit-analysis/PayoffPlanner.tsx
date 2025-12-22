@@ -1,7 +1,6 @@
-
 import React, { useState, useMemo } from 'react';
-import { ArrowLeft, TrendingUp, Target, DollarSign, Calendar, Info } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ArrowLeft, TrendingUp, Target, DollarSign, Calendar, AlertTriangle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,19 +9,13 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import {
-  CreditCard,
-  PayoffStrategy,
   calculatePayoff,
   calculateRequiredExtraForGoal,
   getCreditSummary,
 } from '@/utils/payoffCalculations';
+import { CreditCard, PayoffStrategy } from '@/types/creditAnalysis';
 import { CURRENCIES } from '@/types/expense';
 
 interface PayoffPlannerProps {
@@ -48,8 +41,14 @@ const PayoffPlanner: React.FC<PayoffPlannerProps> = ({ creditCards, onBack }) =>
     return `${getCurrencySymbol(currency)}${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  // Validate inputs
-  const hasValidMinimums = creditCards.every(c => c.minimumPayment > 0);
+  // Validate inputs - need minimum payments to run simulation
+  const hasValidMinimums = creditCards.every(c => c.minimumPaymentProvided && c.minimumPayment > 0);
+
+  // Calculate minimum-only baseline for comparison
+  const minimumOnlyResult = useMemo(() => {
+    if (!hasValidMinimums) return null;
+    return calculatePayoff(creditCards, strategy, 0);
+  }, [creditCards, strategy, hasValidMinimums]);
 
   // Calculate required extra for goal mode
   const requiredExtraForGoal = useMemo(() => {
@@ -67,9 +66,18 @@ const PayoffPlanner: React.FC<PayoffPlannerProps> = ({ creditCards, onBack }) =>
 
   // Get ordered cards for display
   const orderedCards = useMemo(() => {
-    if (!payoffResult) return creditCards;
+    if (!payoffResult || !payoffResult.isPayoffPossible) return creditCards;
     return payoffResult.payoffOrder.map(id => creditCards.find(c => c.id === id)!).filter(Boolean);
   }, [payoffResult, creditCards]);
+
+  // Calculate savings vs minimum-only
+  const savings = useMemo(() => {
+    if (!minimumOnlyResult?.isPayoffPossible || !payoffResult?.isPayoffPossible) return null;
+    return {
+      monthsSaved: minimumOnlyResult.totalMonths - payoffResult.totalMonths,
+      interestSaved: minimumOnlyResult.totalInterestPaid - payoffResult.totalInterestPaid,
+    };
+  }, [minimumOnlyResult, payoffResult]);
 
   if (!hasValidMinimums) {
     return (
@@ -160,7 +168,9 @@ const PayoffPlanner: React.FC<PayoffPlannerProps> = ({ creditCards, onBack }) =>
                   onChange={(e) => setTargetMonths(e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Required extra: <span className="font-semibold">{formatCurrency(requiredExtraForGoal)}/mo</span>
+                  Required extra: <span className="font-semibold text-primary">{formatCurrency(requiredExtraForGoal)}/mo</span>
+                  <br />
+                  <span className="text-muted-foreground/80">(on top of {formatCurrency(summary.totalMinimumPayments)} minimums)</span>
                 </p>
               </div>
             ) : (
@@ -175,6 +185,9 @@ const PayoffPlanner: React.FC<PayoffPlannerProps> = ({ creditCards, onBack }) =>
                   onChange={(e) => setExtraPayment(e.target.value)}
                   placeholder="0.00"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Additional payment beyond minimum requirements
+                </p>
               </div>
             )}
 
@@ -193,7 +206,7 @@ const PayoffPlanner: React.FC<PayoffPlannerProps> = ({ creditCards, onBack }) =>
                 <span>{formatCurrency(effectiveExtra)}</span>
               </div>
               <div className="border-t pt-2 flex justify-between text-sm font-medium">
-                <span>Monthly Payment</span>
+                <span>Total Monthly Payment</span>
                 <span className="text-primary">{formatCurrency(totalMonthlyPayment)}</span>
               </div>
             </div>
@@ -205,7 +218,7 @@ const PayoffPlanner: React.FC<PayoffPlannerProps> = ({ creditCards, onBack }) =>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              Payoff Results
+              Estimated Payoff Results
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -218,29 +231,55 @@ const PayoffPlanner: React.FC<PayoffPlannerProps> = ({ creditCards, onBack }) =>
                 </TabsList>
 
                 <TabsContent value="summary" className="space-y-4">
-                  {!payoffResult.isPayoffPossible ? (
-                    <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
-                      <p className="text-destructive font-medium">
-                        Payoff not possible with current payments. Increase your monthly payment amount.
-                      </p>
-                    </div>
-                  ) : (
+                  {/* Negative Amortization Warning */}
+                  {payoffResult.negativeAmortization && (
+                    <Alert variant="destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle>Debt Cannot Be Paid Off</AlertTitle>
+                      <AlertDescription className="mt-2 space-y-2">
+                        <p>
+                          Your current total payment of {formatCurrency(totalMonthlyPayment)}/mo is less than 
+                          the monthly interest being charged. Your debt will grow over time.
+                        </p>
+                        {payoffResult.minimumExtraRequired && payoffResult.minimumExtraRequired > 0 && (
+                          <p className="font-medium">
+                            To make progress, increase your extra payment to at least {formatCurrency(payoffResult.minimumExtraRequired)}/mo.
+                          </p>
+                        )}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {/* Payoff Not Possible (max months reached) */}
+                  {!payoffResult.isPayoffPossible && !payoffResult.negativeAmortization && (
+                    <Alert variant="destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle>Payoff Timeline Too Long</AlertTitle>
+                      <AlertDescription>
+                        With your current payments, it would take more than 50 years to pay off this debt.
+                        Consider increasing your monthly payment amount.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {/* Success Results */}
+                  {payoffResult.isPayoffPossible && (
                     <>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg text-center">
                           <Calendar className="h-5 w-5 mx-auto mb-2 text-primary" />
                           <p className="text-2xl font-bold text-primary">{payoffResult.totalMonths}</p>
-                          <p className="text-xs text-muted-foreground">Months to Debt Free</p>
+                          <p className="text-xs text-muted-foreground">Est. Months to Debt Free</p>
                         </div>
                         <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-lg text-center">
                           <DollarSign className="h-5 w-5 mx-auto mb-2 text-destructive" />
                           <p className="text-2xl font-bold text-destructive">{formatCurrency(payoffResult.totalInterestPaid)}</p>
-                          <p className="text-xs text-muted-foreground">Total Interest</p>
+                          <p className="text-xs text-muted-foreground">Est. Total Interest</p>
                         </div>
                       </div>
 
-                      <div className="p-4 border rounded-lg">
-                        <div className="flex justify-between mb-2">
+                      <div className="p-4 border rounded-lg space-y-2">
+                        <div className="flex justify-between">
                           <span className="text-sm text-muted-foreground">Total You'll Pay</span>
                           <span className="font-semibold">{formatCurrency(payoffResult.totalPaid)}</span>
                         </div>
@@ -251,6 +290,40 @@ const PayoffPlanner: React.FC<PayoffPlannerProps> = ({ creditCards, onBack }) =>
                           </span>
                         </div>
                       </div>
+
+                      {/* Savings vs Minimum Only */}
+                      {savings && (savings.monthsSaved > 0 || savings.interestSaved > 0) && (
+                        <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                          <p className="text-sm font-medium text-green-700 dark:text-green-400 mb-1">
+                            {goalMode ? 'With your goal plan' : 'With extra payments'}, compared to minimums only:
+                          </p>
+                          <div className="flex flex-wrap gap-4 text-sm">
+                            {savings.monthsSaved > 0 && (
+                              <span>Save <strong>{savings.monthsSaved} months</strong></span>
+                            )}
+                            {savings.interestSaved > 0 && (
+                              <span>Save <strong>{formatCurrency(savings.interestSaved)}</strong> in interest</span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Goal Mode Explanation */}
+                      {goalMode && (
+                        <p className="text-sm text-muted-foreground">
+                          To pay off all debt in {targetMonths} months, you need to pay{' '}
+                          <strong>{formatCurrency(requiredExtraForGoal)}/mo extra</strong> beyond your{' '}
+                          {formatCurrency(summary.totalMinimumPayments)}/mo minimum payments.
+                        </p>
+                      )}
+
+                      {/* Non-Goal Mode Explanation */}
+                      {!goalMode && effectiveExtra > 0 && (
+                        <p className="text-sm text-muted-foreground">
+                          With your extra payment of {formatCurrency(effectiveExtra)}/mo on top of minimum payments,
+                          you'll be debt-free in {payoffResult.totalMonths} months.
+                        </p>
+                      )}
                     </>
                   )}
                 </TabsContent>
@@ -278,42 +351,55 @@ const PayoffPlanner: React.FC<PayoffPlannerProps> = ({ creditCards, onBack }) =>
                 </TabsContent>
 
                 <TabsContent value="timeline">
-                  <ScrollArea className="h-[400px] pr-4">
-                    <div className="space-y-2">
-                      {payoffResult.timeline.slice(0, 36).map((month) => (
-                        <div key={month.month} className="p-3 border rounded-lg">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="font-medium text-sm">Month {month.month}</span>
-                            <div className="flex gap-3 text-xs text-muted-foreground">
-                              <span>Pay: {formatCurrency(month.totalPayment)}</span>
-                              <span>Remaining: {formatCurrency(month.totalRemaining)}</span>
+                  {payoffResult.isPayoffPossible ? (
+                    <ScrollArea className="h-[400px] pr-4">
+                      <div className="space-y-2">
+                        {payoffResult.timeline.slice(0, 36).map((month) => (
+                          <div key={month.month} className="p-3 border rounded-lg">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="font-medium text-sm">Month {month.month}</span>
+                              <div className="flex gap-3 text-xs text-muted-foreground">
+                                <span>Pay: {formatCurrency(month.totalPayment)}</span>
+                                <span>Remaining: {formatCurrency(month.totalRemaining)}</span>
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              {month.payments.filter(p => p.remainingBalance > 0 || p.payment > 0).map((payment) => (
+                                <div key={payment.cardId} className="flex justify-between text-xs">
+                                  <span className="text-muted-foreground truncate max-w-[120px]">{payment.cardName}</span>
+                                  <span>
+                                    -{formatCurrency(payment.payment)} → {formatCurrency(payment.remainingBalance)}
+                                  </span>
+                                </div>
+                              ))}
                             </div>
                           </div>
-                          <div className="space-y-1">
-                            {month.payments.filter(p => p.remainingBalance > 0 || p.payment > 0).map((payment) => (
-                              <div key={payment.cardId} className="flex justify-between text-xs">
-                                <span className="text-muted-foreground truncate max-w-[120px]">{payment.cardName}</span>
-                                <span>
-                                  -{formatCurrency(payment.payment)} → {formatCurrency(payment.remainingBalance)}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                      {payoffResult.timeline.length > 36 && (
-                        <p className="text-center text-sm text-muted-foreground py-4">
-                          ... and {payoffResult.timeline.length - 36} more months
-                        </p>
-                      )}
+                        ))}
+                        {payoffResult.timeline.length > 36 && (
+                          <p className="text-center text-sm text-muted-foreground py-4">
+                            ... and {payoffResult.timeline.length - 36} more months
+                          </p>
+                        )}
+                      </div>
+                    </ScrollArea>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>Timeline not available. Increase your payment to see the payoff schedule.</p>
                     </div>
-                  </ScrollArea>
+                  )}
                 </TabsContent>
               </Tabs>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Disclaimer */}
+      <p className="text-xs text-muted-foreground text-center px-4">
+        These payoff timelines and interest numbers are estimates for planning only. 
+        Real credit card interest may vary based on daily balance calculations. 
+        Always rely on your lender or card statement for exact amounts.
+      </p>
     </div>
   );
 };

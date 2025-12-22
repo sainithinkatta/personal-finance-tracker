@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import {
   Popover,
@@ -67,6 +68,7 @@ const RecurringTransactions: React.FC = () => {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'upcoming' | 'done'>('all');
   const [selectedBank, setSelectedBank] = useState('');
+  const [showCompleted, setShowCompleted] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
 
@@ -77,13 +79,15 @@ const RecurringTransactions: React.FC = () => {
     endDate: endDate ? format(endDate, 'yyyy-MM-dd') : undefined,
     status: selectedStatus,
     bankAccountId: selectedBank || undefined,
-    includeCompleted: selectedStatus === 'done',
+    // Show completed if toggle is ON, or if user explicitly selected "Completed" status
+    includeCompleted: showCompleted || selectedStatus === 'done',
     limit: itemsPerPage,
     offset: currentPage * itemsPerPage,
-  }), [searchText, startDate, endDate, selectedStatus, selectedBank, currentPage]);
+  }), [searchText, startDate, endDate, selectedStatus, selectedBank, showCompleted, currentPage]);
 
   const {
     recurringTransactions,
+    completedCount,
     addRecurringTransaction,
     updateRecurringTransaction,
     deleteRecurringTransaction,
@@ -240,6 +244,7 @@ const RecurringTransactions: React.FC = () => {
     setEndDate(null);
     setSelectedStatus('all');
     setSelectedBank('');
+    setShowCompleted(false);
     setCurrentPage(0);
   };
 
@@ -521,6 +526,24 @@ const RecurringTransactions: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Show Completed Toggle */}
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="show-completed-mobile"
+                    checked={showCompleted}
+                    onCheckedChange={(checked) => {
+                      setShowCompleted(checked === true);
+                      setCurrentPage(0);
+                    }}
+                  />
+                  <Label 
+                    htmlFor="show-completed-mobile" 
+                    className="text-sm cursor-pointer"
+                  >
+                    Show completed ({completedCount})
+                  </Label>
+                </div>
+
                 {/* Clear Filters Button */}
                 <Button
                   variant="outline"
@@ -636,6 +659,24 @@ const RecurringTransactions: React.FC = () => {
                     />
                   </PopoverContent>
                 </Popover>
+
+                {/* Show Completed Toggle */}
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="show-completed-desktop"
+                    checked={showCompleted}
+                    onCheckedChange={(checked) => {
+                      setShowCompleted(checked === true);
+                      setCurrentPage(0);
+                    }}
+                  />
+                  <Label 
+                    htmlFor="show-completed-desktop" 
+                    className="text-sm cursor-pointer whitespace-nowrap"
+                  >
+                    Show completed ({completedCount})
+                  </Label>
+                </div>
 
                 <Button variant="ghost" size="sm" onClick={clearFilters}>Clear</Button>
               </div>

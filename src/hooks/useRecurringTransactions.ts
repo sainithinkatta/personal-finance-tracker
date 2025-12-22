@@ -26,6 +26,39 @@ export const useRecurringTransactions = (filters?: RecurringTransactionsFilters)
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Query to count completed transactions (for the toggle label)
+  const { data: completedCount = 0 } = useQuery({
+    queryKey: ['recurring-transactions-completed-count', {
+      searchText: filters?.searchText,
+      bankAccountId: filters?.bankAccountId,
+      startDate: filters?.startDate,
+      endDate: filters?.endDate,
+    }],
+    queryFn: async (): Promise<number> => {
+      let query = supabase
+        .from('recurring_transactions')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'done');
+
+      if (filters?.searchText) {
+        query = query.ilike('name', `%${filters.searchText}%`);
+      }
+      if (filters?.bankAccountId && filters.bankAccountId.length === 36) {
+        query = query.eq('bank_account_id', filters.bankAccountId);
+      }
+      if (filters?.startDate) {
+        query = query.gte('next_due_date', filters.startDate);
+      }
+      if (filters?.endDate) {
+        query = query.lte('next_due_date', filters.endDate);
+      }
+
+      const { count, error } = await query;
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
   const {
     data: recurringTransactions = [],
     isLoading,
@@ -298,6 +331,7 @@ export const useRecurringTransactions = (filters?: RecurringTransactionsFilters)
 
   return {
     recurringTransactions,
+    completedCount,
     isLoading,
     error,
     addRecurringTransaction: addRecurringTransactionMutation.mutate,

@@ -1,8 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, PanelLeftClose, PanelLeftOpen, Wallet } from "lucide-react";
+import { Menu, PanelLeftClose, PanelLeftOpen, Wallet, Upload } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import Dashboard from "@/components/Dashboard";
 import ExpenseList from "@/components/ExpenseList";
 import FilterPanel from "@/components/FilterPanel";
@@ -11,22 +17,28 @@ import RecurringTransactions from "@/components/RecurringTransactions";
 import SavingsGoals from "@/components/SavingsGoals";
 import DuesManager from "@/components/DuesManager";
 import CreditAnalysisDashboard from "@/components/credit-analysis/CreditAnalysisDashboard";
+import LoanDashboard from "@/components/loan/LoanDashboard";
 import Sidebar from "@/components/layout/Sidebar";
 import UtilityPanel from "@/components/layout/UtilityPanel";
 import FloatingActionButton from "@/components/layout/FloatingActionButton";
 import { MobileReminders } from "@/components/layout/MobileReminders";
 import { UserMenu } from "@/components/layout/UserMenu";
+import BankAccountForm from "@/components/BankAccountForm";
+import { StatementUploadModal } from "@/components/StatementUploadModal";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useBankAccounts } from "@/hooks/useBankAccounts";
 import { FilterOptions } from "@/types/expense";
 import { filterExpenses } from "@/utils/expenseUtils";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { BankAccount } from "@/types/bankAccount";
 
 const Index = () => {
   const { expenses, isLoading } = useExpenses();
   const { bankAccounts } = useBankAccounts();
+  const { toast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isDesktopSidebarVisible, setIsDesktopSidebarVisible] = useState(true);
+  const [isDesktopSidebarVisible, setIsDesktopSidebarVisible] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [filters, setFilters] = useState<FilterOptions>({
     startDate: null,
@@ -34,6 +46,13 @@ const Index = () => {
     category: "All",
   });
   const [user, setUser] = useState<any>(null);
+  
+  // State for editing bank account from Credit Analysis
+  const [editingBankAccount, setEditingBankAccount] = useState<BankAccount | null>(null);
+  const [isEditBankAccountOpen, setIsEditBankAccountOpen] = useState(false);
+  
+  // State for statement upload modal
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -42,6 +61,40 @@ const Index = () => {
     };
     getUser();
   }, []);
+
+  // Listen for edit-bank-account custom event from Credit Analysis
+  const handleEditBankAccountEvent = useCallback((event: CustomEvent<{ id: string }>) => {
+    const accountId = event.detail?.id;
+    if (!accountId) {
+      console.error('edit-bank-account event missing account id');
+      return;
+    }
+    
+    const account = bankAccounts.find(acc => acc.id === accountId);
+    if (!account) {
+      toast({
+        title: 'Account not found',
+        description: 'This card could not be loaded for editing. Please refresh and try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setEditingBankAccount(account);
+    setIsEditBankAccountOpen(true);
+  }, [bankAccounts, toast]);
+
+  useEffect(() => {
+    window.addEventListener('edit-bank-account', handleEditBankAccountEvent as EventListener);
+    return () => {
+      window.removeEventListener('edit-bank-account', handleEditBankAccountEvent as EventListener);
+    };
+  }, [handleEditBankAccountEvent]);
+
+  const handleEditBankAccountClose = () => {
+    setIsEditBankAccountOpen(false);
+    setEditingBankAccount(null);
+  };
 
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
@@ -163,6 +216,12 @@ const Index = () => {
                           Savings
                         </TabsTrigger>
                         <TabsTrigger
+                          value="loan"
+                          className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
+                        >
+                          Loan
+                        </TabsTrigger>
+                        <TabsTrigger
                           value="credit"
                           className="flex-none px-4 py-2 h-auto rounded-full text-sm font-medium border border-gray-300 bg-white data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 data-[state=active]:shadow-sm shadow-none transition-all touch-target whitespace-nowrap"
                         >
@@ -172,7 +231,7 @@ const Index = () => {
                     </div>
 
                     {/* Desktop: inline tabs */}
-                    <TabsList className="hidden md:grid w-full grid-cols-7 mb-4 bg-white/60 backdrop-blur-sm border border-gray-200/60 shadow-sm rounded-lg p-1">
+                    <TabsList className="hidden md:grid w-full grid-cols-8 mb-4 bg-white/60 backdrop-blur-sm border border-gray-200/60 shadow-sm rounded-lg p-1">
                       <TabsTrigger
                         value="dashboard"
                         className="text-xs lg:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600"
@@ -210,6 +269,12 @@ const Index = () => {
                         Savings
                       </TabsTrigger>
                       <TabsTrigger
+                        value="loan"
+                        className="text-xs lg:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600"
+                      >
+                        Loan
+                      </TabsTrigger>
+                      <TabsTrigger
                         value="credit"
                         className="text-xs lg:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:text-blue-600"
                       >
@@ -225,10 +290,20 @@ const Index = () => {
                     {activeTab === "expenses" && (
                       <div className="space-y-3">
                         <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm p-3.5 sm:p-4">
-                          <div className="border-b border-gray-200/60 pb-2 mb-3">
+                          <div className="border-b border-gray-200/60 pb-2 mb-3 flex items-center justify-between">
                             <h2 className="text-base sm:text-lg font-semibold text-gray-900">
                               Expenses
                             </h2>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setIsUploadModalOpen(true)}
+                              className="gap-1.5"
+                            >
+                              <Upload className="h-4 w-4" />
+                              <span className="hidden sm:inline">Upload Statement</span>
+                              <span className="sm:hidden">Upload</span>
+                            </Button>
                           </div>
 
                           <FilterPanel
@@ -319,6 +394,24 @@ const Index = () => {
                     )}
                   </TabsContent>
 
+                  <TabsContent value="loan" className="mt-0">
+                    {activeTab === "loan" && (
+                      <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
+                        <div className="flex flex-col items-start p-3.5 sm:p-4 border-b border-gray-200/60 gap-1">
+                          <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+                            Loan Tracker
+                          </h2>
+                          <p className="text-xs sm:text-sm text-gray-600">
+                            Track and project your loan repayment
+                          </p>
+                        </div>
+                        <div className="p-3.5 sm:p-4">
+                          <LoanDashboard />
+                        </div>
+                      </div>
+                    )}
+                  </TabsContent>
+
                   <TabsContent value="credit" className="mt-0">
                     {activeTab === "credit" && (
                       <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
@@ -353,6 +446,28 @@ const Index = () => {
 
         {/* Mobile Reminders */}
         <MobileReminders />
+
+        {/* Edit Bank Account Dialog - triggered from Credit Analysis */}
+        <Dialog open={isEditBankAccountOpen} onOpenChange={setIsEditBankAccountOpen}>
+          <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Bank Account</DialogTitle>
+            </DialogHeader>
+            {editingBankAccount && (
+              <BankAccountForm
+                onClose={handleEditBankAccountClose}
+                account={editingBankAccount}
+                bankAccounts={bankAccounts}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Statement Upload Modal */}
+        <StatementUploadModal
+          open={isUploadModalOpen}
+          onOpenChange={setIsUploadModalOpen}
+        />
     </div>
   );
 };

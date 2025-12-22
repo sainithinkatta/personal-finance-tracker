@@ -260,6 +260,9 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
                       <TableHead className="font-semibold text-foreground">
                         Description
                       </TableHead>
+                      <TableHead className="font-semibold text-foreground">
+                        Bank
+                      </TableHead>
                       <TableHead className="font-semibold text-foreground text-right">
                         Amount
                       </TableHead>
@@ -299,6 +302,9 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
                         </TableCell>
                         <TableCell className="max-w-[200px] truncate">
                           {expense.description || '–'}
+                        </TableCell>
+                        <TableCell className="max-w-[150px] truncate text-muted-foreground">
+                          {bankAccounts.find(b => b.id === expense.bank_account_id)?.name || '–'}
                         </TableCell>
                         <TableCell className="text-right font-semibold">
                           {formatCurrency(expense.amount, expense.currency)}
@@ -382,6 +388,11 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
                                 No description
                               </div>
                             )}
+                            
+                            {/* Bank Account */}
+                            <div className="text-xs text-muted-foreground">
+                              Bank: {bankAccounts.find(b => b.id === expense.bank_account_id)?.name || '–'}
+                            </div>
                           </div>
                         </div>
                       </div>

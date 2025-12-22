@@ -81,9 +81,17 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Expense> }) => {
+      // Convert Date to string for Supabase
+      const dbUpdates = {
+        ...updates,
+        date: updates.date instanceof Date 
+          ? updates.date.toISOString().split('T')[0] 
+          : updates.date,
+      };
+      
       const { error } = await supabase
         .from('expenses')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', id);
 
       if (error) throw error;
@@ -231,6 +239,7 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({
               {editingExpense && (
                 <ExpenseEditForm
                   expense={editingExpense}
+                  onUpdateExpense={handleUpdate}
                   onClose={() => setEditingExpense(null)}
                   bankAccounts={bankAccounts}
                 />
@@ -247,6 +256,7 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({
             {editingExpense && (
               <ExpenseEditForm
                 expense={editingExpense}
+                onUpdateExpense={handleUpdate}
                 onClose={() => setEditingExpense(null)}
                 bankAccounts={bankAccounts}
               />
