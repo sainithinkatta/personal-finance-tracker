@@ -2,9 +2,10 @@ import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Settings, Plane, ShoppingCart, Zap, Coffee, Package, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react';
+import { Edit, Trash2, Settings, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react';
 import { Budget } from '@/types/budget';
 import { formatCurrency, getBudgetProgress, getCategoryRemaining, getTotalSpent, getTotalAllocated } from '@/utils/budgetUtils';
+import { categoryIcons, categoryConfig, BudgetCategoryName } from '@/constants/categoryConfig';
 
 interface BudgetCardProps {
   budget: Budget;
@@ -12,52 +13,6 @@ interface BudgetCardProps {
   onAllocate: (budget: Budget) => void;
   onDelete: (budget: Budget) => void;
 }
-
-const categoryIcons = {
-  Travel: Plane,
-  Groceries: ShoppingCart,
-  Bills: Zap,
-  Food: Coffee,
-  Others: Package,
-};
-
-const categoryConfig = {
-  Travel: { 
-    color: 'text-blue-600', 
-    bg: 'bg-blue-50', 
-    border: 'border-blue-200',
-    progress: 'bg-blue-500',
-    light: 'bg-blue-100'
-  },
-  Groceries: { 
-    color: 'text-emerald-600', 
-    bg: 'bg-emerald-50', 
-    border: 'border-emerald-200',
-    progress: 'bg-emerald-500',
-    light: 'bg-emerald-100'
-  },
-  Bills: { 
-    color: 'text-amber-600', 
-    bg: 'bg-amber-50', 
-    border: 'border-amber-200',
-    progress: 'bg-amber-500',
-    light: 'bg-amber-100'
-  },
-  Food: { 
-    color: 'text-red-600',
-    bg: 'bg-red-50',
-    border: 'border-red-200',
-    progress: 'bg-red-500',
-    light: 'bg-red-100'
-  },
-  Others: { 
-    color: 'text-purple-600', 
-    bg: 'bg-purple-50', 
-    border: 'border-purple-200',
-    progress: 'bg-purple-500',
-    light: 'bg-purple-100'
-  },
-};
 
 export const BudgetCard: React.FC<BudgetCardProps> = ({
   budget,
@@ -78,7 +33,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
     return months[month - 1];
   };
 
-  const CategoryItem = ({ category }: { category: keyof typeof categoryIcons }) => {
+  const CategoryItem = ({ category }: { category: BudgetCategoryName }) => {
     const allocated = budget[`${category.toLowerCase()}_allocated` as keyof Budget] as number || 0;
     const spent = budget[`${category.toLowerCase()}_spent` as keyof Budget] as number || 0;
     const categoryProgress = allocated > 0 ? (spent / allocated) * 100 : 0;
@@ -319,8 +274,8 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
             </div>
           ) : (
             <div className="space-y-3.5">
-              {['Travel', 'Groceries', 'Bills', 'Food', 'Others'].map(category => (
-                <CategoryItem key={category} category={category as keyof typeof categoryIcons} />
+              {(['Travel', 'Groceries', 'Bills', 'Food', 'Others'] as BudgetCategoryName[]).map(category => (
+                <CategoryItem key={category} category={category} />
               ))}
             </div>
           )}

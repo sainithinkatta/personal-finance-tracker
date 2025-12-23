@@ -17,7 +17,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ user, showSignOut = false 
             <Wallet className="h-8 w-8 text-primary" />
             <div>
               <h1 className="text-2xl font-bold text-primary">
-                Personal Finance Tracker
+                FinMate
               </h1>
               <p className="text-sm text-muted-foreground mt-0.5">
                 Track, analyze, and manage your complete financial picture

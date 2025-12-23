@@ -1,6 +1,6 @@
 {
-  "name": "Personal Finance Tracker",
-  "short_name": "Finance",
+  "name": "FinMate",
+  "short_name": "FinMate",
   "description": "Track your income, expenses, and financial goals",
   "start_url": "/app",
   "display": "standalone",
