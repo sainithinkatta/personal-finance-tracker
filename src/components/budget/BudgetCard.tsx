@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, Settings, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react';
 import { Budget } from '@/types/budget';
-import { formatCurrency, getBudgetProgress, getCategoryRemaining, getTotalSpent, getTotalAllocated } from '@/utils/budgetUtils';
+import { formatCurrency, getBudgetSummary, getCategoryRemaining } from '@/utils/budgetUtils';
 import { categoryIcons, categoryConfig, BudgetCategoryName } from '@/constants/categoryConfig';
 
 interface BudgetCardProps {
@@ -20,12 +20,10 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
   onAllocate,
   onDelete
 }) => {
-  const totalSpent = getTotalSpent(budget);
-  const totalAllocated = getTotalAllocated(budget);
-  const progress = getBudgetProgress(budget);
-  const isOverBudget = progress > 100;
-  const isFullyAllocated = totalAllocated === budget.total_amount;
-  const remaining = budget.total_amount - totalSpent;
+  // Use unified budget summary (SOURCE OF TRUTH)
+  const summary = getBudgetSummary(budget);
+  const isOverBudget = summary.status === 'over_budget';
+  const isFullyAllocated = summary.allocated === summary.budget;
 
   const getMonthName = (month: number) => {
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 
@@ -94,7 +92,11 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
   return (
     <Card className="group relative bg-white hover:shadow-lg transition-all duration-300 border border-gray-200 overflow-hidden h-full flex flex-col">
       {/* Colored top border indicator */}
-      <div className={`h-1 ${isOverBudget ? 'bg-red-500' : progress > 80 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+      <div className={`h-1 ${
+        summary.status === 'over_budget' ? 'bg-red-500' :
+        summary.status === 'warning' ? 'bg-amber-500' :
+        'bg-emerald-500'
+      }`} />
       
       {/* Header */}
       <CardHeader className="pb-2 pt-3 px-4">
@@ -110,17 +112,8 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
               <Badge variant="secondary" className="bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium text-xs">
                 {getMonthName(budget.month)} {budget.year}
               </Badge>
-              <Badge 
-                className={`
-                  ${isOverBudget 
-                    ? 'bg-red-100 text-red-700 border-red-200' 
-                    : progress > 80 
-                      ? 'bg-amber-100 text-amber-700 border-amber-200'
-                      : 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                  } border font-medium text-xs
-                `}
-              >
-                {isOverBudget ? 'Over Budget' : progress > 80 ? 'Nearly Full' : 'On Track'}
+              <Badge className={`${summary.statusColors.badge} border font-medium text-xs`}>
+                {summary.statusLabel}
               </Badge>
             </div>
           </div>
@@ -167,7 +160,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
               </div>
               <div className="flex items-baseline gap-1.5">
                 <span className={`text-xl font-bold ${isOverBudget ? 'text-red-600' : 'text-gray-900'}`}>
-                  {formatCurrency(totalSpent, budget.currency)}
+                  {formatCurrency(summary.spent, budget.currency)}
                 </span>
                 {isOverBudget && (
                   <TrendingUp className="h-4 w-4 text-red-500" />
@@ -178,13 +171,13 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
             {/* Remaining/Over Amount */}
             <div>
               <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                {remaining >= 0 ? 'Remaining' : 'Over Budget'}
+                {summary.remaining >= 0 ? 'Remaining' : 'Over Budget'}
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className={`text-xl font-bold ${remaining >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                  {formatCurrency(Math.abs(remaining), budget.currency)}
+                <span className={`text-xl font-bold ${summary.remaining >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                  {formatCurrency(Math.abs(summary.remaining), budget.currency)}
                 </span>
-                {remaining < 0 && (
+                {summary.remaining < 0 && (
                   <TrendingDown className="h-4 w-4 text-red-500" />
                 )}
               </div>
@@ -197,13 +190,11 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
               </div>
               <div className="flex items-baseline gap-1.5">
                 <span className={`text-xl font-bold ${
-                  isOverBudget
-                    ? 'text-red-600'
-                    : progress > 80
-                      ? 'text-amber-600'
-                      : 'text-blue-600'
+                  summary.status === 'over_budget' ? 'text-red-600' :
+                  summary.status === 'warning' ? 'text-amber-600' :
+                  'text-blue-600'
                 }`}>
-                  {Math.round(progress)}%
+                  {summary.usedPercentage}%
                 </span>
               </div>
             </div>
@@ -213,14 +204,8 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
           <div className="mt-3">
             <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
               <div
-                className={`h-2.5 rounded-full transition-all duration-500 ${
-                  isOverBudget
-                    ? 'bg-gradient-to-r from-red-500 to-red-600'
-                    : progress > 80
-                      ? 'bg-gradient-to-r from-amber-500 to-amber-600'
-                      : 'bg-gradient-to-r from-emerald-500 to-emerald-600'
-                }`}
-                style={{ width: `${Math.min(progress, 100)}%` }}
+                className={`h-2.5 rounded-full transition-all duration-500 ${summary.statusColors.bar}`}
+                style={{ width: `${Math.min(summary.usedPercentage, 100)}%` }}
               />
             </div>
           </div>
@@ -231,13 +216,13 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
           <div className="bg-white border border-gray-200 rounded-lg p-2.5">
             <div className="text-xs font-medium text-gray-500 mb-0.5">Budget</div>
             <div className="text-base font-bold text-blue-600">
-              {formatCurrency(budget.total_amount, budget.currency)}
+              {formatCurrency(summary.budget, budget.currency)}
             </div>
           </div>
           <div className="bg-white border border-gray-200 rounded-lg p-2.5">
             <div className="text-xs font-medium text-gray-500 mb-0.5">Allocated</div>
             <div className="text-base font-bold text-purple-600">
-              {formatCurrency(totalAllocated, budget.currency)}
+              {formatCurrency(summary.allocated, budget.currency)}
             </div>
           </div>
         </div>
@@ -266,7 +251,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
                     Category allocation incomplete
                   </div>
                   <div className="text-xs text-amber-700 leading-relaxed">
-                    You have {formatCurrency(budget.total_amount - totalAllocated, budget.currency)} unallocated. 
+                    You have {formatCurrency(summary.budget - summary.allocated, budget.currency)} unallocated.
                     Click the settings icon to distribute funds across categories.
                   </div>
                 </div>
