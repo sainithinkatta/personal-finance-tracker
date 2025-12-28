@@ -1,13 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { FILE_UPLOAD_CONFIG, FILE_UPLOAD_MESSAGES } from '@/constants/fileUpload';
-import type { ImportHistoryItem } from '@/types/statementImport';
 
-/**
- * Custom hook for managing import history
- * Fetches and manages the history of statement imports
- */
+export interface ImportHistoryItem {
+  id: string;
+  user_id: string;
+  bank_account_id: string;
+  file_name: string;
+  file_size: number;
+  imported_count: number;
+  skipped_count: number;
+  duplicate_count: number;
+  imported_at: string;
+  bank_account?: {
+    name: string | null;
+  };
+}
+
 export const useImportHistory = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -22,7 +31,7 @@ export const useImportHistory = () => {
           bank_account:bank_accounts(name)
         `)
         .order('imported_at', { ascending: false })
-        .limit(FILE_UPLOAD_CONFIG.HISTORY_LIMIT);
+        .limit(50);
 
       if (error) throw error;
       return data as ImportHistoryItem[];
@@ -41,13 +50,13 @@ export const useImportHistory = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['import-history'] });
       toast({
-        title: 'History Deleted',
-        description: FILE_UPLOAD_MESSAGES.SUCCESS.HISTORY_DELETED,
+        title: 'History deleted',
+        description: 'Import history record removed.',
       });
     },
     onError: (error) => {
       toast({
-        title: 'Delete Failed',
+        title: 'Delete failed',
         description: error instanceof Error ? error.message : 'Failed to delete history',
         variant: 'destructive',
       });

@@ -50,7 +50,7 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
   const computedStatus = transaction.computedStatus;
   const isDone = computedStatus === 'done';
   const isPending = computedStatus === 'pending';
-  
+
   const dueDate = parseLocalDate(transaction.next_due_date);
   const daysUntilDue = differenceInDays(dueDate, new Date());
 
@@ -94,19 +94,17 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
       <div className="p-4">
         <div className="flex gap-3">
           {/* Date Section - Calendar Style */}
-          <div className={`flex-shrink-0 w-16 h-16 flex flex-col items-center justify-center rounded-xl border ${
-            isDone 
-              ? 'bg-accent-muted/50 border-accent/20' 
-              : isPending 
-                ? 'bg-destructive/10 border-destructive/20' 
+          <div className={`flex-shrink-0 w-16 h-16 flex flex-col items-center justify-center rounded-xl border ${isDone
+              ? 'bg-accent-muted/50 border-accent/20'
+              : isPending
+                ? 'bg-destructive/10 border-destructive/20'
                 : 'bg-gradient-to-br from-info-muted to-info-muted/50 border-info/20'
-          }`}>
+            }`}>
             <div className="text-2xl font-bold text-foreground leading-none">
               {format(dueDate, 'dd')}
             </div>
-            <div className={`text-xs font-semibold uppercase mt-0.5 ${
-              isDone ? 'text-accent' : isPending ? 'text-destructive' : 'text-info-foreground'
-            }`}>
+            <div className={`text-xs font-semibold uppercase mt-0.5 ${isDone ? 'text-accent' : isPending ? 'text-destructive' : 'text-info-foreground'
+              }`}>
               {format(dueDate, 'MMM')}
             </div>
             <div className="text-xs text-muted-foreground capitalize">
@@ -119,18 +117,17 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
             {/* Amount and Category Row */}
             <div className="flex items-start justify-between gap-2">
               <Badge
-                className={`font-semibold text-xs px-3 py-1 rounded-lg ${
-                  transaction.category === 'Groceries' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
-                  transaction.category === 'Food' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' :
-                  transaction.category === 'Travel' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
-                  transaction.category === 'Bills' ? 'bg-red-100 text-red-800 hover:bg-red-200' :
-                  transaction.category === 'Others' ? 'bg-purple-100 text-purple-800 hover:bg-purple-200' :
-                  'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                }`}
+                className={`font-semibold text-xs px-3 py-1 rounded-lg ${transaction.category === 'Groceries' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
+                    transaction.category === 'Food' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' :
+                      transaction.category === 'Travel' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
+                        transaction.category === 'Bills' ? 'bg-red-100 text-red-800 hover:bg-red-200' :
+                          transaction.category === 'Others' ? 'bg-purple-100 text-purple-800 hover:bg-purple-200' :
+                            'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
               >
                 {transaction.category}
               </Badge>
-              <div className="text-xl font-bold text-gray-900 whitespace-nowrap">
+              <div className="text-xl font-bold text-foreground whitespace-nowrap">
                 {formatCurrency(transaction.amount, transaction.currency)}
               </div>
             </div>
@@ -157,11 +154,11 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
                 {isDone && <Check className="h-3 w-3 mr-1" />}
                 {getStatusDisplayText(computedStatus)}
               </Badge>
-              
+
               <span className={`text-xs flex items-center gap-1 ${getDueColorClass()}`}>
                 {getDueText()}
               </span>
-              
+
               <Badge
                 variant="outline"
                 className={`text-xs ${getFrequencyBadgeColor(transaction.frequency)}`}
@@ -197,7 +194,7 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
             <span className="text-sm font-medium text-accent">Done</span>
           </Button>
         )}
-        
+
         <Button
           variant="ghost"
           size="sm"

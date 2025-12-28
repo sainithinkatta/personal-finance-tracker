@@ -74,7 +74,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
           "p-3 md:p-3.5 rounded-lg",
           "bg-secondary/50 hover:bg-secondary/70",
           "transition-colors duration-200",
-          "border border-transparent hover:border-gray-300",
+          "border border-transparent hover:border-border",
           "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
           "touch-target"
         )}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, TrendingUp, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { Plus, TrendingUp, MoreVertical, Pencil, Trash2, PiggyBank } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,12 +37,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { useSavingsGoals } from '@/hooks/useSavingsGoals';
 import { SavingsGoal, SavingsGoalFormData } from '@/types/savingsGoal';
 import { CURRENCIES } from '@/types/expense';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import SavingsGoalForm from './savings/SavingsGoalForm';
+import EmptyState from './dashboard/EmptyState';
 
 const SavingsGoals: React.FC = () => {
   const {
@@ -235,9 +237,11 @@ const SavingsGoals: React.FC = () => {
       </div>
 
       {savingsGoals.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          No savings goals created yet. Add your first goal to start saving!
-        </div>
+        <EmptyState
+          icon={PiggyBank}
+          title="No Savings Goals Yet"
+          description="Create your first savings goal to start tracking your progress toward financial milestones."
+        />
       ) : (
         <div className="grid gap-6">
           {savingsGoals.map((goal) => {
@@ -306,31 +310,20 @@ const SavingsGoals: React.FC = () => {
           })}
         </div>
       )}
-      <AlertDialog open={!!deletingGoal} onOpenChange={(open) => !open && setDeletingGoal(null)}>
-        <AlertDialogContent className="mx-auto w-[calc(100%-2rem)] sm:w-full">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the "{deletingGoal?.name}" savings goal and all of its contributions.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeletingGoal(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive hover:bg-destructive/90"
-              onClick={() => {
-                if (deletingGoal) {
-                  deleteSavingsGoal(deletingGoal.id);
-                  setDeletingGoal(null);
-                }
-              }}
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmDialog
+        isOpen={!!deletingGoal}
+        onClose={() => setDeletingGoal(null)}
+        onConfirm={() => {
+          if (deletingGoal) {
+            deleteSavingsGoal(deletingGoal.id);
+            setDeletingGoal(null);
+          }
+        }}
+        entityName="Savings Goal"
+        itemIdentifier={deletingGoal?.name}
+        isLoading={isDeleting}
+        additionalInfo="This will also delete all contributions."
+      />
     </div>
   );
 };

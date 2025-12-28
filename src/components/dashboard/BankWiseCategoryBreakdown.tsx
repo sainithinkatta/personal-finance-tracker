@@ -85,16 +85,16 @@ export const BankWiseCategoryBreakdown: React.FC<BankWiseCategoryBreakdownProps>
   const symbol = getCurrencySymbol(currency);
 
   return (
-    <Card className="bg-white/90 backdrop-blur-sm border border-gray-200/60 shadow-sm hover:shadow-md transition-shadow duration-200 h-full flex flex-col min-h-0 overflow-hidden">
-      <CardHeader className="px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
+    <Card className="bg-card/90 backdrop-blur-sm border border-border/60 shadow-sm hover:shadow-md transition-shadow duration-200 h-full flex flex-col min-h-0 overflow-hidden">
+      <CardHeader className="px-4 py-2.5 border-b border-border flex-shrink-0">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm md:text-base font-medium text-gray-800 flex items-center">
+          <CardTitle className="text-sm md:text-base font-medium text-foreground flex items-center">
             <div className="w-1.5 h-1.5 bg-purple-500 rounded-full mr-2"></div>
             <span>Expense Breakdown</span>
-            <span className="ml-2 text-xs font-normal text-gray-500">({currentMonthLabel})</span>
+            <span className="ml-2 text-xs font-normal text-muted-foreground">({currentMonthLabel})</span>
           </CardTitle>
           {grandTotal > 0 && (
-            <span className="text-sm font-bold text-gray-900">{symbol}{grandTotal.toFixed(2)}</span>
+            <span className="text-sm font-bold text-foreground">{symbol}{grandTotal.toFixed(2)}</span>
           )}
         </div>
       </CardHeader>
@@ -103,10 +103,10 @@ export const BankWiseCategoryBreakdown: React.FC<BankWiseCategoryBreakdownProps>
         {bankGroupedData.length === 0 ? (
           <div className="flex items-center justify-center h-full py-8">
             <div className="text-center">
-              <div className="w-12 h-12 mx-auto mb-2 bg-gray-100 rounded-full flex items-center justify-center">
-                <Building2 className="w-6 h-6 text-gray-400" />
+              <div className="w-12 h-12 mx-auto mb-2 bg-muted rounded-full flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-muted-foreground" />
               </div>
-              <p className="text-sm text-gray-500">No spending yet</p>
+              <p className="text-sm text-muted-foreground">No spending yet</p>
             </div>
           </div>
         ) : (
@@ -114,32 +114,31 @@ export const BankWiseCategoryBreakdown: React.FC<BankWiseCategoryBreakdownProps>
             {bankGroupedData.map(bank => (
               <div
                 key={bank.bank_account_id}
-                className="p-3 bg-gray-50/80 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors"
+                className="p-3 bg-muted/50 rounded-lg border border-border hover:border-primary/30 transition-colors"
               >
                 {/* Bank Header Row */}
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
-                    <div className={`p-1.5 rounded-md ${
-                      bank.account_type === 'Credit' 
-                        ? 'bg-amber-100 text-amber-600' 
+                    <div className={`p-1.5 rounded-md ${bank.account_type === 'Credit'
+                        ? 'bg-amber-100 text-amber-600'
                         : bank.account_type === 'Debit'
-                        ? 'bg-blue-100 text-blue-600'
-                        : 'bg-gray-200 text-gray-600'
-                    }`}>
+                          ? 'bg-blue-100 text-blue-600'
+                          : 'bg-muted text-muted-foreground'
+                      }`}>
                       {getAccountTypeIcon(bank.account_type)}
                     </div>
                     <div>
-                      <span className="text-sm font-semibold text-gray-800">
+                      <span className="text-sm font-semibold text-foreground">
                         {bank.bank_name}
                       </span>
                       {bank.account_type && bank.bank_account_id !== 'unassigned' && (
-                        <span className="ml-2 text-[10px] text-gray-500 font-medium uppercase">
+                        <span className="ml-2 text-[10px] text-muted-foreground font-medium uppercase">
                           {bank.account_type}
                         </span>
                       )}
                     </div>
                   </div>
-                  <span className="text-sm font-bold text-gray-900">
+                  <span className="text-sm font-bold text-foreground">
                     {symbol}{bank.total.toFixed(2)}
                   </span>
                 </div>
@@ -149,14 +148,14 @@ export const BankWiseCategoryBreakdown: React.FC<BankWiseCategoryBreakdownProps>
                   {bank.categories.map(({ category, amount }) => (
                     <div
                       key={category}
-                      className="inline-flex items-center space-x-1.5 px-2 py-1 bg-white rounded-md border border-gray-200/80 shadow-sm"
+                      className="inline-flex items-center space-x-1.5 px-2 py-1 bg-card rounded-md border border-border shadow-sm"
                     >
                       <div
                         className="w-2 h-2 rounded-full flex-shrink-0"
                         style={{ backgroundColor: COLORS[category] }}
                       />
-                      <span className="text-xs text-gray-700 font-medium">{category}</span>
-                      <span className="text-xs font-semibold text-gray-900">
+                      <span className="text-xs text-foreground font-medium">{category}</span>
+                      <span className="text-xs font-semibold text-foreground">
                         {symbol}{amount.toFixed(2)}
                       </span>
                     </div>

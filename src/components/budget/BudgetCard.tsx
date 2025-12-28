@@ -1,11 +1,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { IconButton } from '@/components/ui/icon-button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Settings, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react';
+import { Edit, Trash2, Settings, Plane, ShoppingCart, Zap, Coffee, Package, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react';
 import { Budget } from '@/types/budget';
-import { formatCurrency, getBudgetSummary, getCategoryRemaining } from '@/utils/budgetUtils';
-import { categoryIcons, categoryConfig, BudgetCategoryName } from '@/constants/categoryConfig';
+import { formatCurrency, getBudgetProgress, getCategoryRemaining, getTotalSpent, getTotalAllocated } from '@/utils/budgetUtils';
 
 interface BudgetCardProps {
   budget: Budget;
@@ -14,30 +14,78 @@ interface BudgetCardProps {
   onDelete: (budget: Budget) => void;
 }
 
+const categoryIcons = {
+  Travel: Plane,
+  Groceries: ShoppingCart,
+  Bills: Zap,
+  Food: Coffee,
+  Others: Package,
+};
+
+const categoryConfig = {
+  Travel: {
+    color: 'text-blue-600',
+    bg: 'bg-blue-50',
+    border: 'border-blue-200',
+    progress: 'bg-blue-500',
+    light: 'bg-blue-100'
+  },
+  Groceries: {
+    color: 'text-emerald-600',
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-200',
+    progress: 'bg-emerald-500',
+    light: 'bg-emerald-100'
+  },
+  Bills: {
+    color: 'text-amber-600',
+    bg: 'bg-amber-50',
+    border: 'border-amber-200',
+    progress: 'bg-amber-500',
+    light: 'bg-amber-100'
+  },
+  Food: {
+    color: 'text-red-600',
+    bg: 'bg-red-50',
+    border: 'border-red-200',
+    progress: 'bg-red-500',
+    light: 'bg-red-100'
+  },
+  Others: {
+    color: 'text-purple-600',
+    bg: 'bg-purple-50',
+    border: 'border-purple-200',
+    progress: 'bg-purple-500',
+    light: 'bg-purple-100'
+  },
+};
+
 export const BudgetCard: React.FC<BudgetCardProps> = ({
   budget,
   onEdit,
   onAllocate,
   onDelete
 }) => {
-  // Use unified budget summary (SOURCE OF TRUTH)
-  const summary = getBudgetSummary(budget);
-  const isOverBudget = summary.status === 'over_budget';
-  const isFullyAllocated = summary.allocated === summary.budget;
+  const totalSpent = getTotalSpent(budget);
+  const totalAllocated = getTotalAllocated(budget);
+  const progress = getBudgetProgress(budget);
+  const isOverBudget = progress > 100;
+  const isFullyAllocated = totalAllocated === budget.total_amount;
+  const remaining = budget.total_amount - totalSpent;
 
   const getMonthName = (month: number) => {
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                   'July', 'August', 'September', 'October', 'November', 'December'];
+    const months = ['January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'];
     return months[month - 1];
   };
 
-  const CategoryItem = ({ category }: { category: BudgetCategoryName }) => {
+  const CategoryItem = ({ category }: { category: keyof typeof categoryIcons }) => {
     const allocated = budget[`${category.toLowerCase()}_allocated` as keyof Budget] as number || 0;
     const spent = budget[`${category.toLowerCase()}_spent` as keyof Budget] as number || 0;
     const categoryProgress = allocated > 0 ? (spent / allocated) * 100 : 0;
     const IconComponent = categoryIcons[category];
     const config = categoryConfig[category];
-    
+
     if (allocated === 0) return null;
 
     const isOverCategory = categoryProgress > 100;
@@ -50,23 +98,22 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
             <div className={`p-1.5 rounded-lg ${config.bg} ${config.color}`}>
               <IconComponent className="h-3.5 w-3.5" />
             </div>
-            <span className="text-sm font-medium text-gray-900">{category}</span>
+            <span className="text-sm font-medium text-foreground">{category}</span>
           </div>
           <div className="text-right">
-            <div className={`text-sm font-semibold ${isOverCategory ? 'text-red-600' : 'text-gray-900'}`}>
+            <div className={`text-sm font-semibold ${isOverCategory ? 'text-red-600' : 'text-foreground'}`}>
               {formatCurrency(spent, budget.currency)}
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground">
               of {formatCurrency(allocated, budget.currency)}
             </div>
           </div>
         </div>
         <div className="relative">
-          <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
             <div
-              className={`h-2 rounded-full transition-all duration-500 ${
-                isOverCategory ? 'bg-red-500' : config.progress
-              }`}
+              className={`h-2 rounded-full transition-all duration-500 ${isOverCategory ? 'bg-red-500' : config.progress
+                }`}
               style={{ width: `${Math.min(categoryProgress, 100)}%` }}
             />
           </div>
@@ -75,7 +122,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
               {Math.round(categoryProgress)}%
             </span>
             {categoryRemaining >= 0 ? (
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 {formatCurrency(categoryRemaining, budget.currency)} left
               </span>
             ) : (
@@ -90,77 +137,82 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
   };
 
   return (
-    <Card className="group relative bg-white hover:shadow-lg transition-all duration-300 border border-gray-200 overflow-hidden h-full flex flex-col">
+    <Card className="group relative bg-card hover:shadow-lg transition-all duration-300 border border-border overflow-hidden h-full flex flex-col">
       {/* Colored top border indicator */}
-      <div className={`h-1 ${
-        summary.status === 'over_budget' ? 'bg-red-500' :
-        summary.status === 'warning' ? 'bg-amber-500' :
-        'bg-emerald-500'
-      }`} />
-      
+      <div className={`h-1 ${isOverBudget ? 'bg-red-500' : progress > 80 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+
       {/* Header */}
       <CardHeader className="pb-2 pt-3 px-4">
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1.5">
-              <h3 className="text-base font-bold text-gray-900">{budget.name}</h3>
+              <h3 className="text-base font-bold text-foreground">{budget.name}</h3>
               {isOverBudget && (
                 <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium text-xs">
+              <Badge variant="secondary" className="bg-muted text-muted-foreground hover:bg-muted/80 font-medium text-xs">
                 {getMonthName(budget.month)} {budget.year}
               </Badge>
-              <Badge className={`${summary.statusColors.badge} border font-medium text-xs`}>
-                {summary.statusLabel}
+              <Badge
+                className={`
+                  ${isOverBudget
+                    ? 'bg-red-100 text-red-700 border-red-200'
+                    : progress > 80
+                      ? 'bg-amber-100 text-amber-700 border-amber-200'
+                      : 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                  } border font-medium text-xs
+                `}
+              >
+                {isOverBudget ? 'Over Budget' : progress > 80 ? 'Nearly Full' : 'On Track'}
               </Badge>
             </div>
           </div>
-          
+
           {/* Action buttons */}
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <Button
+            <IconButton
               variant="ghost"
               size="sm"
               onClick={() => onAllocate(budget)}
               className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 rounded-lg"
-              title="Allocate Categories"
+              tooltip="Allocate Categories"
             >
               <Settings className="h-3.5 w-3.5" />
-            </Button>
-            <Button
+            </IconButton>
+            <IconButton
               variant="ghost"
               size="sm"
               onClick={() => onEdit(budget)}
-              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-lg"
-              title="Edit Budget"
+              className="h-8 w-8 p-0 hover:bg-muted rounded-lg"
+              tooltip="Edit Budget"
             >
               <Edit className="h-3.5 w-3.5" />
-            </Button>
-            <Button
+            </IconButton>
+            <IconButton
               variant="ghost"
               size="sm"
               onClick={() => onDelete(budget)}
               className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 rounded-lg"
-              title="Delete Budget"
+              tooltip="Delete Budget"
             >
               <Trash2 className="h-3.5 w-3.5" />
-            </Button>
+            </IconButton>
           </div>
         </div>
 
         {/* Main Budget Stats */}
-        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200">
+        <div className="bg-gradient-to-br from-muted/50 to-muted rounded-lg p-3 border border-border">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {/* Spent Amount */}
             <div>
-              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
                 Total Spent
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className={`text-xl font-bold ${isOverBudget ? 'text-red-600' : 'text-gray-900'}`}>
-                  {formatCurrency(summary.spent, budget.currency)}
+                <span className={`text-xl font-bold ${isOverBudget ? 'text-red-600' : 'text-foreground'}`}>
+                  {formatCurrency(totalSpent, budget.currency)}
                 </span>
                 {isOverBudget && (
                   <TrendingUp className="h-4 w-4 text-red-500" />
@@ -170,14 +222,14 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
 
             {/* Remaining/Over Amount */}
             <div>
-              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                {summary.remaining >= 0 ? 'Remaining' : 'Over Budget'}
+              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                {remaining >= 0 ? 'Remaining' : 'Over Budget'}
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className={`text-xl font-bold ${summary.remaining >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                  {formatCurrency(Math.abs(summary.remaining), budget.currency)}
+                <span className={`text-xl font-bold ${remaining >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                  {formatCurrency(Math.abs(remaining), budget.currency)}
                 </span>
-                {summary.remaining < 0 && (
+                {remaining < 0 && (
                   <TrendingDown className="h-4 w-4 text-red-500" />
                 )}
               </div>
@@ -185,16 +237,17 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
 
             {/* Percentage Used */}
             <div>
-              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
                 Used
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className={`text-xl font-bold ${
-                  summary.status === 'over_budget' ? 'text-red-600' :
-                  summary.status === 'warning' ? 'text-amber-600' :
-                  'text-blue-600'
-                }`}>
-                  {summary.usedPercentage}%
+                <span className={`text-xl font-bold ${isOverBudget
+                  ? 'text-red-600'
+                  : progress > 80
+                    ? 'text-amber-600'
+                    : 'text-blue-600'
+                  }`}>
+                  {Math.round(progress)}%
                 </span>
               </div>
             </div>
@@ -202,10 +255,15 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
 
           {/* Progress Bar */}
           <div className="mt-3">
-            <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+            <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden">
               <div
-                className={`h-2.5 rounded-full transition-all duration-500 ${summary.statusColors.bar}`}
-                style={{ width: `${Math.min(summary.usedPercentage, 100)}%` }}
+                className={`h-2.5 rounded-full transition-all duration-500 ${isOverBudget
+                  ? 'bg-gradient-to-r from-red-500 to-red-600'
+                  : progress > 80
+                    ? 'bg-gradient-to-r from-amber-500 to-amber-600'
+                    : 'bg-gradient-to-r from-emerald-500 to-emerald-600'
+                  }`}
+                style={{ width: `${Math.min(progress, 100)}%` }}
               />
             </div>
           </div>
@@ -213,16 +271,16 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
 
         {/* Allocation Status */}
         <div className="grid grid-cols-2 gap-2.5 mt-2">
-          <div className="bg-white border border-gray-200 rounded-lg p-2.5">
-            <div className="text-xs font-medium text-gray-500 mb-0.5">Budget</div>
+          <div className="bg-card border border-border rounded-lg p-2.5">
+            <div className="text-xs font-medium text-muted-foreground mb-0.5">Budget</div>
             <div className="text-base font-bold text-blue-600">
-              {formatCurrency(summary.budget, budget.currency)}
+              {formatCurrency(budget.total_amount, budget.currency)}
             </div>
           </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-2.5">
-            <div className="text-xs font-medium text-gray-500 mb-0.5">Allocated</div>
+          <div className="bg-card border border-border rounded-lg p-2.5">
+            <div className="text-xs font-medium text-muted-foreground mb-0.5">Allocated</div>
             <div className="text-base font-bold text-purple-600">
-              {formatCurrency(summary.allocated, budget.currency)}
+              {formatCurrency(totalAllocated, budget.currency)}
             </div>
           </div>
         </div>
@@ -232,14 +290,14 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
         {/* Category Breakdown */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-semibold text-gray-900">Category Breakdown</h4>
+            <h4 className="text-sm font-semibold text-foreground">Category Breakdown</h4>
             {!isFullyAllocated && (
               <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50 text-xs">
                 Incomplete
               </Badge>
             )}
           </div>
-          
+
           {!isFullyAllocated ? (
             <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-3.5">
               <div className="flex items-start gap-2.5">
@@ -251,7 +309,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
                     Category allocation incomplete
                   </div>
                   <div className="text-xs text-amber-700 leading-relaxed">
-                    You have {formatCurrency(summary.budget - summary.allocated, budget.currency)} unallocated.
+                    You have {formatCurrency(budget.total_amount - totalAllocated, budget.currency)} unallocated.
                     Click the settings icon to distribute funds across categories.
                   </div>
                 </div>
@@ -259,8 +317,8 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
             </div>
           ) : (
             <div className="space-y-3.5">
-              {(['Travel', 'Groceries', 'Bills', 'Food', 'Others'] as BudgetCategoryName[]).map(category => (
-                <CategoryItem key={category} category={category} />
+              {['Travel', 'Groceries', 'Bills', 'Food', 'Others'].map(category => (
+                <CategoryItem key={category} category={category as keyof typeof categoryIcons} />
               ))}
             </div>
           )}

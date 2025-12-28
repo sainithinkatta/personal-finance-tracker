@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Edit2, Trash2, Receipt } from 'lucide-react';
 import { Expense } from '@/types/expense';
 import { cn } from '@/lib/utils';
 
@@ -38,6 +38,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import {
   Pagination,
   PaginationContent,
@@ -54,6 +55,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import ExpenseEditForm from '@/components/ExpenseEditForm';
 import ExportDataButton from '@/components/ExportDataButton';
+import EmptyState from '@/components/dashboard/EmptyState';
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -76,7 +78,7 @@ const getCategoryColor = (category: string) => {
     case 'Others':
       return 'bg-purple-100 text-purple-800 hover:bg-purple-200';
     default:
-      return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+      return 'bg-muted text-muted-foreground hover:bg-muted/80';
   }
 };
 
@@ -218,7 +220,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
     if (deletingExpenseId) {
       deleteExpense(deletingExpenseId);
       setDeletingExpenseId(null);
-      
+
       // Reset to page 1 if current page becomes empty after deletion
       const newTotalPages = Math.ceil((expenses.length - 1) / ITEMS_PER_PAGE);
       if (currentPage > newTotalPages && newTotalPages > 0) {
@@ -373,7 +375,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
                               >
                                 {expense.category}
                               </Badge>
-                              <div className="text-xl font-bold text-gray-900 whitespace-nowrap">
+                              <div className="text-xl font-bold text-foreground whitespace-nowrap">
                                 {formatCurrency(expense.amount, expense.currency)}
                               </div>
                             </div>
@@ -388,7 +390,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
                                 No description
                               </div>
                             )}
-                            
+
                             {/* Bank Account */}
                             <div className="text-xs text-muted-foreground">
                               Bank: {bankAccounts.find(b => b.id === expense.bank_account_id)?.name || '–'}
@@ -430,12 +432,12 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
                 <Pagination>
                   <PaginationContent>
                     <PaginationItem>
-                      <PaginationPrevious 
+                      <PaginationPrevious
                         onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                         className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                       />
                     </PaginationItem>
-                    
+
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                       <PaginationItem key={page}>
                         <PaginationLink
@@ -447,9 +449,9 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
                         </PaginationLink>
                       </PaginationItem>
                     ))}
-                    
+
                     <PaginationItem>
-                      <PaginationNext 
+                      <PaginationNext
                         onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                         className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                       />
@@ -460,14 +462,11 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
             )}
           </>
         ) : (
-          <div className="text-center py-12 text-muted-foreground">
-            <p className="text-lg mb-2">
-              No expenses found for the selected filters.
-            </p>
-            <p className="text-sm mb-4">
-              Try adjusting your date range or category selection.
-            </p>
-          </div>
+          <EmptyState
+            icon={Receipt}
+            title="No Expenses Found"
+            description="No expenses match your current filters. Try adjusting your date range or category selection."
+          />
         )}
       </div>
 
@@ -509,28 +508,13 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
       )}
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deletingExpenseId} onOpenChange={() => setDeletingExpenseId(null)}>
-        <AlertDialogContent className="mx-auto w-[calc(100%-2rem)] sm:w-full">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Expense</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this expense{expenseToDelete ? ` for ${formatCurrency(expenseToDelete.amount, expenseToDelete.currency)}` : ''}?
-              This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeletingExpenseId(null)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-destructive hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmDialog
+        isOpen={!!deletingExpenseId}
+        onClose={() => setDeletingExpenseId(null)}
+        onConfirm={handleDeleteConfirm}
+        entityName="Expense"
+        itemIdentifier={expenseToDelete ? formatCurrency(expenseToDelete.amount, expenseToDelete.currency) : undefined}
+      />
     </div>
   );
 };

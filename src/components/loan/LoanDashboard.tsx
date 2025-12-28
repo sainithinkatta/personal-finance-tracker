@@ -32,21 +32,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useLoans } from '@/hooks/useLoans';
 import { useLoanContributions } from '@/hooks/useLoanContributions';
 import { Loan, LoanFormData, LoanContributionFormData } from '@/types/loan';
-import { calculateCurrentOutstanding } from '@/utils/loanCalculations';
 import LoanForm from './LoanForm';
 import LoanSummaryCard from './LoanSummaryCard';
 import LoanProjectionTable from './LoanProjectionTable';
 import LoanContributionForm from './LoanContributionForm';
 import LoanContributionsList from './LoanContributionsList';
+import EmptyState from '@/components/dashboard/EmptyState';
 
 const LoanDashboard: React.FC = () => {
   const isMobile = useIsMobile();
   const { loans, isLoading, addLoan, updateLoan, deleteLoan, isAdding, isUpdating } = useLoans();
-  
+
   const [selectedLoanId, setSelectedLoanId] = useState<string | null>(null);
   const [monthsAhead, setMonthsAhead] = useState<number>(6);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -54,8 +55,8 @@ const LoanDashboard: React.FC = () => {
   const [deletingLoanId, setDeletingLoanId] = useState<string | null>(null);
 
   // Get selected loan
-  const selectedLoan = selectedLoanId 
-    ? loans.find(l => l.id === selectedLoanId) 
+  const selectedLoan = selectedLoanId
+    ? loans.find(l => l.id === selectedLoanId)
     : loans[0];
 
   // Use first loan by default when loans load
@@ -66,10 +67,10 @@ const LoanDashboard: React.FC = () => {
   }, [loans, selectedLoanId]);
 
   // Fetch contributions for selected loan
-  const { 
-    contributions, 
-    addContribution, 
-    updateContribution, 
+  const {
+    contributions,
+    addContribution,
+    updateContribution,
     deleteContribution,
     isAdding: isAddingContribution,
     isUpdating: isUpdatingContribution,
@@ -100,11 +101,6 @@ const LoanDashboard: React.FC = () => {
   const handleAddContribution = (data: LoanContributionFormData) => {
     addContribution(data);
   };
-
-  // Check if loan is paid off
-  const isLoanPaidOff = selectedLoan
-    ? calculateCurrentOutstanding(selectedLoan, contributions) <= 0
-    : false;
 
   // Form modal for loan
   const FormModal = () => {
@@ -167,19 +163,13 @@ const LoanDashboard: React.FC = () => {
   if (loans.length === 0) {
     return (
       <>
-        <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-          <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4">
-            <GraduationCap className="h-8 w-8 text-blue-600" />
-          </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">No Loans Yet</h3>
-          <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-            Add your first loan to start tracking and projecting your repayment journey.
-          </p>
-          <Button onClick={() => setIsFormOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Your First Loan
-          </Button>
-        </div>
+        <EmptyState
+          icon={GraduationCap}
+          title="No Loans Yet"
+          description="Add your first loan to start tracking and projecting your repayment journey."
+          actionLabel="Add Your First Loan"
+          onAction={() => setIsFormOpen(true)}
+        />
         <FormModal />
       </>
     );
@@ -205,9 +195,9 @@ const LoanDashboard: React.FC = () => {
                 </SelectContent>
               </Select>
             )}
-            
-            <Select 
-              value={monthsAhead.toString()} 
+
+            <Select
+              value={monthsAhead.toString()}
               onValueChange={(v) => setMonthsAhead(Number(v))}
             >
               <SelectTrigger className="w-[140px]">
@@ -224,16 +214,16 @@ const LoanDashboard: React.FC = () => {
           <div className="flex items-center gap-2">
             {selectedLoan && (
               <>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => setEditingLoan(selectedLoan)}
                 >
                   <Edit2 className="h-4 w-4 mr-1.5" />
                   Edit
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => setDeletingLoanId(selectedLoan.id)}
                   className="text-destructive hover:text-destructive"
@@ -252,8 +242,8 @@ const LoanDashboard: React.FC = () => {
 
         {/* Summary Card */}
         {selectedLoan && (
-          <LoanSummaryCard 
-            loan={selectedLoan} 
+          <LoanSummaryCard
+            loan={selectedLoan}
             contributions={contributions}
             monthsAhead={monthsAhead}
           />
@@ -271,10 +261,8 @@ const LoanDashboard: React.FC = () => {
             <CardContent>
               <LoanContributionForm
                 loanId={selectedLoan.id}
-                loan={selectedLoan}
                 onSubmit={handleAddContribution}
                 isSubmitting={isAddingContribution}
-                disabled={isLoanPaidOff}
               />
             </CardContent>
           </Card>
@@ -292,7 +280,6 @@ const LoanDashboard: React.FC = () => {
             <CardContent className="pt-0">
               <LoanContributionsList
                 loanId={selectedLoan.id}
-                loan={selectedLoan}
                 contributions={contributions}
                 currency={selectedLoan.currency}
                 onUpdate={updateContribution}
@@ -327,28 +314,14 @@ const LoanDashboard: React.FC = () => {
       <FormModal />
 
       {/* Delete Confirmation */}
-      <AlertDialog 
-        open={!!deletingLoanId} 
-        onOpenChange={(open) => !open && setDeletingLoanId(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Loan</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this loan? This will also delete all associated contributions. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteLoan}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmDialog
+        isOpen={!!deletingLoanId}
+        onClose={() => setDeletingLoanId(null)}
+        onConfirm={handleDeleteLoan}
+        entityName="Loan"
+        itemIdentifier={selectedLoan?.name}
+        additionalInfo="This will also delete all associated contributions."
+      />
     </>
   );
 };

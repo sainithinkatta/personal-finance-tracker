@@ -40,8 +40,8 @@ const renderActiveShape = (props: any) => {
   );
 };
 
-export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({ 
-  expenses, 
+export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({
+  expenses,
   isCompact = false,
   currency = 'USD'
 }) => {
@@ -88,9 +88,9 @@ export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-3 bg-muted rounded-full flex items-center justify-center">
             <svg
-              className="w-8 h-8 text-gray-400"
+              className="w-8 h-8 text-muted-foreground"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -103,7 +103,7 @@ export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({
               />
             </svg>
           </div>
-          <p className="text-sm text-gray-500">No expense data available</p>
+          <p className="text-sm text-muted-foreground">No expense data available</p>
         </div>
       </div>
     );
@@ -149,10 +149,10 @@ export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({
                 if (active && payload && payload.length) {
                   const data = payload[0].payload;
                   return (
-                    <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
-                      <p className="text-sm font-semibold text-gray-900">{data.category}</p>
-                      <p className="text-sm text-gray-600">{symbol}{data.total.toFixed(2)}</p>
-                      <p className="text-xs text-gray-500">{data.percentage}% of total</p>
+                    <div className="bg-card p-3 rounded-lg shadow-lg border border-border">
+                      <p className="text-sm font-semibold text-foreground">{data.category}</p>
+                      <p className="text-sm text-muted-foreground">{symbol}{data.total.toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground/80">{data.percentage}% of total</p>
                     </div>
                   );
                 }
@@ -165,15 +165,15 @@ export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({
         {/* Center Total */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
-            <p className={`${isCompact ? 'text-[0.55rem]' : 'text-[0.65rem] md:text-xs'} font-medium text-gray-500 uppercase tracking-wide`}>Total</p>
-            <p className={`${isCompact ? 'text-sm' : 'text-base md:text-lg'} font-bold text-gray-900`}>{symbol}{totalAmount.toFixed(2)}</p>
+            <p className={`${isCompact ? 'text-[0.55rem]' : 'text-[0.65rem] md:text-xs'} font-medium text-muted-foreground uppercase tracking-wide`}>Total</p>
+            <p className={`${isCompact ? 'text-sm' : 'text-base md:text-lg'} font-bold text-foreground`}>{symbol}{totalAmount.toFixed(2)}</p>
           </div>
         </div>
       </div>
 
       {/* Custom Legend - Hidden in compact mode */}
       {!isCompact && (
-        <div className="mt-3 pt-3 border-t border-gray-100 mb-3">
+        <div className="mt-3 pt-3 border-t border-border mb-3">
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
             {chartData.map((entry) => (
               <div key={entry.category} className="flex items-center space-x-2">
@@ -181,8 +181,8 @@ export const ExpenseCategoryChart: React.FC<ExpenseCategoryChartProps> = ({
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: COLORS[entry.category] }}
                 />
-                <span className="text-xs text-gray-700 font-medium">{entry.category}</span>
-                <span className="text-xs text-gray-500">({symbol}{entry.total.toFixed(2)})</span>
+                <span className="text-xs text-foreground font-medium">{entry.category}</span>
+                <span className="text-xs text-muted-foreground">({symbol}{entry.total.toFixed(2)})</span>
               </div>
             ))}
           </div>

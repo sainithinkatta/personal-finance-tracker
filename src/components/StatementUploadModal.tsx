@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -20,17 +20,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
 import { useStatementImport } from '@/hooks/useStatementImport';
 import { useQueryClient } from '@tanstack/react-query';
-import { Upload, FileText, X, Loader2, CheckCircle, History, AlertCircle } from 'lucide-react';
+import { Upload, FileText, X, Loader2, CheckCircle, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImportHistoryList } from './ImportHistoryList';
-import { FILE_UPLOAD_CONFIG, FILE_UPLOAD_MESSAGES } from '@/constants/fileUpload';
-import { formatFileSize, validateFile } from '@/utils/fileUtils';
-import type { ImportSummary } from '@/types/statementImport';
 
 interface StatementUploadModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ACCEPTED_TYPES = ['.pdf', '.csv', '.txt'];
+const ACCEPTED_MIME_TYPES = [
+  'application/pdf',
+  'text/csv',
+  'text/plain',
+  'application/vnd.ms-excel',
+];
 
 export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
   open,
@@ -39,136 +45,111 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
   const { bankAccounts, isLoading: isLoadingBanks } = useBankAccounts();
   const { importStatement, isImporting, error, clearError } = useStatementImport();
   const queryClient = useQueryClient();
-
+  
   const [selectedBankId, setSelectedBankId] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
-  const [importResult, setImportResult] = useState<ImportSummary | null>(null);
+  const [importResult, setImportResult] = useState<{ imported: number; skipped: number; duplicates: number } | null>(null);
   const [activeTab, setActiveTab] = useState<string>('upload');
-  const [validationError, setValidationError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  /**
-   * Handle file selection with validation
-   */
-  const handleFileSelect = useCallback((file: File) => {
+  const handleFileSelect = (file: File) => {
     clearError();
     setImportResult(null);
-    setValidationError(null);
-
-    // Validate file
-    const validation = validateFile(file);
-    if (!validation.isValid) {
-      setValidationError(validation.error!);
+    
+    // Validate file type
+    const isValidType = ACCEPTED_MIME_TYPES.includes(file.type) || 
+      ACCEPTED_TYPES.some(ext => file.name.toLowerCase().endsWith(ext));
+    
+    if (!isValidType) {
       return;
     }
-
+    
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      return;
+    }
+    
     setSelectedFile(file);
-  }, [clearError]);
+  };
 
-  /**
-   * Handle file drop
-   */
-  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragOver(false);
-
+    
     const file = e.dataTransfer.files[0];
     if (file) {
       handleFileSelect(file);
     }
-  }, [handleFileSelect]);
+  };
 
-  /**
-   * Handle drag over
-   */
-  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragOver(true);
-  }, []);
+  };
 
-  /**
-   * Handle drag leave
-   */
-  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragOver(false);
-  }, []);
+  };
 
-  /**
-   * Trigger file input click
-   */
-  const handleBrowseClick = useCallback(() => {
+  const handleBrowseClick = () => {
     fileInputRef.current?.click();
-  }, []);
+  };
 
-  /**
-   * Handle file input change
-   */
-  const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       handleFileSelect(file);
     }
-  }, [handleFileSelect]);
+  };
 
-  /**
-   * Remove selected file
-   */
-  const handleRemoveFile = useCallback(() => {
+  const handleRemoveFile = () => {
     setSelectedFile(null);
     setImportResult(null);
-    setValidationError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  }, []);
+  };
 
-  /**
-   * Close modal and reset state
-   */
-  const handleClose = useCallback(() => {
-    setSelectedBankId('');
-    setSelectedFile(null);
-    setImportResult(null);
-    setActiveTab('upload');
-    setValidationError(null);
-    clearError();
-    onOpenChange(false);
-  }, [clearError, onOpenChange]);
-
-  /**
-   * Confirm and process upload
-   */
-  const handleConfirmUpload = useCallback(async () => {
+  const handleConfirmUpload = async () => {
     if (!selectedBankId || !selectedFile) return;
-
+    
     const result = await importStatement(selectedBankId, selectedFile);
-
+    
     if (result) {
       setImportResult({
         imported: result.imported_count,
         skipped: result.skipped_count,
         duplicates: result.duplicate_count || 0,
       });
-
+      
       // Invalidate import history to show new record
       queryClient.invalidateQueries({ queryKey: ['import-history'] });
-
+      
       // Auto-close after success with a delay
       setTimeout(() => {
         handleClose();
-      }, FILE_UPLOAD_CONFIG.SUCCESS_MODAL_DELAY);
+      }, 2000);
     }
-  }, [selectedBankId, selectedFile, importStatement, queryClient, handleClose]);
+  };
 
-  /**
-   * Check if upload can be submitted
-   */
-  const canSubmit = useMemo(
-    () => selectedBankId && selectedFile && !isImporting && !importResult && !validationError,
-    [selectedBankId, selectedFile, isImporting, importResult, validationError]
-  );
+  const handleClose = () => {
+    setSelectedBankId('');
+    setSelectedFile(null);
+    setImportResult(null);
+    setActiveTab('upload');
+    clearError();
+    onOpenChange(false);
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const canSubmit = selectedBankId && selectedFile && !isImporting && !importResult;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -248,7 +229,7 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
                     <span className="text-primary font-medium">browse files</span>
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    PDF, CSV, or TXT (max {FILE_UPLOAD_CONFIG.MAX_FILE_SIZE_MB}MB)
+                    PDF, CSV, or TXT (max 10MB)
                   </p>
                 </div>
               ) : (
@@ -276,24 +257,17 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept={FILE_UPLOAD_CONFIG.ACCEPTED_EXTENSIONS.join(',')}
+                accept={ACCEPTED_TYPES.join(',')}
                 className="hidden"
                 onChange={handleFileInputChange}
               />
             </div>
 
             {/* Status Messages */}
-            {validationError && (
-              <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 rounded-lg p-3">
-                <AlertCircle className="h-4 w-4" />
-                <span>{validationError}</span>
-              </div>
-            )}
-
             {isImporting && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>{FILE_UPLOAD_MESSAGES.LOADING.ANALYZING}</span>
+                <span>Analyzing statement with AI...</span>
               </div>
             )}
 
@@ -309,9 +283,8 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
             )}
 
             {error && (
-              <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 rounded-lg p-3">
-                <AlertCircle className="h-4 w-4" />
-                <span>{error}</span>
+              <div className="text-sm text-destructive bg-destructive/10 rounded-lg p-3">
+                {error}
               </div>
             )}
 

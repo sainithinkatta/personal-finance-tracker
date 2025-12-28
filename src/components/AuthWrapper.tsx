@@ -100,9 +100,9 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
       const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
-      
+
       if (error) throw error;
-      
+
       toast({
         title: 'Reset email sent!',
         description: 'Please check your email for password reset instructions.',
@@ -135,7 +135,7 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
     return (
       <div>
         <AppHeader />
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center bg-muted">
           <Card className="w-full max-w-md">
             <CardHeader>
               <CardTitle>
@@ -188,14 +188,14 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
                       onClick={() => isLogin ? setShowLoginPassword(!showLoginPassword) : setShowSignupPassword(!showSignupPassword)}
                     >
                       {(isLogin ? showLoginPassword : showSignupPassword) ? (
-                        <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                        <EyeOff className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                       ) : (
-                        <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                        <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                       )}
                     </button>
                   </div>
                   <Button
-                    type="submit" 
+                    type="submit"
                     className="w-full bg-blue-500 hover:bg-blue-600"
                     disabled={authLoading}
                   >

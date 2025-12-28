@@ -15,15 +15,15 @@ const BudgetManager: React.FC = () => {
     setAllocatingBudget(budget);
   };
 
-  const { 
-    budgets, 
-    isLoading, 
-    createBudget, 
-    updateBudget, 
-    deleteBudget, 
+  const {
+    budgets,
+    isLoading,
+    createBudget,
+    updateBudget,
+    deleteBudget,
     updateCategoryAllocations,
-    isCreating, 
-    isUpdating, 
+    isCreating,
+    isUpdating,
     isDeleting,
     isUpdatingAllocations
   } = useBudgets(handleBudgetCreated);
@@ -36,7 +36,7 @@ const BudgetManager: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="text-gray-500">Loading budgets...</div>
+        <div className="text-muted-foreground">Loading budgets...</div>
       </div>
     );
   }
@@ -55,7 +55,7 @@ const BudgetManager: React.FC = () => {
       currency: budgetData.currency || 'USD',
       notes: budgetData.notes || null,
     };
-    
+
     createBudget(budgetToCreate);
     setShowCreateForm(false);
   };
@@ -89,9 +89,9 @@ const BudgetManager: React.FC = () => {
   const handleSaveAllocations = async (allocations: any) => {
     if (allocatingBudget) {
       try {
-        await updateCategoryAllocations({ 
-          id: allocatingBudget.id, 
-          allocations 
+        await updateCategoryAllocations({
+          id: allocatingBudget.id,
+          allocations
         });
         setAllocatingBudget(null);
       } catch (error) {

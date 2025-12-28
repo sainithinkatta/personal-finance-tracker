@@ -25,7 +25,7 @@ const PasswordReset: React.FC = () => {
         const urlParams = new URLSearchParams(hash.substring(1));
         const error = urlParams.get('error');
         const errorDescription = urlParams.get('error_description');
-        
+
         if (error === 'otp_expired' || error === 'access_denied') {
           setHasError(true);
           setErrorMessage('The password reset link has expired or is invalid. Please request a new one.');
@@ -40,7 +40,7 @@ const PasswordReset: React.FC = () => {
     const checkSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        
+
         if (error) {
           console.error('Session error:', error);
           setHasError(true);
@@ -81,7 +81,7 @@ const PasswordReset: React.FC = () => {
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       toast({
         title: 'Password Mismatch',
@@ -135,13 +135,13 @@ const PasswordReset: React.FC = () => {
     return (
       <div>
         <AppHeader />
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center bg-muted">
           <Card className="w-full max-w-md">
             <CardHeader>
               <CardTitle className="text-red-600">Reset Link Issue</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-gray-700">{errorMessage}</p>
+              <p className="text-muted-foreground">{errorMessage}</p>
               <Button onClick={handleRequestNewReset} className="w-full">
                 Request New Password Reset
               </Button>
@@ -166,7 +166,7 @@ const PasswordReset: React.FC = () => {
   return (
     <div>
       <AppHeader />
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Set New Password</CardTitle>

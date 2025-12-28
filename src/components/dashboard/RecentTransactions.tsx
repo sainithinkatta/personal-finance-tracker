@@ -34,6 +34,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import ExpenseEditForm from '@/components/ExpenseEditForm';
 
 interface RecentTransactionsProps {
@@ -52,9 +53,9 @@ const getCategoryColor = (category: string) => {
     case 'Bills':
       return 'bg-red-500';
     case 'Others':
-      return 'bg-gray-700';
+      return 'bg-purple-500';
     default:
-      return 'bg-gray-500';
+      return 'bg-muted-foreground';
   }
 };
 
@@ -84,11 +85,11 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({
       // Convert Date to string for Supabase
       const dbUpdates = {
         ...updates,
-        date: updates.date instanceof Date 
-          ? updates.date.toISOString().split('T')[0] 
+        date: updates.date instanceof Date
+          ? updates.date.toISOString().split('T')[0]
           : updates.date,
       };
-      
+
       const { error } = await supabase
         .from('expenses')
         .update(dbUpdates)
@@ -266,25 +267,12 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({
       )}
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deletingExpenseId} onOpenChange={(open) => !open && setDeletingExpenseId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Expense</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this expense? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmDialog
+        isOpen={!!deletingExpenseId}
+        onClose={() => setDeletingExpenseId(null)}
+        onConfirm={handleDelete}
+        entityName="Expense"
+      />
     </>
   );
 };

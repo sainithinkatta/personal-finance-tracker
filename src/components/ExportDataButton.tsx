@@ -215,24 +215,24 @@ const ExportDataButton: React.FC<ExportDataButtonProps> = ({ expenses }) => {
           {isExporting ? 'Exporting...' : 'Export Data'}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-200 shadow-lg z-50">
+      <DropdownMenuContent align="end" className="w-48 bg-card border border-border shadow-lg z-50">
         <DropdownMenuItem
           onClick={() => handleExport('csv')}
-          className="flex items-center gap-2 hover:bg-gray-50 cursor-pointer"
+          className="flex items-center gap-2 hover:bg-muted cursor-pointer"
         >
           <FileSpreadsheet className="h-4 w-4 text-green-600" />
           Export as CSV
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => handleExport('doc')}
-          className="flex items-center gap-2 hover:bg-gray-50 cursor-pointer"
+          className="flex items-center gap-2 hover:bg-muted cursor-pointer"
         >
           <FileText className="h-4 w-4 text-blue-600" />
           Export as DOC
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => handleExport('pdf')}
-          className="flex items-center gap-2 hover:bg-gray-50 cursor-pointer"
+          className="flex items-center gap-2 hover:bg-muted cursor-pointer"
         >
           <File className="h-4 w-4 text-red-600" />
           Export as PDF

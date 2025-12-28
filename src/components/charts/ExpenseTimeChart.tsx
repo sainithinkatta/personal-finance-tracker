@@ -120,12 +120,12 @@ export const ExpenseTimeChart: React.FC<ExpenseTimeChartProps> = ({
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <div className="w-12 h-12 mx-auto mb-2 bg-gray-100 rounded-full flex items-center justify-center">
-            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-12 h-12 mx-auto mb-2 bg-muted rounded-full flex items-center justify-center">
+            <svg className="w-6 h-6 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </div>
-          <p className="text-sm text-gray-500">No data available</p>
+          <p className="text-sm text-muted-foreground">No data available</p>
         </div>
       </div>
     );
@@ -135,11 +135,11 @@ export const ExpenseTimeChart: React.FC<ExpenseTimeChartProps> = ({
     <ResponsiveContainer width="100%" height="100%">
       <BarChart
         data={chartData}
-        margin={{ 
-          top: 20, 
-          right: 20, 
-          left: 20, 
-          bottom: groupBy === 'day' ? 50 : 30 
+        margin={{
+          top: 20,
+          right: 20,
+          left: 20,
+          bottom: groupBy === 'day' ? 50 : 30
         }}
       >
         <defs>
@@ -159,10 +159,10 @@ export const ExpenseTimeChart: React.FC<ExpenseTimeChartProps> = ({
         <XAxis
           dataKey="period"
           tickFormatter={formatXAxis}
-          tick={{ 
-            fill: '#6b7280', 
-            fontSize: 11, 
-            fontWeight: 500 
+          tick={{
+            fill: '#6b7280',
+            fontSize: 11,
+            fontWeight: 500
           }}
           axisLine={{ stroke: '#d1d5db' }}
           tickLine={{ stroke: '#d1d5db' }}
@@ -174,10 +174,10 @@ export const ExpenseTimeChart: React.FC<ExpenseTimeChartProps> = ({
 
         <YAxis
           tickFormatter={(value) => `${symbol}${value}`}
-          tick={{ 
-            fill: '#6b7280', 
-            fontSize: 11, 
-            fontWeight: 500 
+          tick={{
+            fill: '#6b7280',
+            fontSize: 11,
+            fontWeight: 500
           }}
           axisLine={{ stroke: '#d1d5db' }}
           tickLine={{ stroke: '#d1d5db' }}
@@ -193,14 +193,14 @@ export const ExpenseTimeChart: React.FC<ExpenseTimeChartProps> = ({
             padding: '10px 12px',
             fontSize: '13px'
           }}
-          labelStyle={{ 
-            color: '#374151', 
-            fontSize: '13px', 
+          labelStyle={{
+            color: '#374151',
+            fontSize: '13px',
             fontWeight: 600,
-            marginBottom: '4px' 
+            marginBottom: '4px'
           }}
-          itemStyle={{ 
-            color: '#1f2937', 
+          itemStyle={{
+            color: '#1f2937',
             fontWeight: 600,
             fontSize: '14px'
           }}

@@ -1,12 +1,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  BottomSheet,
+  BottomSheetContent,
+  BottomSheetHeader,
+  BottomSheetTitle,
+  BottomSheetBody,
+} from '@/components/ui/bottom-sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Budget } from '@/types/budget';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -28,6 +36,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
   budget,
   isLoading = false,
 }) => {
+  const isMobile = useIsMobile();
   const currentDate = new Date();
   const [formData, setFormData] = useState({
     name: '',
@@ -75,6 +84,128 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
 
   const isFormValid = formData.name && formData.total_amount && parseFloat(formData.total_amount) > 0;
 
+  const formContent = (
+    <>
+      <div className="space-y-4 py-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">Budget Name *</Label>
+          <Input
+            id="name"
+            placeholder="e.g., June - Living Expenses"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="amount">Total Budget Amount *</Label>
+            <Input
+              id="amount"
+              type="number"
+              placeholder="0.00"
+              value={formData.total_amount}
+              onChange={(e) => setFormData({ ...formData, total_amount: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="currency">Currency</Label>
+            <Select
+              value={formData.currency}
+              onValueChange={(value) => setFormData({ ...formData, currency: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='USD'>USD</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="month">Month *</Label>
+            <Select
+              value={formData.month.toString()}
+              onValueChange={(value) => setFormData({ ...formData, month: parseInt(value) })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MONTHS.map((month, index) => (
+                  <SelectItem key={index + 1} value={(index + 1).toString()}>
+                    {month}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="year">Year *</Label>
+            <Select
+              value={formData.year.toString()}
+              onValueChange={(value) => setFormData({ ...formData, year: parseInt(value) })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() + i - 2).map(year => (
+                  <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="notes">Notes (Optional)</Label>
+          <Textarea
+            id="notes"
+            placeholder="Any additional details about this budget..."
+            value={formData.notes}
+            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            rows={3}
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end space-x-2">
+        <Button variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button
+          onClick={handleSave}
+          disabled={!isFormValid || isLoading}
+        >
+          {budget ? 'Update Budget' : 'Create Budget'}
+        </Button>
+      </div>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <BottomSheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <BottomSheetContent>
+          <BottomSheetHeader>
+            <BottomSheetTitle>
+              {budget ? 'Edit Budget' : 'Create New Budget'}
+            </BottomSheetTitle>
+          </BottomSheetHeader>
+          <BottomSheetBody>
+            {formContent}
+          </BottomSheetBody>
+        </BottomSheetContent>
+      </BottomSheet>
+    );
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
@@ -83,107 +214,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
             {budget ? 'Edit Budget' : 'Create New Budget'}
           </DialogTitle>
         </DialogHeader>
-        
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Budget Name *</Label>
-            <Input
-              id="name"
-              placeholder="e.g., June - Living Expenses"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="amount">Total Budget Amount *</Label>
-              <Input
-                id="amount"
-                type="number"
-                placeholder="0.00"
-                value={formData.total_amount}
-                onChange={(e) => setFormData({ ...formData, total_amount: e.target.value })}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="currency">Currency</Label>
-              <Select 
-                value={formData.currency} 
-                onValueChange={(value) => setFormData({ ...formData, currency: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value='USD'>USD</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="month">Month *</Label>
-              <Select 
-                value={formData.month.toString()} 
-                onValueChange={(value) => setFormData({ ...formData, month: parseInt(value) })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {MONTHS.map((month, index) => (
-                    <SelectItem key={index + 1} value={(index + 1).toString()}>
-                      {month}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="year">Year *</Label>
-              <Select 
-                value={formData.year.toString()} 
-                onValueChange={(value) => setFormData({ ...formData, year: parseInt(value) })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() + i - 2).map(year => (
-                    <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes (Optional)</Label>
-            <Textarea
-              id="notes"
-              placeholder="Any additional details about this budget..."
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              rows={3}
-            />
-          </div>
-        </div>
-
-        <div className="flex justify-end space-x-2">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleSave} 
-            disabled={!isFormValid || isLoading}
-          >
-            {budget ? 'Update Budget' : 'Create Budget'}
-          </Button>
-        </div>
+        {formContent}
       </DialogContent>
     </Dialog>
   );

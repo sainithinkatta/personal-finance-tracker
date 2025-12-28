@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Plus, Bell, Calendar, CalendarIcon, Search, ChevronDown, ChevronUp, Edit2, Trash2, Check, RotateCcw } from 'lucide-react';
+import { Plus, Bell, Calendar, CalendarIcon, Search, ChevronDown, ChevronUp, Edit2, Trash2, Check, RotateCcw, Repeat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -45,6 +45,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 import { useRecurringTransactions, RecurringTransactionWithStatus } from '@/hooks/useRecurringTransactions';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
 import { RecurringTransactionFormData } from '@/types/recurringTransaction';
@@ -57,11 +58,12 @@ import { EditRecurringTransactionForm } from '@/components/recurring/EditRecurri
 import { MarkAsDoneDialog } from '@/components/recurring/MarkAsDoneDialog';
 import { parseLocalDate } from '@/utils/dateUtils';
 import { cn } from '@/lib/utils';
+import EmptyState from '@/components/dashboard/EmptyState';
 
 const RecurringTransactions: React.FC = () => {
   const { toast } = useToast();
   const { bankAccounts } = useBankAccounts();
-  
+
   // Filter states
   const [searchText, setSearchText] = useState('');
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -157,7 +159,7 @@ const RecurringTransactions: React.FC = () => {
   };
 
   // Filter bank accounts by selected currency for add form
-  const filteredBankAccountsForAdd = useMemo(() => 
+  const filteredBankAccountsForAdd = useMemo(() =>
     bankAccounts.filter(account => account.currency === formData.currency),
     [bankAccounts, formData.currency]
   );
@@ -281,7 +283,7 @@ const RecurringTransactions: React.FC = () => {
       case 'Others':
         return 'bg-purple-100 text-purple-800 hover:bg-purple-200';
       default:
-        return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+        return 'bg-muted text-muted-foreground hover:bg-muted/80';
     }
   };
 
@@ -357,227 +359,77 @@ const RecurringTransactions: React.FC = () => {
       <div>
         {/* Mobile: Toggle Button */}
         <button
-            onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
-            aria-expanded={isFiltersExpanded}
-            aria-controls="recurring-filters-content"
-            className={cn(
-              "md:hidden",
-              "w-full flex items-center justify-between",
-              "p-3 mb-3 rounded-lg",
-              "bg-secondary/50 hover:bg-secondary/70",
-              "transition-colors duration-200",
-              "border border-transparent hover:border-gray-300",
-              "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
+          aria-expanded={isFiltersExpanded}
+          aria-controls="recurring-filters-content"
+          className={cn(
+            "md:hidden",
+            "w-full flex items-center justify-between",
+            "p-3 mb-3 rounded-lg",
+            "bg-secondary/50 hover:bg-secondary/70",
+            "transition-colors duration-200",
+            "border border-transparent hover:border-border",
+            "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          )}
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-sm md:text-base font-medium text-foreground">Filters</span>
+            {/* Active Filter Indicator */}
+            {(searchText || startDate || endDate || selectedStatus !== 'all' || selectedBank) && (
+              <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
+                {[
+                  !!searchText,
+                  !!startDate || !!endDate,
+                  selectedStatus !== 'all',
+                  !!selectedBank
+                ].filter(Boolean).length}
+              </span>
             )}
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-sm md:text-base font-medium text-foreground">Filters</span>
-              {/* Active Filter Indicator */}
-              {(searchText || startDate || endDate || selectedStatus !== 'all' || selectedBank) && (
-                <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
-                  {[
-                    !!searchText,
-                    !!startDate || !!endDate,
-                    selectedStatus !== 'all',
-                    !!selectedBank
-                  ].filter(Boolean).length}
-                </span>
-              )}
-            </div>
-            {isFiltersExpanded ? (
-              <ChevronUp className="h-5 w-5 text-muted-foreground transition-transform duration-200" />
-            ) : (
-              <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200" />
-            )}
-          </button>
+          </div>
+          {isFiltersExpanded ? (
+            <ChevronUp className="h-5 w-5 text-muted-foreground transition-transform duration-200" />
+          ) : (
+            <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200" />
+          )}
+        </button>
 
-          {/* Collapsible Filter Content */}
-          <div
-            id="recurring-filters-content"
-            className={cn(
-              "overflow-hidden transition-all duration-300 ease-in-out",
-              "md:max-h-[800px] md:opacity-100 md:mt-3",
-              isFiltersExpanded ? "max-h-[800px] opacity-100 mt-3" : "max-h-0 opacity-0"
-            )}
-          >
-            <div className="bg-secondary/50 p-3 md:p-4 rounded-lg space-y-3 md:space-y-0">
-              {/* Mobile: Stacked Layout */}
-              <div className="block md:hidden space-y-3">
-                {/* Search */}
-                <div className="w-full space-y-2">
-                  <Label className="text-sm font-medium">Search</Label>
-                  <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search by name..."
-                      value={searchText}
-                      onChange={(e) => {
-                        setSearchText(e.target.value);
-                        setCurrentPage(0);
-                      }}
-                      className="pl-9 touch-target"
-                    />
-                  </div>
-                </div>
-
-                {/* Status Filter */}
-                <div className="w-full space-y-2">
-                  <Label className="text-sm font-medium">Status</Label>
-                  <Select value={selectedStatus} onValueChange={(val: 'all' | 'pending' | 'upcoming' | 'done') => {
-                    setSelectedStatus(val);
-                    setCurrentPage(0);
-                  }}>
-                    <SelectTrigger className="touch-target">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="pending">
-                        <Badge variant="outline" className="bg-warning-muted text-warning-foreground">Pending</Badge>
-                      </SelectItem>
-                      <SelectItem value="upcoming">
-                        <Badge variant="outline" className="bg-info-muted text-info-foreground">Upcoming</Badge>
-                      </SelectItem>
-                      <SelectItem value="done">
-                        <Badge variant="outline" className="bg-accent-muted text-accent-foreground">Completed</Badge>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Bank Filter */}
-                <div className="w-full space-y-2">
-                  <Label className="text-sm font-medium">Bank Account</Label>
-                  <Select value={selectedBank} onValueChange={(val) => {
-                    setSelectedBank(val);
-                    setCurrentPage(0);
-                  }}>
-                    <SelectTrigger className="touch-target">
-                      <SelectValue placeholder="All banks" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All banks</SelectItem>
-                      {bankAccounts.map((account) => (
-                        <SelectItem key={account.id} value={account.id}>
-                          {account.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Date Range Filter */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Date Range (Due Date)</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {/* Start Date */}
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start text-left touch-target min-w-0"
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
-                          <span className="truncate text-sm">
-                            {startDate ? format(startDate, 'MMM d') : "Start"}
-                          </span>
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <CalendarComponent
-                          mode="single"
-                          selected={startDate || undefined}
-                          onSelect={(date) => {
-                            setStartDate(date || null);
-                            setCurrentPage(0);
-                          }}
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-
-                    {/* End Date */}
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start text-left touch-target min-w-0"
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
-                          <span className="truncate text-sm">
-                            {endDate ? format(endDate, 'MMM d') : "End"}
-                          </span>
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <CalendarComponent
-                          mode="single"
-                          selected={endDate || undefined}
-                          onSelect={(date) => {
-                            setEndDate(date || null);
-                            setCurrentPage(0);
-                          }}
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-
-                {/* Show Completed Toggle */}
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="show-completed-mobile"
-                    checked={showCompleted}
-                    onCheckedChange={(checked) => {
-                      setShowCompleted(checked === true);
+        {/* Collapsible Filter Content */}
+        <div
+          id="recurring-filters-content"
+          className={cn(
+            "overflow-hidden transition-all duration-300 ease-in-out",
+            "md:max-h-[800px] md:opacity-100 md:mt-3",
+            isFiltersExpanded ? "max-h-[800px] opacity-100 mt-3" : "max-h-0 opacity-0"
+          )}
+        >
+          <div className="bg-secondary/50 p-3 md:p-4 rounded-lg space-y-3 md:space-y-0">
+            {/* Mobile: Stacked Layout */}
+            <div className="block md:hidden space-y-3">
+              {/* Search */}
+              <div className="w-full space-y-2">
+                <Label className="text-sm font-medium">Search</Label>
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by name..."
+                    value={searchText}
+                    onChange={(e) => {
+                      setSearchText(e.target.value);
                       setCurrentPage(0);
                     }}
+                    className="pl-9 touch-target"
                   />
-                  <Label 
-                    htmlFor="show-completed-mobile" 
-                    className="text-sm cursor-pointer"
-                  >
-                    Show completed ({completedCount})
-                  </Label>
                 </div>
-
-                {/* Clear Filters Button */}
-                <Button
-                  variant="outline"
-                  onClick={clearFilters}
-                  className="w-full touch-target"
-                >
-                  Clear Filters
-                </Button>
               </div>
 
-              {/* Desktop: Horizontal Layout */}
-              <div className="hidden md:flex flex-wrap items-center gap-3">
-                {/* Search */}
-                <div className="flex-1 min-w-[180px]">
-                  <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search by name..."
-                      value={searchText}
-                      onChange={(e) => {
-                        setSearchText(e.target.value);
-                        setCurrentPage(0);
-                      }}
-                      className="pl-9"
-                    />
-                  </div>
-                </div>
-
-                {/* Status */}
+              {/* Status Filter */}
+              <div className="w-full space-y-2">
+                <Label className="text-sm font-medium">Status</Label>
                 <Select value={selectedStatus} onValueChange={(val: 'all' | 'pending' | 'upcoming' | 'done') => {
                   setSelectedStatus(val);
                   setCurrentPage(0);
                 }}>
-                  <SelectTrigger className="w-[130px]">
+                  <SelectTrigger className="touch-target">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -593,13 +445,16 @@ const RecurringTransactions: React.FC = () => {
                     </SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
 
-                {/* Bank */}
+              {/* Bank Filter */}
+              <div className="w-full space-y-2">
+                <Label className="text-sm font-medium">Bank Account</Label>
                 <Select value={selectedBank} onValueChange={(val) => {
                   setSelectedBank(val);
                   setCurrentPage(0);
                 }}>
-                  <SelectTrigger className="w-[140px]">
+                  <SelectTrigger className="touch-target">
                     <SelectValue placeholder="All banks" />
                   </SelectTrigger>
                   <SelectContent>
@@ -611,77 +466,224 @@ const RecurringTransactions: React.FC = () => {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
 
-                {/* Start Date */}
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-[130px] justify-start text-left">
-                      <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
-                      <span className="truncate text-sm">
-                        {startDate ? format(startDate, 'MMM d') : "Start Date"}
-                      </span>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={startDate || undefined}
-                      onSelect={(date) => {
-                        setStartDate(date || null);
-                        setCurrentPage(0);
-                      }}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
+              {/* Date Range Filter */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Date Range (Due Date)</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Start Date */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left touch-target min-w-0"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                        <span className="truncate text-sm">
+                          {startDate ? format(startDate, 'MMM d') : "Start"}
+                        </span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={startDate || undefined}
+                        onSelect={(date) => {
+                          setStartDate(date || null);
+                          setCurrentPage(0);
+                        }}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
 
-                {/* End Date */}
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-[130px] justify-start text-left">
-                      <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
-                      <span className="truncate text-sm">
-                        {endDate ? format(endDate, 'MMM d') : "End Date"}
-                      </span>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={endDate || undefined}
-                      onSelect={(date) => {
-                        setEndDate(date || null);
-                        setCurrentPage(0);
-                      }}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
+                  {/* End Date */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left touch-target min-w-0"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                        <span className="truncate text-sm">
+                          {endDate ? format(endDate, 'MMM d') : "End"}
+                        </span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={endDate || undefined}
+                        onSelect={(date) => {
+                          setEndDate(date || null);
+                          setCurrentPage(0);
+                        }}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
 
-                {/* Show Completed Toggle */}
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="show-completed-desktop"
-                    checked={showCompleted}
-                    onCheckedChange={(checked) => {
-                      setShowCompleted(checked === true);
+              {/* Show Completed Toggle */}
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="show-completed-mobile"
+                  checked={showCompleted}
+                  onCheckedChange={(checked) => {
+                    setShowCompleted(checked === true);
+                    setCurrentPage(0);
+                  }}
+                />
+                <Label
+                  htmlFor="show-completed-mobile"
+                  className="text-sm cursor-pointer"
+                >
+                  Show completed ({completedCount})
+                </Label>
+              </div>
+
+              {/* Clear Filters Button */}
+              <Button
+                variant="outline"
+                onClick={clearFilters}
+                className="w-full touch-target"
+              >
+                Clear Filters
+              </Button>
+            </div>
+
+            {/* Desktop: Horizontal Layout */}
+            <div className="hidden md:flex flex-wrap items-center gap-3">
+              {/* Search */}
+              <div className="flex-1 min-w-[180px]">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by name..."
+                    value={searchText}
+                    onChange={(e) => {
+                      setSearchText(e.target.value);
                       setCurrentPage(0);
                     }}
+                    className="pl-9"
                   />
-                  <Label 
-                    htmlFor="show-completed-desktop" 
-                    className="text-sm cursor-pointer whitespace-nowrap"
-                  >
-                    Show completed ({completedCount})
-                  </Label>
                 </div>
-
-                <Button variant="ghost" size="sm" onClick={clearFilters}>Clear</Button>
               </div>
+
+              {/* Status */}
+              <Select value={selectedStatus} onValueChange={(val: 'all' | 'pending' | 'upcoming' | 'done') => {
+                setSelectedStatus(val);
+                setCurrentPage(0);
+              }}>
+                <SelectTrigger className="w-[130px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="pending">
+                    <Badge variant="outline" className="bg-warning-muted text-warning-foreground">Pending</Badge>
+                  </SelectItem>
+                  <SelectItem value="upcoming">
+                    <Badge variant="outline" className="bg-info-muted text-info-foreground">Upcoming</Badge>
+                  </SelectItem>
+                  <SelectItem value="done">
+                    <Badge variant="outline" className="bg-accent-muted text-accent-foreground">Completed</Badge>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Bank */}
+              <Select value={selectedBank} onValueChange={(val) => {
+                setSelectedBank(val);
+                setCurrentPage(0);
+              }}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="All banks" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All banks</SelectItem>
+                  {bankAccounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      {account.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Start Date */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-[130px] justify-start text-left">
+                    <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                    <span className="truncate text-sm">
+                      {startDate ? format(startDate, 'MMM d') : "Start Date"}
+                    </span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={startDate || undefined}
+                    onSelect={(date) => {
+                      setStartDate(date || null);
+                      setCurrentPage(0);
+                    }}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {/* End Date */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-[130px] justify-start text-left">
+                    <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                    <span className="truncate text-sm">
+                      {endDate ? format(endDate, 'MMM d') : "End Date"}
+                    </span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={endDate || undefined}
+                    onSelect={(date) => {
+                      setEndDate(date || null);
+                      setCurrentPage(0);
+                    }}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {/* Show Completed Toggle */}
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="show-completed-desktop"
+                  checked={showCompleted}
+                  onCheckedChange={(checked) => {
+                    setShowCompleted(checked === true);
+                    setCurrentPage(0);
+                  }}
+                />
+                <Label
+                  htmlFor="show-completed-desktop"
+                  className="text-sm cursor-pointer whitespace-nowrap"
+                >
+                  Show completed ({completedCount})
+                </Label>
+              </div>
+
+              <Button variant="ghost" size="sm" onClick={clearFilters}>Clear</Button>
             </div>
           </div>
+        </div>
       </div>
 
       {/* Count and Add Transaction Row */}
@@ -690,355 +692,356 @@ const RecurringTransactions: React.FC = () => {
           {recurringTransactions.length} {recurringTransactions.length === 1 ? 'transaction' : 'transactions'}
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="default" size="sm" className="flex shadow-lg">
-                <Plus className="h-4 w-4 mr-1" />
-                Add Transaction
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md mx-auto my-8 overflow-auto">
-              <DialogHeader>
-                <DialogTitle>Add Recurring Transaction</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Form fields remain the same */}
-                <div className="space-y-1">
-                  <Label htmlFor="name" className="text-sm font-medium">Name</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g., Netflix"
-                    required
-                    className="text-sm"
-                  />
-                </div>
+          <DialogTrigger asChild>
+            <Button variant="default" size="sm" className="flex shadow-lg">
+              <Plus className="h-4 w-4 mr-1" />
+              Add Transaction
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md mx-auto my-8 overflow-auto">
+            <DialogHeader>
+              <DialogTitle>Add Recurring Transaction</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Form fields remain the same */}
+              <div className="space-y-1">
+                <Label htmlFor="name" className="text-sm font-medium">Name</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="e.g., Netflix"
+                  required
+                  className="text-sm"
+                />
+              </div>
 
-                <div className="space-y-1">
-                  <Label htmlFor="amount" className="text-sm font-medium">Amount</Label>
-                  <Input
-                    id="amount"
-                    type="number"
-                    step="0.01"
-                    value={formData.amount}
-                    onChange={(e) =>
-                      setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })
-                    }
-                    placeholder="0.00"
-                    required
-                    className="text-sm"
-                  />
-                </div>
+              <div className="space-y-1">
+                <Label htmlFor="amount" className="text-sm font-medium">Amount</Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  value={formData.amount}
+                  onChange={(e) =>
+                    setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })
+                  }
+                  placeholder="0.00"
+                  required
+                  className="text-sm"
+                />
+              </div>
 
-                <div className="space-y-1">
-                  <Label htmlFor="currency" className="text-sm font-medium">Currency</Label>
-                  <Select value={formData.currency} onValueChange={(val) => setFormData({ ...formData, currency: val })}>
-                    <SelectTrigger className="text-sm">
-                      <SelectValue placeholder="USD" />
-                    </SelectTrigger>
-                    <SelectContent className="text-sm bg-background">
-                      <SelectItem value="USD" className="text-sm">$ US Dollar</SelectItem>
-                      <SelectItem value="INR" className="text-sm">₹ Indian Rupee</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-1">
+                <Label htmlFor="currency" className="text-sm font-medium">Currency</Label>
+                <Select value={formData.currency} onValueChange={(val) => setFormData({ ...formData, currency: val })}>
+                  <SelectTrigger className="text-sm">
+                    <SelectValue placeholder="USD" />
+                  </SelectTrigger>
+                  <SelectContent className="text-sm bg-background">
+                    <SelectItem value="USD" className="text-sm">$ US Dollar</SelectItem>
+                    <SelectItem value="INR" className="text-sm">₹ Indian Rupee</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                <div className="space-y-1">
-                  <Label htmlFor="category" className="text-sm font-medium">Category</Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(val) => setFormData({ ...formData, category: val as ExpenseCategory })}
-                  >
-                    <SelectTrigger className="text-sm">
-                      <SelectValue placeholder="Bills" />
-                    </SelectTrigger>
-                    <SelectContent className="text-sm">
-                      <SelectItem value="Groceries">Groceries</SelectItem>
-                      <SelectItem value="Food">Food</SelectItem>
-                      <SelectItem value="Travel">Travel</SelectItem>
-                      <SelectItem value="Bills">Bills</SelectItem>
-                      <SelectItem value="Others">Others</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-1">
+                <Label htmlFor="category" className="text-sm font-medium">Category</Label>
+                <Select
+                  value={formData.category}
+                  onValueChange={(val) => setFormData({ ...formData, category: val as ExpenseCategory })}
+                >
+                  <SelectTrigger className="text-sm">
+                    <SelectValue placeholder="Bills" />
+                  </SelectTrigger>
+                  <SelectContent className="text-sm">
+                    <SelectItem value="Groceries">Groceries</SelectItem>
+                    <SelectItem value="Food">Food</SelectItem>
+                    <SelectItem value="Travel">Travel</SelectItem>
+                    <SelectItem value="Bills">Bills</SelectItem>
+                    <SelectItem value="Others">Others</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                <div className="space-y-1">
-                  <Label htmlFor="frequency" className="text-sm font-medium">Frequency</Label>
-                  <Select
-                    value={formData.frequency}
-                    onValueChange={(val: 'daily' | 'weekly' | 'monthly' | 'yearly') =>
-                      setFormData({ ...formData, frequency: val })
-                    }
-                  >
-                    <SelectTrigger className="text-sm">
-                      <SelectValue placeholder="Monthly" />
-                    </SelectTrigger>
-                    <SelectContent className="text-sm">
-                      <SelectItem value="daily">Daily</SelectItem>
-                      <SelectItem value="weekly">Weekly</SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                      <SelectItem value="yearly">Yearly</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-1">
+                <Label htmlFor="frequency" className="text-sm font-medium">Frequency</Label>
+                <Select
+                  value={formData.frequency}
+                  onValueChange={(val: 'daily' | 'weekly' | 'monthly' | 'yearly') =>
+                    setFormData({ ...formData, frequency: val })
+                  }
+                >
+                  <SelectTrigger className="text-sm">
+                    <SelectValue placeholder="Monthly" />
+                  </SelectTrigger>
+                  <SelectContent className="text-sm">
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="yearly">Yearly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                <div className="space-y-1">
-                  <Label htmlFor="next_due_date" className="text-sm font-medium">Next Due Date</Label>
-                  <Input
-                    id="next_due_date"
-                    type="date"
-                    value={formData.next_due_date}
-                    onChange={(e) => setFormData({ ...formData, next_due_date: e.target.value })}
-                    required
-                    className="text-sm"
-                  />
-                </div>
+              <div className="space-y-1">
+                <Label htmlFor="next_due_date" className="text-sm font-medium">Next Due Date</Label>
+                <Input
+                  id="next_due_date"
+                  type="date"
+                  value={formData.next_due_date}
+                  onChange={(e) => setFormData({ ...formData, next_due_date: e.target.value })}
+                  required
+                  className="text-sm"
+                />
+              </div>
 
-                <div className="space-y-1">
-                  <Label htmlFor="bank_account_id" className="text-sm font-medium">
-                    Bank Account <span className="text-destructive">*</span>
-                  </Label>
-                  <Select
-                    value={formData.bank_account_id}
-                    onValueChange={(val) => setFormData({ ...formData, bank_account_id: val })}
-                    disabled={filteredBankAccountsForAdd.length === 0}
-                  >
-                    <SelectTrigger className="text-sm">
-                      <SelectValue placeholder={filteredBankAccountsForAdd.length === 0 ? `No ${formData.currency} accounts` : "Select bank account"} />
-                    </SelectTrigger>
-                    <SelectContent className="text-sm bg-background">
-                      {filteredBankAccountsForAdd.map((account) => (
-                        <SelectItem key={account.id} value={account.id} className="text-sm">
-                          {account.name} ({account.account_type || 'Debit'})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {filteredBankAccountsForAdd.length === 0 ? (
-                    <p className="text-xs text-amber-600 mt-1">
-                      No bank accounts available for {formData.currency}. Add a {formData.currency} account first.
-                    </p>
-                  ) : !formData.bank_account_id && (
-                    <p className="text-xs text-muted-foreground">Required - select where this payment will be made from</p>
-                  )}
-                </div>
+              <div className="space-y-1">
+                <Label htmlFor="bank_account_id" className="text-sm font-medium">
+                  Bank Account <span className="text-destructive">*</span>
+                </Label>
+                <Select
+                  value={formData.bank_account_id}
+                  onValueChange={(val) => setFormData({ ...formData, bank_account_id: val })}
+                  disabled={filteredBankAccountsForAdd.length === 0}
+                >
+                  <SelectTrigger className="text-sm">
+                    <SelectValue placeholder={filteredBankAccountsForAdd.length === 0 ? `No ${formData.currency} accounts` : "Select bank account"} />
+                  </SelectTrigger>
+                  <SelectContent className="text-sm bg-background">
+                    {filteredBankAccountsForAdd.map((account) => (
+                      <SelectItem key={account.id} value={account.id} className="text-sm">
+                        {account.name} ({account.account_type || 'Debit'})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {filteredBankAccountsForAdd.length === 0 ? (
+                  <p className="text-xs text-amber-600 mt-1">
+                    No bank accounts available for {formData.currency}. Add a {formData.currency} account first.
+                  </p>
+                ) : !formData.bank_account_id && (
+                  <p className="text-xs text-muted-foreground">Required - select where this payment will be made from</p>
+                )}
+              </div>
 
-                <div className="space-y-1">
-                  <Label htmlFor="reminder_days_before" className="text-sm font-medium">
-                    Remind (days before)
-                  </Label>
-                  <Input
-                    id="reminder_days_before"
-                    type="number"
-                    min="0"
-                    max="30"
-                    value={formData.reminder_days_before}
-                    onChange={(e) =>
-                      setFormData({ ...formData, reminder_days_before: parseInt(e.target.value) || 0 })
-                    }
-                    className="text-sm"
-                  />
-                </div>
+              <div className="space-y-1">
+                <Label htmlFor="reminder_days_before" className="text-sm font-medium">
+                  Remind (days before)
+                </Label>
+                <Input
+                  id="reminder_days_before"
+                  type="number"
+                  min="0"
+                  max="30"
+                  value={formData.reminder_days_before}
+                  onChange={(e) =>
+                    setFormData({ ...formData, reminder_days_before: parseInt(e.target.value) || 0 })
+                  }
+                  className="text-sm"
+                />
+              </div>
 
-                <DialogFooter>
-                  <Button type="submit" size="sm" disabled={isAdding || filteredBankAccountsForAdd.length === 0}>Save</Button>
-                  <Button variant="outline" size="sm" onClick={resetForm} type="button">
-                    Cancel
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+              <DialogFooter>
+                <Button type="submit" size="sm" disabled={isAdding || filteredBankAccountsForAdd.length === 0}>Save</Button>
+                <Button variant="outline" size="sm" onClick={resetForm} type="button">
+                  Cancel
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Transactions List */}
       <div>
         {recurringTransactions.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No recurring transactions found.</p>
-              <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters or add a new transaction.</p>
-            </div>
-          ) : (
-            <>
-              {/* Desktop Table View */}
-              <div className="hidden md:block">
-                <ScrollArea className="h-[500px]">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-muted/50">
-                        <TableHead className="font-semibold text-foreground">
-                          Name
-                        </TableHead>
-                        <TableHead className="font-semibold text-foreground">
-                          Category
-                        </TableHead>
-                        <TableHead className="font-semibold text-foreground">
-                          Bank
-                        </TableHead>
-                        <TableHead className="font-semibold text-foreground">
-                          Frequency
-                        </TableHead>
-                        <TableHead className="font-semibold text-foreground">
-                          Next Due Date
-                        </TableHead>
-                        <TableHead className="font-semibold text-foreground text-right">
-                          Amount
-                        </TableHead>
-                        <TableHead className="font-semibold text-foreground">
-                          Status
-                        </TableHead>
-                        <TableHead className="font-semibold text-foreground text-right">
-                          Actions
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {recurringTransactions.map((transaction, index) => {
-                        const isDone = transaction.computedStatus === 'done';
-                        const isPending = transaction.computedStatus === 'pending';
-                        const bankAccount = bankAccounts.find(ba => ba.id === transaction.bank_account_id);
-                        return (
-                          <TableRow
-                            key={transaction.id}
-                            className={cn(
-                              'hover:bg-muted/30 transition-colors',
-                              index % 2 === 0 ? 'bg-background' : 'bg-muted/10',
-                              isDone && 'opacity-60'
-                            )}
-                          >
-                            <TableCell className="font-medium">
-                              <div className="flex items-center gap-2">
-                                <RotateCcw className={cn(
-                                  "h-4 w-4",
-                                  isDone ? 'text-accent' : 'text-muted-foreground'
-                                )} />
-                                <span className="text-sm">{transaction.name}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                className={cn(
-                                  'font-normal',
-                                  getCategoryColor(transaction.category)
-                                )}
-                              >
-                                {transaction.category}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <span className="text-sm text-muted-foreground">
-                                {bankAccount?.name || 'Not assigned'}
+          <EmptyState
+            icon={Repeat}
+            title="No Recurring Transactions Found"
+            description="No transactions match your current filters. Try adjusting your filters or add a new transaction."
+          />
+        ) : (
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block">
+              <ScrollArea className="h-[500px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead className="font-semibold text-foreground">
+                        Name
+                      </TableHead>
+                      <TableHead className="font-semibold text-foreground">
+                        Category
+                      </TableHead>
+                      <TableHead className="font-semibold text-foreground">
+                        Bank
+                      </TableHead>
+                      <TableHead className="font-semibold text-foreground">
+                        Frequency
+                      </TableHead>
+                      <TableHead className="font-semibold text-foreground">
+                        Next Due Date
+                      </TableHead>
+                      <TableHead className="font-semibold text-foreground text-right">
+                        Amount
+                      </TableHead>
+                      <TableHead className="font-semibold text-foreground">
+                        Status
+                      </TableHead>
+                      <TableHead className="font-semibold text-foreground text-right">
+                        Actions
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {recurringTransactions.map((transaction, index) => {
+                      const isDone = transaction.computedStatus === 'done';
+                      const isPending = transaction.computedStatus === 'pending';
+                      const bankAccount = bankAccounts.find(ba => ba.id === transaction.bank_account_id);
+                      return (
+                        <TableRow
+                          key={transaction.id}
+                          className={cn(
+                            'hover:bg-muted/30 transition-colors',
+                            index % 2 === 0 ? 'bg-background' : 'bg-muted/10',
+                            isDone && 'opacity-60'
+                          )}
+                        >
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              <RotateCcw className={cn(
+                                "h-4 w-4",
+                                isDone ? 'text-accent' : 'text-muted-foreground'
+                              )} />
+                              <span className="text-sm">{transaction.name}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              className={cn(
+                                'font-normal',
+                                getCategoryColor(transaction.category)
+                              )}
+                            >
+                              {transaction.category}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm text-muted-foreground">
+                              {bankAccount?.name || 'Not assigned'}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={cn('text-xs', getFrequencyBadgeColor(transaction.frequency))}
+                            >
+                              {transaction.frequency.charAt(0).toUpperCase() + transaction.frequency.slice(1)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium">
+                                {format(parseLocalDate(transaction.next_due_date), 'MMM d, yyyy')}
                               </span>
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant="outline"
-                                className={cn('text-xs', getFrequencyBadgeColor(transaction.frequency))}
-                              >
-                                {transaction.frequency.charAt(0).toUpperCase() + transaction.frequency.slice(1)}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              <div className="flex flex-col">
-                                <span className="text-sm font-medium">
-                                  {format(parseLocalDate(transaction.next_due_date), 'MMM d, yyyy')}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  {format(parseLocalDate(transaction.next_due_date), 'EEEE')}
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-right font-semibold">
-                              {formatCurrency(transaction.amount, transaction.currency)}
-                            </TableCell>
-                            <TableCell>
-                              <Badge 
-                                variant="outline" 
-                                className={getStatusBadgeClass(transaction.computedStatus)}
-                              >
-                                {isDone && '✓ '}{getStatusDisplayText(transaction.computedStatus)}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end space-x-1">
-                                {!isDone && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 w-8 p-0 text-accent hover:text-accent hover:bg-accent/10"
-                                    onClick={() => handleMarkAsDone(transaction)}
-                                    disabled={isMarkingDone}
-                                  >
-                                    <Check className="h-3.5 w-3.5" />
-                                  </Button>
-                                )}
+                              <span className="text-xs text-muted-foreground">
+                                {format(parseLocalDate(transaction.next_due_date), 'EEEE')}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right font-semibold">
+                            {formatCurrency(transaction.amount, transaction.currency)}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={getStatusBadgeClass(transaction.computedStatus)}
+                            >
+                              {isDone && '✓ '}{getStatusDisplayText(transaction.computedStatus)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end space-x-1">
+                              {!isDone && (
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-8 w-8 p-0"
-                                  onClick={() => handleEdit(transaction)}
+                                  className="h-8 w-8 p-0 text-accent hover:text-accent hover:bg-accent/10"
+                                  onClick={() => handleMarkAsDone(transaction)}
+                                  disabled={isMarkingDone}
                                 >
-                                  <Edit2 className="h-3.5 w-3.5" />
+                                  <Check className="h-3.5 w-3.5" />
                                 </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                  onClick={() => handleDelete(transaction.id)}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </ScrollArea>
-              </div>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => handleEdit(transaction)}
+                              >
+                                <Edit2 className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={() => handleDelete(transaction.id)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            </div>
 
-              {/* Mobile Card View */}
-              <div className="block md:hidden space-y-4">
-                {recurringTransactions.map((transaction) => (
-                  <RecurringTransactionCard
-                    key={transaction.id}
-                    transaction={transaction}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onMarkAsDone={() => handleMarkAsDone(transaction)}
-                    isMarkingDone={isMarkingDone}
-                    bankAccounts={bankAccounts}
-                  />
-                ))}
-              </div>
+            {/* Mobile Card View */}
+            <div className="block md:hidden space-y-4">
+              {recurringTransactions.map((transaction) => (
+                <RecurringTransactionCard
+                  key={transaction.id}
+                  transaction={transaction}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onMarkAsDone={() => handleMarkAsDone(transaction)}
+                  isMarkingDone={isMarkingDone}
+                  bankAccounts={bankAccounts}
+                />
+              ))}
+            </div>
 
-              {/* Pagination */}
-              {(currentPage > 0 || hasMore) && (
-                <div className="flex items-center justify-center gap-2 pt-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
-                    disabled={currentPage === 0}
-                  >
-                    Previous
-                  </Button>
-                  <span className="text-sm text-muted-foreground">
-                    Page {currentPage + 1}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    disabled={!hasMore}
-                  >
-                    Next
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
+            {/* Pagination */}
+            {(currentPage > 0 || hasMore) && (
+              <div className="flex items-center justify-center gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                  disabled={currentPage === 0}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  Page {currentPage + 1}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={!hasMore}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Edit Dialog */}
@@ -1060,25 +1063,13 @@ const RecurringTransactions: React.FC = () => {
       />
 
       {/* Delete Confirmation */}
-      <AlertDialog
-        open={!!deletingTransactionId}
-        onOpenChange={(open) => !open && setDeletingTransactionId(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Recurring Transaction</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{transactionToDelete?.name}"? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmDialog
+        isOpen={!!deletingTransactionId}
+        onClose={() => setDeletingTransactionId(null)}
+        onConfirm={handleDeleteConfirm}
+        entityName="Recurring Transaction"
+        itemIdentifier={transactionToDelete?.name}
+      />
     </div>
   );
 };

@@ -25,6 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { DeleteConfirmDialog } from '@/components/ui/delete-confirm-dialog';
 
 interface DuesListProps {
   dues: Due[];
@@ -226,7 +227,7 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
                 </TableHeader>
                 <TableBody>
                   {duesList.map((due) => (
-                    <TableRow 
+                    <TableRow
                       key={due.id}
                       className={due.status === 'Settled' ? 'opacity-60' : ''}
                     >
@@ -320,33 +321,18 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
       {renderDuesTable(theyOweMeDues, 'They Owe Me', 'text-accent')}
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deletingDueId} onOpenChange={() => setDeletingDueId(null)}>
-        <AlertDialogContent className="mx-auto w-[calc(100%-2rem)] sm:w-full">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Due</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this due{dueToDelete ? ` for ${dueToDelete.person_name} (${formatCurrency(dueToDelete.amount, dueToDelete.currency)})` : ''}? 
-              This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeletingDueId(null)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (deletingDueId) {
-                  onDelete(deletingDueId);
-                  setDeletingDueId(null);
-                }
-              }}
-              className="bg-destructive hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmDialog
+        isOpen={!!deletingDueId}
+        onClose={() => setDeletingDueId(null)}
+        onConfirm={() => {
+          if (deletingDueId) {
+            onDelete(deletingDueId);
+            setDeletingDueId(null);
+          }
+        }}
+        entityName="Due"
+        itemIdentifier={dueToDelete ? `${dueToDelete.person_name} (${formatCurrency(dueToDelete.amount, dueToDelete.currency)})` : undefined}
+      />
     </div>
   );
 };

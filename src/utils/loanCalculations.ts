@@ -1,28 +1,23 @@
-import { format, addMonths, getDaysInMonth, startOfMonth, isLeapYear } from 'date-fns';
+import { format, addMonths, getDaysInMonth, startOfMonth } from 'date-fns';
 import { Loan, LoanContribution, MonthlyProjection } from '@/types/loan';
 
 /**
  * Calculate monthly interest using reducing balance method
  * Interest is calculated on the current outstanding balance, not a fixed principal.
- * Formula: monthly_interest = currentOutstanding * (roi / 100) * (days_in_month / days_in_year)
- *
+ * Formula: monthly_interest = currentOutstanding * (roi / 100) * (days_in_month / 365)
+ * 
  * @param currentOutstanding - The outstanding balance at the start of the month
  * @param roi - Annual rate of interest as a percentage
  * @param daysInMonth - Number of days in the current month
- * @param monthDate - The date of the month being calculated (used for leap year detection)
  */
 export const calculateMonthlyInterest = (
   currentOutstanding: number,
   roi: number,
-  daysInMonth: number,
-  monthDate: Date
+  daysInMonth: number
 ): number => {
   // Edge case: If ROI is 0 or outstanding is 0/negative, no interest accrues
   if (roi <= 0 || currentOutstanding <= 0) return 0;
-
-  // Use 366 days for leap years, 365 otherwise
-  const daysInYear = isLeapYear(monthDate) ? 366 : 365;
-  return currentOutstanding * (roi / 100) * (daysInMonth / daysInYear);
+  return currentOutstanding * (roi / 100) * (daysInMonth / 365);
 };
 
 /**
@@ -103,8 +98,7 @@ export const generateProjection = (
     const interestAdded = calculateMonthlyInterest(
       openingBalance,
       loan.roi,
-      daysInCurrentMonth,
-      currentMonth
+      daysInCurrentMonth
     );
     
     // Closing balance = Opening + Interest (no inline payments anymore)

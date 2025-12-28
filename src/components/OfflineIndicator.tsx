@@ -32,11 +32,10 @@ export function OfflineIndicator() {
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg transition-all duration-300 ${
-        isOnline
+      className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg transition-all duration-300 ${isOnline
           ? "bg-green-500 text-white"
-          : "bg-yellow-500 text-gray-900"
-      }`}
+          : "bg-yellow-500 text-foreground"
+        }`}
       role="alert"
       aria-live="polite"
     >

@@ -22,59 +22,35 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { cn } from '@/lib/utils';
-import { Loan, LoanContribution, LoanContributionFormData } from '@/types/loan';
+import { LoanContribution, LoanContributionFormData } from '@/types/loan';
+
+const formSchema = z.object({
+  amount: z.coerce.number().positive('Amount must be greater than 0'),
+  contribution_date: z.date({ required_error: 'Date is required' }),
+  note: z.string().optional(),
+});
 
 interface LoanContributionFormProps {
   loanId: string;
-  loan: Loan;
   contribution?: LoanContribution;
   onSubmit: (data: LoanContributionFormData) => void;
   onCancel?: () => void;
   isSubmitting?: boolean;
-  disabled?: boolean;
 }
-
-const createFormSchema = (referenceDate: string) => z.object({
-  amount: z.coerce.number().positive('Amount must be greater than 0'),
-  contribution_date: z.date({ required_error: 'Date is required' })
-    .refine((date) => {
-      const refDate = new Date(referenceDate);
-      refDate.setHours(0, 0, 0, 0);
-      const checkDate = new Date(date);
-      checkDate.setHours(0, 0, 0, 0);
-      return checkDate >= refDate;
-    }, {
-      message: 'Date must be on or after the loan reference date',
-    })
-    .refine((date) => {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const checkDate = new Date(date);
-      checkDate.setHours(0, 0, 0, 0);
-      return checkDate <= today;
-    }, {
-      message: 'Date cannot be in the future',
-    }),
-  note: z.string().optional(),
-});
 
 const LoanContributionForm: React.FC<LoanContributionFormProps> = ({
   loanId,
-  loan,
   contribution,
   onSubmit,
   onCancel,
   isSubmitting = false,
-  disabled = false,
 }) => {
-  const formSchema = createFormSchema(loan.reference_date);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       amount: contribution?.amount || undefined,
-      contribution_date: contribution?.contribution_date
-        ? new Date(contribution.contribution_date)
+      contribution_date: contribution?.contribution_date 
+        ? new Date(contribution.contribution_date) 
         : new Date(),
       note: contribution?.note || '',
     },
@@ -95,16 +71,6 @@ const LoanContributionForm: React.FC<LoanContributionFormProps> = ({
       });
     }
   };
-
-  if (disabled) {
-    return (
-      <div className="text-center py-4 px-6 bg-green-50 border border-green-200 rounded-lg">
-        <p className="text-sm text-green-700 font-medium">
-          This loan is fully paid off. No additional contributions needed.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <Form {...form}>

@@ -137,7 +137,7 @@ const Index = () => {
             </Sheet>
             <Wallet className="h-5 w-5 text-primary flex-shrink-0" />
             <h1 className="text-base font-semibold text-primary truncate flex-1">
-              FinMate
+              Personal Finance Tracker
             </h1>
             {user && <UserMenu user={user} />}
           </div>

@@ -171,29 +171,6 @@
     max-height: 100vh;
     max-height: 100dvh;
   }
-
-  /* Custom thin scrollbar for category list */
-  .thin-scrollbar {
-    scrollbar-width: thin; /* Firefox */
-    scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
-  }
-
-  .thin-scrollbar::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  .thin-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .thin-scrollbar::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--muted-foreground) / 0.2);
-    border-radius: 3px;
-  }
-
-  .thin-scrollbar:hover::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--muted-foreground) / 0.4);
-  }
 }
 
 /* Support for dvh where available */
@@ -254,4 +231,135 @@
 
 .snap-start {
   scroll-snap-align: start;
+}
+
+/* ===== DESIGN SYSTEM: Typography Scale ===== */
+
+/* Page titles - used for main section headers */
+.text-page-title {
+  @apply text-xl font-semibold text-foreground;
+}
+
+/* Section titles - used for card/section headers */
+.text-section-title {
+  @apply text-base font-semibold text-foreground;
+}
+
+/* Card titles - used for card component headers */
+.text-card-title {
+  @apply text-base font-bold text-foreground;
+}
+
+/* Body text - default content text */
+.text-body {
+  @apply text-sm text-foreground;
+}
+
+/* Body muted - secondary content text */
+.text-body-muted {
+  @apply text-sm text-muted-foreground;
+}
+
+/* Labels - form labels and field names */
+.text-label {
+  @apply text-sm font-medium text-foreground;
+}
+
+/* Caption - small helper text */
+.text-caption {
+  @apply text-xs text-muted-foreground;
+}
+
+/* Stat values - large numbers for dashboards */
+.text-stat-value {
+  @apply text-xl lg:text-2xl font-bold text-foreground;
+}
+
+/* Stat label - labels for stat values */
+.text-stat-label {
+  @apply text-xs font-medium text-muted-foreground uppercase tracking-wide;
+}
+
+/* ===== DESIGN SYSTEM: Enhanced Animations ===== */
+
+/* Smooth hover transitions for interactive elements */
+.hover-lift {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+.hover-lift:hover {
+  @apply -translate-y-0.5 shadow-md;
+}
+
+/* Button press feedback */
+.press-feedback:active {
+  @apply scale-[0.98] transition-transform duration-75;
+}
+
+/* Card hover effect */
+.card-hover {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+.card-hover:hover {
+  @apply shadow-md border-primary/20;
+}
+
+/* Subtle fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* Staggered animation for lists */
+.animate-stagger > * {
+  animation: fadeIn 0.3s ease-out backwards;
+}
+
+.animate-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.animate-stagger > *:nth-child(2) { animation-delay: 50ms; }
+.animate-stagger > *:nth-child(3) { animation-delay: 100ms; }
+.animate-stagger > *:nth-child(4) { animation-delay: 150ms; }
+.animate-stagger > *:nth-child(5) { animation-delay: 200ms; }
+
+/* ===== DESIGN SYSTEM: Accessibility ===== */
+
+/* Skip to main content link */
+.skip-link {
+  @apply absolute -top-10 left-0 bg-primary text-primary-foreground px-4 py-2 z-50 rounded-br-lg;
+  @apply focus:top-0 transition-all;
+}
+
+/* Focus ring enhancement for keyboard navigation */
+.focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 0 0% 20%;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-stagger > * {
+    animation: none;
+  }
+  
+  .hover-lift:hover {
+    transform: none;
+  }
 }
