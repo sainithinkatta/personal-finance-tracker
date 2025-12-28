@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
     // Get today's date in UTC
     const today = new Date();
     const todayString = format(today, 'yyyy-MM-dd');
-    
+
     console.log(`Checking for reminders due on or before: ${todayString}`);
 
     // Query recurring transactions that need reminders
@@ -79,19 +79,19 @@ Deno.serve(async (req) => {
       const dueDate = parseISO(transaction.next_due_date);
       const reminderDate = addDays(dueDate, -transaction.reminder_days_before);
       const reminderDateString = format(reminderDate, 'yyyy-MM-dd');
-      
+
       // Check if today matches or is past the reminder date
       const isReminderDue = reminderDateString <= todayString;
-      
+
       // Check if enough time has passed since last reminder (5 hours)
       if (transaction.last_reminder_sent_at) {
         const lastSentAt = new Date(transaction.last_reminder_sent_at);
         const hoursSinceLastReminder = (today.getTime() - lastSentAt.getTime()) / (1000 * 60 * 60);
-        
+
         // Only send if it's been more than MAIL_TRIGGER_INTERVAL_HOURS since last reminder
         return isReminderDue && hoursSinceLastReminder >= MAIL_TRIGGER_INTERVAL_HOURS;
       }
-      
+
       // If never sent before, send if reminder is due
       return isReminderDue;
     });
@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
     // Add delay between sends to respect rate limits (max 2 per second)
     for (let i = 0; i < transactionsToRemind.length; i++) {
       const transaction = transactionsToRemind[i];
-      
+
       // Add 500ms delay between emails (except for first one)
       if (i > 0) {
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
         const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
         // Send email using Resend - Enhanced Modern Design
-const emailHtml = `
+        const emailHtml = `
   <!DOCTYPE html>
   <html lang="en">
     <head>
@@ -501,7 +501,7 @@ const emailHtml = `
         <div class="footer">
           <div class="footer-logo">💰</div>
           <p class="footer-text">
-            This is an automated reminder from your Personal Expense Tracker.
+            This is an automated reminder from FinMate.
           </p>
           <p class="footer-text">
             <a href="https://personal-finance-tracker-eosin-eight.vercel.app/" class="footer-link">Manage your recurring transactions</a>
@@ -528,13 +528,13 @@ const emailHtml = `
             emailsFailed++;
           } else {
             console.log(`Reminder sent successfully for transaction: ${transaction.name} to ${userEmail}`);
-            
+
             // Update last_reminder_sent_at timestamp
             await supabaseAdmin
               .from('recurring_transactions')
               .update({ last_reminder_sent_at: new Date().toISOString() })
               .eq('id', transaction.id);
-            
+
             emailsSent++;
           }
         } catch (emailError: any) {

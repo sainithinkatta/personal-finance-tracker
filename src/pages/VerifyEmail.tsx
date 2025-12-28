@@ -12,7 +12,7 @@ const VerifyEmail: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
-  
+
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
@@ -105,7 +105,7 @@ const VerifyEmail: React.FC = () => {
         <div className="flex items-center gap-2">
           <Wallet className="h-7 w-7 text-primary" />
           <span className="text-lg font-bold text-foreground">
-            Personal Finance Tracker
+            FinMate
           </span>
         </div>
       </header>
@@ -123,7 +123,7 @@ const VerifyEmail: React.FC = () => {
             <h1 className="text-2xl font-bold text-center text-foreground mb-2">
               Verify your email
             </h1>
-            
+
             <p className="text-center text-muted-foreground mb-6">
               We've sent a verification link to{' '}
               {email ? (

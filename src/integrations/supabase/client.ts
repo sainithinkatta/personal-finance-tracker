@@ -9,7 +9,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     // Enable session persistence across page reloads
     persistSession: true,
     // Store session in localStorage (works better on mobile)
-    storageKey: 'personal-finance-tracker-auth',
+    storageKey: 'finmate-auth',
     // Automatically refresh the token before it expires
     autoRefreshToken: true,
     // Detect session from URL (for magic links and OAuth)

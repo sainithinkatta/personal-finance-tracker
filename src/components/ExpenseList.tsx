@@ -54,7 +54,7 @@ import { BankAccount } from '@/types/bankAccount';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import ExpenseEditForm from '@/components/ExpenseEditForm';
-import ExportDataButton from '@/components/ExportDataButton';
+
 import EmptyState from '@/components/dashboard/EmptyState';
 
 interface ExpenseListProps {
@@ -237,11 +237,10 @@ const ExpenseList: React.FC<ExpenseListProps> = ({
 
   return (
     <div className="p-3 sm:p-6 pt-0">
-      <div className="flex items-center justify-between pt-2 pb-3 gap-2">
+      <div className="flex items-center pt-2 pb-3">
         <div className="text-xs sm:text-sm text-muted-foreground">
           {expenses.length} {expenses.length === 1 ? 'expense' : 'expenses'}
         </div>
-        <ExportDataButton expenses={expenses} />
       </div>
 
       <div>
