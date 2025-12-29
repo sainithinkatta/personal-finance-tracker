@@ -1,6 +1,7 @@
 
-import { startOfDay, endOfDay, isWithinInterval, format } from 'date-fns';
+import { startOfDay, endOfDay, format } from 'date-fns';
 import { Expense, FilterOptions, ExpenseSummary, CategorySummary, GroupByPeriod, ExpenseCategory, GroupedExpense } from '@/types/expense';
+import { Transaction } from '@/types/transaction';
 
 export const filterExpenses = (expenses: Expense[], filters: FilterOptions): Expense[] => {
   return expenses.filter(expense => {
@@ -12,8 +13,32 @@ export const filterExpenses = (expenses: Expense[], filters: FilterOptions): Exp
       return false;
     }
     
+    // Category filter - Income filter doesn't apply to expenses
+    if (filters.category !== 'All' && filters.category !== 'Income' && expense.category !== filters.category) {
+      return false;
+    }
+    
+    // If Income filter is selected, no expenses should match
+    if (filters.category === 'Income') {
+      return false;
+    }
+    
+    return true;
+  });
+};
+
+export const filterTransactions = (transactions: Transaction[], filters: FilterOptions): Transaction[] => {
+  return transactions.filter(tx => {
+    // Date filter
+    if (filters.startDate && tx.date < startOfDay(filters.startDate)) {
+      return false;
+    }
+    if (filters.endDate && tx.date > endOfDay(filters.endDate)) {
+      return false;
+    }
+    
     // Category filter
-    if (filters.category !== 'All' && expense.category !== filters.category) {
+    if (filters.category !== 'All' && tx.category !== filters.category) {
       return false;
     }
     

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   BottomSheet,
@@ -11,6 +12,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -22,7 +29,8 @@ import { useIncome } from '@/hooks/useIncome';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Loader2, DollarSign, IndianRupee } from 'lucide-react';
+import { Loader2, DollarSign, IndianRupee, CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface AddIncomeModalProps {
   open: boolean;
@@ -34,6 +42,7 @@ const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ open, onOpenChange }) =
   const [bankAccountId, setBankAccountId] = useState('');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
+  const [date, setDate] = useState<Date>(new Date());
   const [amountError, setAmountError] = useState('');
 
   const { addIncome, isAdding } = useIncome();
@@ -67,6 +76,7 @@ const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ open, onOpenChange }) =
       setBankAccountId('');
       setAmount('');
       setDescription('');
+      setDate(new Date());
       setAmountError('');
     }
   }, [open]);
@@ -131,6 +141,7 @@ const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ open, onOpenChange }) =
         amount: parseFloat(amount),
         currency,
         description: description.trim() || undefined,
+        date: date,
       });
       onOpenChange(false);
     } catch {
@@ -182,6 +193,34 @@ const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ open, onOpenChange }) =
             No bank accounts available for {currency}. Add a {currency} account first.
           </p>
         )}
+      </div>
+
+      {/* Date Picker */}
+      <div className="space-y-2">
+        <Label htmlFor="date">Date *</Label>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full justify-start text-left font-normal",
+                !date && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {date ? format(date, "PPP") : <span>Pick a date</span>}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={(d) => d && setDate(d)}
+              initialFocus
+              className={cn("p-3 pointer-events-auto")}
+            />
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Amount Input */}

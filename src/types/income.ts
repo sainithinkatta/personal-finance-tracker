@@ -5,6 +5,7 @@ export interface Income {
   amount: number;
   currency: string;
   description?: string;
+  date: string;
   created_at: string;
 }
 
@@ -13,4 +14,5 @@ export interface IncomeFormData {
   amount: number;
   currency: string;
   description?: string;
+  date: Date;
 }

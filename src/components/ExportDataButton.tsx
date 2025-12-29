@@ -8,15 +8,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Expense, CURRENCIES } from '@/types/expense';
+import { Transaction } from '@/types/transaction';
+import { CURRENCIES } from '@/types/expense';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 
 interface ExportDataButtonProps {
-  expenses: Expense[];
+  transactions: Transaction[];
 }
 
-const ExportDataButton: React.FC<ExportDataButtonProps> = ({ expenses }) => {
+const ExportDataButton: React.FC<ExportDataButtonProps> = ({ transactions }) => {
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
 
@@ -27,22 +28,30 @@ const ExportDataButton: React.FC<ExportDataButtonProps> = ({ expenses }) => {
 
   const generateFileName = (fileFormat: string) => {
     const currentDate = format(new Date(), 'MMMM-yyyy').toLowerCase();
-    return `expenses-${currentDate}.${fileFormat}`;
+    return `transactions-${currentDate}.${fileFormat}`;
   };
 
   const exportToCSV = () => {
-    const headers = ['Date', 'Category', 'Description', 'Amount', 'Currency'];
-    const csvData = expenses.map(expense => [
-      format(expense.date, 'MMM d, yyyy'),
-      expense.category,
-      expense.description || '',
-      expense.amount.toString(),
-      expense.currency
+    const headers = ['Date', 'Type', 'Category', 'Description', 'Amount', 'Currency'];
+    const csvData = transactions.map(tx => [
+      format(tx.date, 'MMM d, yyyy'),
+      tx.type === 'income' ? 'Income' : 'Expense',
+      tx.category,
+      tx.description || '',
+      tx.amount.toString(), // Negative for income (credit)
+      tx.currency
     ]);
 
-    // Add total expenses row
-    const totalAmount = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-    const totalRow = ['', '', 'Total Expenses', totalAmount.toString(), expenses[0]?.currency || 'USD'];
+    // Calculate net totals
+    const totalExpenses = transactions
+      .filter(tx => tx.type === 'expense')
+      .reduce((sum, tx) => sum + tx.amount, 0);
+    const totalIncome = transactions
+      .filter(tx => tx.type === 'income')
+      .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+    const netTotal = totalExpenses - totalIncome;
+
+    const totalRow = ['', '', '', 'Net Total', netTotal.toString(), transactions[0]?.currency || 'USD'];
 
     const csvContent = [headers, ...csvData, totalRow]
       .map(row => row.map(field => `"${field}"`).join(','))
@@ -52,12 +61,19 @@ const ExportDataButton: React.FC<ExportDataButtonProps> = ({ expenses }) => {
   };
 
   const exportToPDF = () => {
-    // Create a simple HTML structure for PDF conversion
+    const totalExpenses = transactions
+      .filter(tx => tx.type === 'expense')
+      .reduce((sum, tx) => sum + tx.amount, 0);
+    const totalIncome = transactions
+      .filter(tx => tx.type === 'income')
+      .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+    const currency = transactions[0]?.currency || 'USD';
+
     const htmlContent = `
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Expense Report</title>
+        <title>Transaction Report</title>
         <style>
           body { font-family: Arial, sans-serif; margin: 20px; }
           h1 { color: #333; text-align: center; }
@@ -65,32 +81,38 @@ const ExportDataButton: React.FC<ExportDataButtonProps> = ({ expenses }) => {
           th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
           th { background-color: #f2f2f2; font-weight: bold; }
           .total { font-weight: bold; background-color: #f9f9f9; }
+          .income { color: #059669; }
+          .expense { color: #333; }
+          .summary { margin-top: 20px; padding: 10px; background: #f9f9f9; border-radius: 8px; }
         </style>
       </head>
       <body>
-        <h1>Expense Report - ${format(new Date(), 'MMMM yyyy')}</h1>
+        <h1>Transaction Report - ${format(new Date(), 'MMMM yyyy')}</h1>
+        <div class="summary">
+          <p><strong>Total Expenses:</strong> ${formatCurrency(totalExpenses, currency)}</p>
+          <p><strong>Total Income:</strong> ${formatCurrency(totalIncome, currency)}</p>
+          <p><strong>Net:</strong> ${formatCurrency(totalExpenses - totalIncome, currency)}</p>
+        </div>
         <table>
           <thead>
             <tr>
               <th>Date</th>
+              <th>Type</th>
               <th>Category</th>
               <th>Description</th>
               <th>Amount</th>
             </tr>
           </thead>
           <tbody>
-            ${expenses.map(expense => `
+            ${transactions.map(tx => `
               <tr>
-                <td>${format(expense.date, 'MMM d, yyyy')}</td>
-                <td>${expense.category}</td>
-                <td>${expense.description || '-'}</td>
-                <td>${formatCurrency(expense.amount, expense.currency)}</td>
+                <td>${format(tx.date, 'MMM d, yyyy')}</td>
+                <td>${tx.type === 'income' ? 'Income' : 'Expense'}</td>
+                <td>${tx.category}</td>
+                <td>${tx.description || '-'}</td>
+                <td class="${tx.type === 'income' ? 'income' : 'expense'}">${formatCurrency(tx.amount, tx.currency)}</td>
               </tr>
             `).join('')}
-            <tr class="total">
-              <td colspan="3"><strong>Total Expenses</strong></td>
-              <td><strong>${formatCurrency(expenses.reduce((sum, exp) => sum + exp.amount, 0), expenses[0]?.currency || 'USD')}</strong></td>
-            </tr>
           </tbody>
         </table>
       </body>
@@ -101,12 +123,19 @@ const ExportDataButton: React.FC<ExportDataButtonProps> = ({ expenses }) => {
   };
 
   const exportToDOC = () => {
-    // Create a simple DOC-compatible HTML structure
+    const totalExpenses = transactions
+      .filter(tx => tx.type === 'expense')
+      .reduce((sum, tx) => sum + tx.amount, 0);
+    const totalIncome = transactions
+      .filter(tx => tx.type === 'income')
+      .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+    const currency = transactions[0]?.currency || 'USD';
+
     const docContent = `
       <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
       <head>
         <meta charset="utf-8">
-        <title>Expense Report</title>
+        <title>Transaction Report</title>
         <style>
           body { font-family: Arial, sans-serif; }
           h1 { color: #333; text-align: center; }
@@ -117,29 +146,30 @@ const ExportDataButton: React.FC<ExportDataButtonProps> = ({ expenses }) => {
         </style>
       </head>
       <body>
-        <h1>Expense Report - ${format(new Date(), 'MMMM yyyy')}</h1>
+        <h1>Transaction Report - ${format(new Date(), 'MMMM yyyy')}</h1>
+        <p><strong>Total Expenses:</strong> ${formatCurrency(totalExpenses, currency)}</p>
+        <p><strong>Total Income:</strong> ${formatCurrency(totalIncome, currency)}</p>
+        <p><strong>Net:</strong> ${formatCurrency(totalExpenses - totalIncome, currency)}</p>
         <table>
           <thead>
             <tr>
               <th>Date</th>
+              <th>Type</th>
               <th>Category</th>
               <th>Description</th>
               <th>Amount</th>
             </tr>
           </thead>
           <tbody>
-            ${expenses.map(expense => `
+            ${transactions.map(tx => `
               <tr>
-                <td>${format(expense.date, 'MMM d, yyyy')}</td>
-                <td>${expense.category}</td>
-                <td>${expense.description || '-'}</td>
-                <td>${formatCurrency(expense.amount, expense.currency)}</td>
+                <td>${format(tx.date, 'MMM d, yyyy')}</td>
+                <td>${tx.type === 'income' ? 'Income' : 'Expense'}</td>
+                <td>${tx.category}</td>
+                <td>${tx.description || '-'}</td>
+                <td>${formatCurrency(tx.amount, tx.currency)}</td>
               </tr>
             `).join('')}
-            <tr class="total">
-              <td colspan="3"><strong>Total Expenses</strong></td>
-              <td><strong>${formatCurrency(expenses.reduce((sum, exp) => sum + exp.amount, 0), expenses[0]?.currency || 'USD')}</strong></td>
-            </tr>
           </tbody>
         </table>
       </body>
@@ -162,10 +192,10 @@ const ExportDataButton: React.FC<ExportDataButtonProps> = ({ expenses }) => {
   };
 
   const handleExport = async (fileFormat: 'csv' | 'pdf' | 'doc') => {
-    if (expenses.length === 0) {
+    if (transactions.length === 0) {
       toast({
         title: 'No Data to Export',
-        description: 'There are no expenses to export.',
+        description: 'There are no transactions to export.',
         variant: 'destructive',
       });
       return;
@@ -188,7 +218,7 @@ const ExportDataButton: React.FC<ExportDataButtonProps> = ({ expenses }) => {
 
       toast({
         title: 'Export Successful',
-        description: `Your expenses have been exported as ${fileFormat.toUpperCase()}.`,
+        description: `Your transactions have been exported as ${fileFormat.toUpperCase()}.`,
       });
     } catch (error) {
       console.error('Export error:', error);
@@ -208,7 +238,7 @@ const ExportDataButton: React.FC<ExportDataButtonProps> = ({ expenses }) => {
         <Button
           variant="outline"
           size="sm"
-          disabled={isExporting || expenses.length === 0}
+          disabled={isExporting || transactions.length === 0}
           className="flex items-center gap-2"
         >
           <Download className="h-4 w-4" />

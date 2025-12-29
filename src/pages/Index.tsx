@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Dashboard from "@/components/Dashboard";
-import ExpenseList from "@/components/ExpenseList";
+import TransactionList from "@/components/TransactionList";
 import FilterPanel from "@/components/FilterPanel";
 import BudgetManager from "@/components/BudgetManager";
 import RecurringTransactions from "@/components/RecurringTransactions";
@@ -26,16 +26,18 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import BankAccountForm from "@/components/BankAccountForm";
 import { StatementUploadModal } from "@/components/StatementUploadModal";
 import ExportDataButton from "@/components/ExportDataButton";
-import { useExpenses } from "@/hooks/useExpenses";
+import { useTransactions } from "@/hooks/useTransactions";
 import { useBankAccounts } from "@/hooks/useBankAccounts";
 import { FilterOptions } from "@/types/expense";
-import { filterExpenses } from "@/utils/expenseUtils";
+import { filterTransactions } from "@/utils/expenseUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { BankAccount } from "@/types/bankAccount";
+import { useExpenses } from "@/hooks/useExpenses";
 
 const Index = () => {
-  const { expenses, isLoading } = useExpenses();
+  const { transactions, isLoading } = useTransactions();
+  const { expenses } = useExpenses(); // Still needed for Dashboard
   const { bankAccounts } = useBankAccounts();
   const { toast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -101,7 +103,7 @@ const Index = () => {
     setFilters(newFilters);
   };
 
-  const filteredExpenses = filterExpenses(expenses, filters);
+  const filteredTransactions = filterTransactions(transactions, filters);
 
   if (isLoading) {
     return (
@@ -293,7 +295,7 @@ const Index = () => {
                         <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm p-3.5 sm:p-4">
                           <div className="border-b border-gray-200/60 pb-2 mb-3 flex items-center justify-between">
                             <h2 className="text-base sm:text-lg font-semibold text-gray-900">
-                              Expenses
+                              Transactions
                             </h2>
                             <div className="flex items-center gap-2">
                               <Button
@@ -308,7 +310,7 @@ const Index = () => {
                                 <span className="hidden sm:inline">Upload Bank Statement</span>
                                 <span className="sm:hidden">Upload</span>
                               </Button>
-                              <ExportDataButton expenses={filteredExpenses} />
+                              <ExportDataButton transactions={filteredTransactions} />
                             </div>
                           </div>
 
@@ -317,12 +319,12 @@ const Index = () => {
                             onFilterChange={handleFilterChange}
                           />
 
-                          <ExpenseList
-                            expenses={filteredExpenses}
+                          <TransactionList
+                            transactions={filteredTransactions}
                             title={`${filters.category === "All"
                               ? "All"
                               : filters.category
-                              } Expenses`}
+                              } Transactions`}
                             bankAccounts={bankAccounts}
                           />
                         </div>

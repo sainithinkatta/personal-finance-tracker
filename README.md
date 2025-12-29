@@ -1,15 +1,15 @@
-# Personal Finance Tracker
+# FinMate
 
 A responsive web application to help you track bank accounts, budgets, and expenses—built with React, TypeScript, Vite and Supabase.
 
 ## Live Demo
-The project is now live! You can check it out here: [Personal Finance Tracker - Live](https://personal-finance-tracker-eosin-eight.vercel.app/)
+The project is now live! You can check it out here: [FinMate - Live](https://personal-finance-tracker-eosin-eight.vercel.app/)
 
 ---
 
 ## 1. Project Overview
 
-**Personal Finance Tracker** provides an intuitive dashboard to:
+**FinMate** provides an intuitive dashboard to:
 
 - Connect multiple bank accounts  
 - Create and allocate budgets by category  

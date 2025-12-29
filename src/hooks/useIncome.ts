@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { IncomeFormData } from '@/types/income';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
 export const useIncome = () => {
   const { toast } = useToast();
@@ -44,6 +45,9 @@ export const useIncome = () => {
       // Round amount to 2 decimal places
       const roundedAmount = Math.round(incomeData.amount * 100) / 100;
 
+      // Format date for database
+      const dateStr = format(incomeData.date, 'yyyy-MM-dd');
+
       // Insert income record
       const { error: incomeError } = await supabase
         .from('income')
@@ -53,6 +57,7 @@ export const useIncome = () => {
           amount: roundedAmount,
           currency: incomeData.currency,
           description: incomeData.description || null,
+          date: dateStr,
         });
 
       if (incomeError) {
@@ -90,6 +95,7 @@ export const useIncome = () => {
       // Invalidate bank-accounts to refresh balances
       queryClient.invalidateQueries({ queryKey: ['bank-accounts'] });
       queryClient.invalidateQueries({ queryKey: ['expenses'] }); // Refresh dashboard data
+      queryClient.invalidateQueries({ queryKey: ['transactions'] }); // Refresh unified transactions
       toast({
         title: 'Income Added',
         description: 'Bank balance updated successfully.',

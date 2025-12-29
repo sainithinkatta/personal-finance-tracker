@@ -1,5 +1,6 @@
 
 export type ExpenseCategory = 'Groceries' | 'Food' | 'Travel' | 'Bills' | 'Others';
+export type TransactionCategory = ExpenseCategory | 'Income';
 export type GroupByPeriod = 'day' | 'month' | 'year';
 
 export interface Expense {
@@ -16,7 +17,7 @@ export interface Expense {
 export interface FilterOptions {
   startDate: Date | null;
   endDate: Date | null;
-  category: ExpenseCategory | 'All';
+  category: TransactionCategory | 'All';
 }
 
 export interface ExpenseSummary {

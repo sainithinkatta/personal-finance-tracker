@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { FilterOptions, ExpenseCategory } from '@/types/expense';
+import { FilterOptions, TransactionCategory } from '@/types/expense';
 
 interface FilterPanelProps {
   filters: FilterOptions;
@@ -31,7 +31,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
   const handleCategoryChange = (value: string) => {
     onFilterChange({
       ...filters,
-      category: value as ExpenseCategory | 'All',
+      category: value as TransactionCategory | 'All',
     });
   };
 
@@ -124,6 +124,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="All">All Categories</SelectItem>
+                  <SelectItem value="Income">Income</SelectItem>
                   <SelectItem value="Groceries">Groceries</SelectItem>
                   <SelectItem value="Food">Food</SelectItem>
                   <SelectItem value="Travel">Travel</SelectItem>
@@ -206,6 +207,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="All">All Categories</SelectItem>
+                  <SelectItem value="Income">Income</SelectItem>
                   <SelectItem value="Groceries">Groceries</SelectItem>
                   <SelectItem value="Food">Food</SelectItem>
                   <SelectItem value="Travel">Travel</SelectItem>
