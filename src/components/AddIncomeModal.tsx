@@ -32,12 +32,23 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Loader2, DollarSign, IndianRupee, CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// Data shape for editing an existing income record
+export interface IncomeEditData {
+  id: string;
+  currency: string;
+  bank_account_id: string;
+  amount: number;
+  description?: string;
+  date: Date;
+}
+
 interface AddIncomeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editingIncome?: IncomeEditData | null;
 }
 
-const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ open, onOpenChange }) => {
+const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ open, onOpenChange, editingIncome }) => {
   const [currency, setCurrency] = useState('USD');
   const [bankAccountId, setBankAccountId] = useState('');
   const [amount, setAmount] = useState('');
@@ -45,10 +56,12 @@ const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ open, onOpenChange }) =
   const [date, setDate] = useState<Date>(new Date());
   const [amountError, setAmountError] = useState('');
 
-  const { addIncome, isAdding } = useIncome();
+  const { addIncome, isAdding, updateIncome, isUpdating } = useIncome();
   const { bankAccounts } = useBankAccounts();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+
+  const isEditMode = !!editingIncome;
 
   // Filter bank accounts by selected currency
   const filteredBankAccounts = bankAccounts.filter(
@@ -69,17 +82,25 @@ const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ open, onOpenChange }) =
     }
   }, [currency, bankAccountId, bankAccounts, toast]);
 
-  // Reset form when modal opens
+  // Reset form when modal opens or populate with editing data
   useEffect(() => {
     if (open) {
-      setCurrency('USD');
-      setBankAccountId('');
-      setAmount('');
-      setDescription('');
-      setDate(new Date());
+      if (editingIncome) {
+        setCurrency(editingIncome.currency);
+        setBankAccountId(editingIncome.bank_account_id);
+        setAmount(editingIncome.amount.toString());
+        setDescription(editingIncome.description || '');
+        setDate(editingIncome.date);
+      } else {
+        setCurrency('USD');
+        setBankAccountId('');
+        setAmount('');
+        setDescription('');
+        setDate(new Date());
+      }
       setAmountError('');
     }
-  }, [open]);
+  }, [open, editingIncome]);
 
   const validateAmount = (value: string): boolean => {
     if (!value.trim()) {
@@ -136,13 +157,19 @@ const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ open, onOpenChange }) =
     }
 
     try {
-      await addIncome({
+      const incomeData = {
         bank_account_id: bankAccountId,
         amount: parseFloat(amount),
         currency,
         description: description.trim() || undefined,
         date: date,
-      });
+      };
+
+      if (isEditMode && editingIncome) {
+        await updateIncome({ id: editingIncome.id, data: incomeData });
+      } else {
+        await addIncome(incomeData);
+      }
       onOpenChange(false);
     } catch {
       // Error handled in hook, keep modal open with preserved inputs
@@ -263,26 +290,28 @@ const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ open, onOpenChange }) =
       <Button
         type="submit"
         className="w-full"
-        disabled={!isFormValid || isAdding}
+        disabled={!isFormValid || isAdding || isUpdating}
       >
-        {isAdding ? (
+        {isAdding || isUpdating ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Adding...
+            {isEditMode ? 'Updating...' : 'Adding...'}
           </>
         ) : (
-          'Add Income'
+          isEditMode ? 'Update Income' : 'Add Income'
         )}
       </Button>
     </form>
   );
+
+  const modalTitle = isEditMode ? 'Edit Income' : 'Add Income';
 
   if (isMobile) {
     return (
       <BottomSheet open={open} onOpenChange={onOpenChange}>
         <BottomSheetContent>
           <BottomSheetHeader>
-            <BottomSheetTitle>Add Income</BottomSheetTitle>
+            <BottomSheetTitle>{modalTitle}</BottomSheetTitle>
           </BottomSheetHeader>
           <BottomSheetBody>{formContent}</BottomSheetBody>
         </BottomSheetContent>
@@ -294,7 +323,7 @@ const AddIncomeModal: React.FC<AddIncomeModalProps> = ({ open, onOpenChange }) =
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add Income</DialogTitle>
+          <DialogTitle>{modalTitle}</DialogTitle>
         </DialogHeader>
         {formContent}
       </DialogContent>

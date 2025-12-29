@@ -45,6 +45,7 @@ import { BankAccount } from '@/types/bankAccount';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import ExpenseEditForm from '@/components/ExpenseEditForm';
+import AddIncomeModal, { IncomeEditData } from '@/components/AddIncomeModal';
 import EmptyState from '@/components/dashboard/EmptyState';
 import { useTransactions } from '@/hooks/useTransactions';
 
@@ -93,6 +94,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
   const { deleteTransaction } = useTransactions();
   
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [editingIncome, setEditingIncome] = useState<IncomeEditData | null>(null);
   const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -178,7 +180,6 @@ const TransactionList: React.FC<TransactionListProps> = ({
   const currentTransactions = transactions.slice(startIndex, endIndex);
 
   const handleEditTransaction = (tx: Transaction) => {
-    // Only allow editing expenses, not income
     if (tx.type === 'expense') {
       const expense: Expense = {
         id: tx.sourceId,
@@ -191,6 +192,17 @@ const TransactionList: React.FC<TransactionListProps> = ({
         budget_id: tx.budget_id,
       };
       setEditingExpense(expense);
+    } else if (tx.type === 'income') {
+      // Income amounts are stored as negative in transactions, convert back to positive
+      const incomeEdit: IncomeEditData = {
+        id: tx.sourceId,
+        currency: tx.currency,
+        bank_account_id: tx.bank_account_id || '',
+        amount: Math.abs(tx.amount),
+        description: tx.description,
+        date: tx.date,
+      };
+      setEditingIncome(incomeEdit);
     }
   };
 
@@ -298,16 +310,14 @@ const TransactionList: React.FC<TransactionListProps> = ({
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end space-x-1">
-                              {!isIncome && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0"
-                                  onClick={() => handleEditTransaction(tx)}
-                                >
-                                  <Edit2 className="h-3.5 w-3.5" />
-                                </Button>
-                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => handleEditTransaction(tx)}
+                              >
+                                <Edit2 className="h-3.5 w-3.5" />
+                              </Button>
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -408,24 +418,19 @@ const TransactionList: React.FC<TransactionListProps> = ({
                           "flex items-center border-t",
                           isIncome ? "bg-emerald-100/50 border-emerald-200" : "bg-muted/30"
                         )}>
-                          {!isIncome && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="flex-1 h-11 rounded-none hover:bg-primary/10 flex items-center justify-center gap-2 touch-target transition-colors border-r"
-                              onClick={() => handleEditTransaction(tx)}
-                            >
-                              <Edit2 className="h-4 w-4 text-primary" />
-                              <span className="text-sm font-medium text-primary">Edit</span>
-                            </Button>
-                          )}
                           <Button
                             variant="ghost"
                             size="sm"
-                            className={cn(
-                              "h-11 rounded-none hover:bg-destructive/10 flex items-center justify-center gap-2 touch-target transition-colors",
-                              isIncome ? "flex-1" : "flex-1"
-                            )}
+                            className="flex-1 h-11 rounded-none hover:bg-primary/10 flex items-center justify-center gap-2 touch-target transition-colors border-r"
+                            onClick={() => handleEditTransaction(tx)}
+                          >
+                            <Edit2 className="h-4 w-4 text-primary" />
+                            <span className="text-sm font-medium text-primary">Edit</span>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="flex-1 h-11 rounded-none hover:bg-destructive/10 flex items-center justify-center gap-2 touch-target transition-colors"
                             onClick={() => setDeletingTransaction(tx)}
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
@@ -531,6 +536,13 @@ const TransactionList: React.FC<TransactionListProps> = ({
             </Dialog>
           )
         )}
+
+        {/* Edit Income Modal */}
+        <AddIncomeModal
+          open={!!editingIncome}
+          onOpenChange={(open) => !open && setEditingIncome(null)}
+          editingIncome={editingIncome}
+        />
 
         {/* Delete Confirmation */}
         <DeleteConfirmDialog
