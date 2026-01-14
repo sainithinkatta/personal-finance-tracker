@@ -582,6 +582,60 @@ export type Database = {
         }
         Relationships: []
       }
+      recurring_occurrences: {
+        Row: {
+          amount: number
+          bank_account_id: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          occurrence_date: string
+          plan_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          bank_account_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          occurrence_date: string
+          plan_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          bank_account_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          occurrence_date?: string
+          plan_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_occurrences_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_occurrences_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "recurring_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recurring_transactions: {
         Row: {
           amount: number | null
@@ -596,6 +650,7 @@ export type Database = {
           last_reminder_sent_at: string | null
           name: string | null
           next_due_date: string
+          plan_status: string
           reminder_days_before: number | null
           status: string | null
           updated_at: string
@@ -615,6 +670,7 @@ export type Database = {
           last_reminder_sent_at?: string | null
           name?: string | null
           next_due_date: string
+          plan_status?: string
           reminder_days_before?: number | null
           status?: string | null
           updated_at?: string
@@ -634,6 +690,7 @@ export type Database = {
           last_reminder_sent_at?: string | null
           name?: string | null
           next_due_date?: string
+          plan_status?: string
           reminder_days_before?: number | null
           status?: string | null
           updated_at?: string

@@ -13,7 +13,7 @@ import Dashboard from "@/components/Dashboard";
 import TransactionList from "@/components/TransactionList";
 import FilterPanel from "@/components/FilterPanel";
 import BudgetManager from "@/components/BudgetManager";
-import RecurringTransactions from "@/components/RecurringTransactions";
+import RecurringPage from "@/components/recurring/RecurringPage";
 import SavingsGoals from "@/components/SavingsGoals";
 import DuesManager from "@/components/DuesManager";
 import CreditAnalysisDashboard from "@/components/credit-analysis/CreditAnalysisDashboard";
@@ -380,7 +380,7 @@ const Index = () => {
                           </h2>
                         </div>
                         <div className="p-3.5 sm:p-4">
-                          <RecurringTransactions />
+                          <RecurringPage />
                         </div>
                       </div>
                     )}
