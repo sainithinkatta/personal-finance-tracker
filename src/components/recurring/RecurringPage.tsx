@@ -18,27 +18,27 @@ export const RecurringPage: React.FC = () => {
             "inline-flex w-max min-w-full sm:w-full sm:grid sm:grid-cols-4",
             "bg-muted/50 p-1 rounded-lg gap-1"
           )}>
-            <TabsTrigger 
+            <TabsTrigger
               value="upcoming"
-              className="flex-1 whitespace-nowrap text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+              className="flex-1 whitespace-nowrap text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-blue-600 rounded-md"
             >
               Upcoming
             </TabsTrigger>
-            <TabsTrigger 
+            <TabsTrigger
               value="active"
-              className="flex-1 whitespace-nowrap text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+              className="flex-1 whitespace-nowrap text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-blue-600 rounded-md"
             >
               Active Plans
             </TabsTrigger>
-            <TabsTrigger 
+            <TabsTrigger
               value="completed"
-              className="flex-1 whitespace-nowrap text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+              className="flex-1 whitespace-nowrap text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-blue-600 rounded-md"
             >
               Completed
             </TabsTrigger>
-            <TabsTrigger 
+            <TabsTrigger
               value="analysis"
-              className="flex-1 whitespace-nowrap text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+              className="flex-1 whitespace-nowrap text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-blue-600 rounded-md"
             >
               Analysis
             </TabsTrigger>

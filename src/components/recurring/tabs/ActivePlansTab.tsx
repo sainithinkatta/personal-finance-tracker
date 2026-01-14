@@ -29,17 +29,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { 
-  Edit, 
-  Pause, 
-  Play, 
-  XCircle, 
+import {
+  Edit,
+  Pause,
+  Play,
+  XCircle,
   Trash2,
   Building2,
   ListChecks,
   Calendar
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { RecurringCard } from '../RecurringCard';
 
 // =====================================================
 // HELPER FUNCTIONS
@@ -76,7 +77,7 @@ export const ActivePlansTab: React.FC = () => {
   const { plans, isLoading, pausePlan, resumePlan, cancelPlan, deletePlan, isPausing, isResuming, isCancelling, isDeleting } = useRecurringPlans();
   const { bankAccounts } = useBankAccounts();
   const isMobile = useIsMobile();
-  
+
   const [filters, setFilters] = useState<RecurringFilters>({
     ...DEFAULT_RECURRING_FILTERS,
     planStatus: 'active', // Default to showing only active plans
@@ -165,8 +166,8 @@ export const ActivePlansTab: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <RecurringFiltersPanel 
-        filters={filters} 
+      <RecurringFiltersPanel
+        filters={filters}
         onFiltersChange={setFilters}
         showPlanStatusFilter={true}
       />
@@ -183,94 +184,34 @@ export const ActivePlansTab: React.FC = () => {
             <ListChecks className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="font-medium text-lg mb-1">No plans found</h3>
             <p className="text-muted-foreground text-sm">
-              {plans.length === 0 
+              {plans.length === 0
                 ? 'Create your first recurring plan to get started.'
                 : 'No plans match your current filters.'}
             </p>
           </CardContent>
         </Card>
       ) : isMobile ? (
-        // Mobile: Card layout
-        <div className="space-y-3">
-          {filteredPlans.map((plan) => {
-            const statusBadge = getPlanStatusBadge(plan.plan_status);
-            const dueDate = parseLocalDate(plan.next_due_date);
-
-            return (
-              <Card key={plan.id} className="overflow-hidden">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="font-medium">{plan.name}</h3>
-                      <p className="text-sm text-muted-foreground">{plan.category}</p>
-                    </div>
-                    <Badge variant="outline" className={statusBadge.className}>
-                      {statusBadge.label}
-                    </Badge>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                    <Building2 className="h-3.5 w-3.5" />
-                    <span>{getBankName(plan.bank_account_id)}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-sm mb-3">
-                    <span className="font-semibold">
-                      {getCurrencySymbol(plan.currency)}{plan.amount.toFixed(2)}
-                    </span>
-                    <Badge className={`text-xs ${getFrequencyBadgeClass(plan.frequency)}`}>
-                      {plan.frequency}
-                    </Badge>
-                  </div>
-
-                  {plan.plan_status !== 'cancelled' && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3">
-                      <Calendar className="h-3 w-3" />
-                      <span>Next: {format(dueDate, 'MMM d, yyyy')}</span>
-                    </div>
-                  )}
-
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(plan)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    {plan.plan_status !== 'cancelled' && (
-                      <>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handlePauseResume(plan)}
-                          disabled={isPausing || isResuming}
-                        >
-                          {plan.plan_status === 'paused' ? (
-                            <Play className="h-4 w-4" />
-                          ) : (
-                            <Pause className="h-4 w-4" />
-                          )}
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleCancelClick(plan)}
-                          disabled={isCancelling}
-                        >
-                          <XCircle className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )}
-                    <Button 
-                      size="sm" 
-                      variant="destructive"
-                      onClick={() => handleDeleteClick(plan)}
-                      disabled={isDeleting}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+        // Mobile: Card layout using RecurringCard
+        <div className="grid gap-4">
+          {filteredPlans.map((plan) => (
+            <RecurringCard
+              key={plan.id}
+              name={plan.name}
+              category={plan.category}
+              bankName={getBankName(plan.bank_account_id)}
+              amount={plan.amount}
+              currency={plan.currency}
+              frequency={plan.frequency}
+              nextDueDate={plan.next_due_date}
+              daysUntilDue={plan.daysUntilDue}
+              isOverdue={plan.isOverdue}
+              isPaused={plan.plan_status === 'paused'}
+              variant="active"
+              onPauseToggle={plan.plan_status !== 'cancelled' ? () => handlePauseResume(plan) : undefined}
+              onEdit={() => handleEdit(plan)}
+              isPausingResuming={isPausing || isResuming}
+            />
+          ))}
         </div>
       ) : (
         // Desktop: Table layout
@@ -313,7 +254,7 @@ export const ActivePlansTab: React.FC = () => {
                       {getCurrencySymbol(plan.currency)}{plan.amount.toFixed(2)}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {plan.plan_status !== 'cancelled' 
+                      {plan.plan_status !== 'cancelled'
                         ? format(dueDate, 'MMM d, yyyy')
                         : '—'
                       }
@@ -330,8 +271,8 @@ export const ActivePlansTab: React.FC = () => {
                         </Button>
                         {plan.plan_status !== 'cancelled' && (
                           <>
-                            <Button 
-                              size="icon" 
+                            <Button
+                              size="icon"
                               variant="ghost"
                               onClick={() => handlePauseResume(plan)}
                               disabled={isPausing || isResuming}
@@ -343,8 +284,8 @@ export const ActivePlansTab: React.FC = () => {
                                 <Pause className="h-4 w-4 text-warning" />
                               )}
                             </Button>
-                            <Button 
-                              size="icon" 
+                            <Button
+                              size="icon"
                               variant="ghost"
                               onClick={() => handleCancelClick(plan)}
                               disabled={isCancelling}
@@ -354,8 +295,8 @@ export const ActivePlansTab: React.FC = () => {
                             </Button>
                           </>
                         )}
-                        <Button 
-                          size="icon" 
+                        <Button
+                          size="icon"
                           variant="ghost"
                           onClick={() => handleDeleteClick(plan)}
                           disabled={isDeleting}

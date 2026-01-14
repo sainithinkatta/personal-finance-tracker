@@ -1,12 +1,3 @@
-/**
- * =====================================================
- * UPCOMING TAB
- * =====================================================
- * 
- * Shows next scheduled payments from active plans.
- * Actions: Mark as Paid, Skip, Edit
- */
-
 import React, { useState, useMemo } from 'react';
 import { format, differenceInDays } from 'date-fns';
 import { parseLocalDate } from '@/utils/dateUtils';
@@ -22,15 +13,16 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Check, 
-  SkipForward, 
-  Edit, 
-  Calendar, 
+import {
+  Check,
+  SkipForward,
+  Edit,
+  Calendar,
   AlertCircle,
   Building2,
   Clock
 } from 'lucide-react';
+import { RecurringCard } from '../RecurringCard';
 
 // =====================================================
 // HELPER FUNCTIONS
@@ -95,7 +87,7 @@ export const UpcomingTab: React.FC = () => {
   const { activePlans, isLoading } = useRecurringPlans();
   const { markAsPaid, skipOccurrence, isMarkingPaid, isSkipping } = useRecurringOccurrences();
   const { bankAccounts } = useBankAccounts();
-  
+
   const [filters, setFilters] = useState<RecurringFilters>(DEFAULT_RECURRING_FILTERS);
   const [selectedPlan, setSelectedPlan] = useState<RecurringPlanWithComputed | null>(null);
   const [showPayDialog, setShowPayDialog] = useState(false);
@@ -195,8 +187,8 @@ export const UpcomingTab: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <RecurringFiltersPanel 
-        filters={filters} 
+      <RecurringFiltersPanel
+        filters={filters}
         onFiltersChange={setFilters}
         showPlanStatusFilter={false}
       />
@@ -213,7 +205,7 @@ export const UpcomingTab: React.FC = () => {
             <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="font-medium text-lg mb-1">No upcoming payments</h3>
             <p className="text-muted-foreground text-sm">
-              {activePlans.length === 0 
+              {activePlans.length === 0
                 ? 'Create a recurring plan to see upcoming payments here.'
                 : 'No payments match your current filters.'}
             </p>
@@ -221,95 +213,26 @@ export const UpcomingTab: React.FC = () => {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {sortedPlans.map((plan) => {
-            const dueDate = parseLocalDate(plan.next_due_date);
-            const dueInfo = getDueStatusInfo(plan.daysUntilDue);
-            const DueIcon = dueInfo.icon;
-
-            return (
-              <Card 
-                key={plan.id} 
-                className={`overflow-hidden transition-all hover:shadow-md ${
-                  plan.isOverdue ? 'border-destructive/50 bg-destructive/5' : ''
-                }`}
-              >
-                <CardContent className="p-4">
-                  {/* Header: Amount & Category */}
-                  <div className="flex items-start justify-between mb-3">
-                    <Badge 
-                      className={`text-xs px-2 py-0.5 ${
-                        plan.category === 'Bills' ? 'bg-red-100 text-red-800' :
-                        plan.category === 'Groceries' ? 'bg-green-100 text-green-800' :
-                        plan.category === 'Food' ? 'bg-orange-100 text-orange-800' :
-                        plan.category === 'Travel' ? 'bg-blue-100 text-blue-800' :
-                        'bg-purple-100 text-purple-800'
-                      }`}
-                    >
-                      {plan.category}
-                    </Badge>
-                    <span className="text-xl font-bold">
-                      {getCurrencySymbol(plan.currency)}{plan.amount.toFixed(2)}
-                    </span>
-                  </div>
-
-                  {/* Name */}
-                  <h3 className="font-medium text-foreground mb-2 line-clamp-1">
-                    {plan.name}
-                  </h3>
-
-                  {/* Bank */}
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
-                    <Building2 className="h-3 w-3" />
-                    <span className="truncate">{getBankName(plan.bank_account_id)}</span>
-                  </div>
-
-                  {/* Due date & frequency */}
-                  <div className="flex items-center gap-2 flex-wrap mb-3">
-                    <div className={`flex items-center gap-1 text-sm ${dueInfo.className}`}>
-                      <DueIcon className="h-3.5 w-3.5" />
-                      <span>{dueInfo.text}</span>
-                    </div>
-                    <Badge variant="outline" className={`text-xs ${getFrequencyBadgeClass(plan.frequency)}`}>
-                      {plan.frequency.charAt(0).toUpperCase() + plan.frequency.slice(1)}
-                    </Badge>
-                  </div>
-
-                  {/* Date */}
-                  <div className="text-xs text-muted-foreground mb-4">
-                    {format(dueDate, 'EEEE, MMM d, yyyy')}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => handleMarkAsPaid(plan)}
-                      disabled={isMarkingPaid}
-                      className="flex-1"
-                    >
-                      <Check className="h-4 w-4 mr-1" />
-                      Paid
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleSkip(plan)}
-                      disabled={isSkipping}
-                    >
-                      <SkipForward className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleEdit(plan)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+          {sortedPlans.map((plan) => (
+            <RecurringCard
+              key={plan.id}
+              name={plan.name}
+              category={plan.category}
+              bankName={getBankName(plan.bank_account_id)}
+              amount={plan.amount}
+              currency={plan.currency}
+              frequency={plan.frequency}
+              nextDueDate={plan.next_due_date}
+              daysUntilDue={plan.daysUntilDue}
+              isOverdue={plan.isOverdue}
+              variant="upcoming"
+              onMarkAsPaid={() => handleMarkAsPaid(plan)}
+              onSkip={() => handleSkip(plan)}
+              onEdit={() => handleEdit(plan)}
+              isMarkingPaid={isMarkingPaid}
+              isSkipping={isSkipping}
+            />
+          ))}
         </div>
       )}
 
