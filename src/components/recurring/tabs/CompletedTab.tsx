@@ -133,18 +133,15 @@ export const CompletedTab: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
-          <RecurringFiltersPanel 
-            filters={filters} 
-            onFiltersChange={setFilters}
-            showPlanStatusFilter={false}
-          />
-        </div>
-        <div className="w-full sm:w-40">
-          <Label className="text-xs text-muted-foreground mb-1 block">Status</Label>
+      <div className="flex items-start gap-4 overflow-x-auto">
+        <RecurringFiltersPanel
+          filters={filters}
+          onFiltersChange={setFilters}
+          showPlanStatusFilter={false}
+        />
+        <div className="flex-shrink-0 pt-4">
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'paid' | 'skipped')}>
-            <SelectTrigger>
+            <SelectTrigger className="h-[42px] rounded-lg border border-slate-200 bg-white text-sm text-slate-700 w-[140px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

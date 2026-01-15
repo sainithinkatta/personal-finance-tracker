@@ -2,11 +2,10 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import { RecurringFilters, PlanStatus } from '@/types/recurringPlan';
 import { ExpenseCategory } from '@/types/expense';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
-import { Search, X } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 interface RecurringFiltersPanelProps {
   filters: RecurringFilters;
@@ -23,43 +22,31 @@ export const RecurringFiltersPanel: React.FC<RecurringFiltersPanelProps> = ({
 }) => {
   const { bankAccounts } = useBankAccounts();
 
-  const hasActiveFilters = filters.search || filters.category !== 'all' || 
-    filters.bankAccountId !== 'all' || filters.dateStart || filters.dateEnd ||
-    (showPlanStatusFilter && filters.planStatus !== 'all');
-
-  const clearFilters = () => {
-    onFiltersChange({
-      search: '',
-      category: 'all',
-      bankAccountId: 'all',
-      planStatus: showPlanStatusFilter ? 'active' : 'all',
-      dateStart: '',
-      dateEnd: '',
-    });
-  };
+  const baseInputClass =
+    "h-[42px] rounded-lg border border-slate-200 bg-white text-sm text-slate-700 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500";
+  const baseSelectTriggerClass =
+    "h-[42px] rounded-lg border border-slate-200 bg-white text-sm text-slate-700 focus:ring-1 focus:ring-blue-500 focus:border-blue-500";
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-3">
-        {/* Search */}
-        <div className="flex-1 min-w-[200px]">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by name..."
-              value={filters.search}
-              onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
-              className="pl-9"
-            />
-          </div>
-        </div>
+    <div className="filter-bar flex items-center gap-3 py-4 overflow-x-auto">
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <Input
+          placeholder="Search by name..."
+          value={filters.search}
+          onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
+          className={`${baseInputClass} w-[220px] pl-11 pr-4`}
+        />
+      </div>
 
-        {/* Category */}
+      {/* Category */}
+      <div className="flex-shrink-0">
         <Select
           value={filters.category}
           onValueChange={(v) => onFiltersChange({ ...filters, category: v as ExpenseCategory | 'all' })}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className={`${baseSelectTriggerClass} min-w-[140px] px-[14px] pr-9 justify-between`}>
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent>
@@ -69,13 +56,15 @@ export const RecurringFiltersPanel: React.FC<RecurringFiltersPanelProps> = ({
             ))}
           </SelectContent>
         </Select>
+      </div>
 
-        {/* Bank */}
+      {/* Bank */}
+      <div className="flex-shrink-0">
         <Select
           value={filters.bankAccountId}
           onValueChange={(v) => onFiltersChange({ ...filters, bankAccountId: v })}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className={`${baseSelectTriggerClass} min-w-[140px] px-[14px] pr-9 justify-between`}>
             <SelectValue placeholder="Bank" />
           </SelectTrigger>
           <SelectContent>
@@ -85,14 +74,16 @@ export const RecurringFiltersPanel: React.FC<RecurringFiltersPanelProps> = ({
             ))}
           </SelectContent>
         </Select>
+      </div>
 
-        {/* Plan Status (optional) */}
-        {showPlanStatusFilter && (
+      {/* Plan Status (optional) */}
+      {showPlanStatusFilter && (
+        <div className="flex-shrink-0">
           <Select
             value={filters.planStatus}
             onValueChange={(v) => onFiltersChange({ ...filters, planStatus: v as PlanStatus | 'all' })}
           >
-            <SelectTrigger className="w-[130px]">
+            <SelectTrigger className={`${baseSelectTriggerClass} min-w-[130px] px-[14px] pr-9 justify-between`}>
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -102,37 +93,25 @@ export const RecurringFiltersPanel: React.FC<RecurringFiltersPanelProps> = ({
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
-        )}
-
-        {/* Clear */}
-        {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
-            <X className="h-4 w-4 mr-1" />
-            Clear
-          </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Date Range */}
-      <div className="flex gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          <Label className="text-xs text-muted-foreground whitespace-nowrap">From:</Label>
-          <Input
-            type="date"
-            value={filters.dateStart}
-            onChange={(e) => onFiltersChange({ ...filters, dateStart: e.target.value })}
-            className="w-[150px]"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Label className="text-xs text-muted-foreground whitespace-nowrap">To:</Label>
-          <Input
-            type="date"
-            value={filters.dateEnd}
-            onChange={(e) => onFiltersChange({ ...filters, dateEnd: e.target.value })}
-            className="w-[150px]"
-          />
-        </div>
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <Label className="text-xs font-medium text-slate-500 whitespace-nowrap">From:</Label>
+        <Input
+          type="date"
+          value={filters.dateStart}
+          onChange={(e) => onFiltersChange({ ...filters, dateStart: e.target.value })}
+          className={`${baseInputClass} w-[140px] px-2`}
+        />
+        <Label className="text-xs font-medium text-slate-500 whitespace-nowrap ml-1">To:</Label>
+        <Input
+          type="date"
+          value={filters.dateEnd}
+          onChange={(e) => onFiltersChange({ ...filters, dateEnd: e.target.value })}
+          className={`${baseInputClass} w-[140px] px-2`}
+        />
       </div>
     </div>
   );

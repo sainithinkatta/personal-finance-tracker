@@ -14,7 +14,7 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import { OfflineIndicator } from "./components/OfflineIndicator";
 import ProtectedRoute from "./components/ProtectedRoute";
-import AuthWrapper from "./components/AuthWrapper";
+
 import { RealtimeProvider } from "./providers/RealtimeProvider";
 
 const App = () => {
@@ -43,7 +43,7 @@ const App = () => {
               <Route path="/" element={<Landing />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/reset-password" element={<PasswordReset />} />
-              
+
               {/* Protected routes */}
               <Route
                 path="/onboarding"
@@ -57,9 +57,7 @@ const App = () => {
                 path="/app"
                 element={
                   <ProtectedRoute>
-                    <AuthWrapper>
-                      <Index />
-                    </AuthWrapper>
+                    <Index />
                   </ProtectedRoute>
                 }
               />
@@ -79,7 +77,7 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
-              
+
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -1,13 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { ExpenseTimeChart } from './charts/ExpenseTimeChart';
 import { ExpenseCategoryChart } from './charts/ExpenseCategoryChart';
 import SummaryCards from './dashboard/SummaryCards';
@@ -22,27 +15,11 @@ import { PieChart, BarChart3, Receipt } from 'lucide-react';
 
 interface DashboardProps {
   expenses: Expense[];
+  selectedCurrency: string;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ expenses }) => {
+const Dashboard: React.FC<DashboardProps> = ({ expenses, selectedCurrency }) => {
   const currentMonthLabel = format(new Date(), 'MMM yyyy').toUpperCase();
-
-  const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
-  const [hasInitialized, setHasInitialized] = useState(false);
-
-  useEffect(() => {
-    if (!hasInitialized && expenses.length > 0) {
-      const currencies = [...new Set(expenses.map(e => e.currency))];
-      if (currencies.length === 1) {
-        setSelectedCurrency(currencies[0]);
-      } else {
-        setSelectedCurrency('USD');
-      }
-      setHasInitialized(true);
-    } else if (!hasInitialized && expenses.length === 0) {
-      setHasInitialized(true);
-    }
-  }, [expenses, hasInitialized]);
 
   const currencyFilteredExpenses = useMemo(() => 
     expenses.filter(e => e.currency === selectedCurrency),
@@ -66,23 +43,6 @@ const Dashboard: React.FC<DashboardProps> = ({ expenses }) => {
 
   return (
     <div className="space-y-6">
-      {/* Header with Currency Filter */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-foreground">Overview</h2>
-          <p className="text-sm text-muted-foreground">Your financial snapshot for {currentMonthLabel}</p>
-        </div>
-        <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
-          <SelectTrigger className="w-[110px] h-9 bg-card">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-card">
-            <SelectItem value="USD">$ USD</SelectItem>
-            <SelectItem value="INR">₹ INR</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
       {/* Empty State */}
       {currencyFilteredExpenses.length === 0 && (
         <Card className="bg-card border border-dashed border-border">
