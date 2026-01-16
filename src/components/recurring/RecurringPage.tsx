@@ -1,45 +1,50 @@
-import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UpcomingTab } from './tabs/UpcomingTab';
-import { ActivePlansTab } from './tabs/ActivePlansTab';
-import { CompletedTab } from './tabs/CompletedTab';
-import { AnalysisTab } from './tabs/AnalysisTab';
-import { cn } from '@/lib/utils';
+import React, { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UpcomingTab } from "./tabs/UpcomingTab";
+import { ActivePlansTab } from "./tabs/ActivePlansTab";
+import { CompletedTab } from "./tabs/CompletedTab";
+import { AnalysisTab } from "./tabs/AnalysisTab";
+import { cn } from "@/lib/utils";
 
 export const RecurringPage: React.FC = () => {
-  const [activeSubTab, setActiveSubTab] = useState('upcoming');
+  const [activeSubTab, setActiveSubTab] = useState("upcoming");
+
+  const triggerClassName = cn(
+    "flex-1 h-full rounded-xl px-3 sm:px-4 text-sm font-semibold",
+    "flex items-center justify-center whitespace-nowrap",
+    "transition-all duration-200",
+    "text-slate-600",
+    "hover:bg-white/60 hover:text-slate-900",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+    "data-[state=active]:bg-white data-[state=active]:text-blue-600",
+    "data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-black/5"
+  );
 
   return (
     <div className="space-y-4">
       <Tabs value={activeSubTab} onValueChange={setActiveSubTab} className="w-full">
-        {/* Mobile: Scrollable tabs */}
         <div className="w-full overflow-x-auto no-scrollbar -mx-1 px-1">
-          <TabsList className={cn(
-            "inline-flex w-max min-w-full sm:w-full sm:grid sm:grid-cols-4",
-            "bg-muted/50 p-1 rounded-lg gap-1"
-          )}>
-            <TabsTrigger
-              value="upcoming"
-              className="flex-1 whitespace-nowrap text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-blue-600 rounded-md"
-            >
+          <TabsList
+            className={cn(
+              "h-12",
+              "inline-flex w-max min-w-full sm:w-full sm:grid sm:grid-cols-4",
+              "items-center gap-1 rounded-2xl bg-muted/40 p-1",
+              "overflow-hidden"
+            )}
+          >
+            <TabsTrigger value="upcoming" className={triggerClassName}>
               Upcoming
             </TabsTrigger>
-            <TabsTrigger
-              value="active"
-              className="flex-1 whitespace-nowrap text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-blue-600 rounded-md"
-            >
+
+            <TabsTrigger value="active" className={triggerClassName}>
               Active Plans
             </TabsTrigger>
-            <TabsTrigger
-              value="completed"
-              className="flex-1 whitespace-nowrap text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-blue-600 rounded-md"
-            >
+
+            <TabsTrigger value="completed" className={triggerClassName}>
               Completed
             </TabsTrigger>
-            <TabsTrigger
-              value="analysis"
-              className="flex-1 whitespace-nowrap text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-blue-600 rounded-md"
-            >
+
+            <TabsTrigger value="analysis" className={triggerClassName}>
               Analysis
             </TabsTrigger>
           </TabsList>

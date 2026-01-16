@@ -11,8 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useProfile } from '@/hooks/useProfile';
-import { useSignOut } from '@/hooks/useSignOut';
-import { User, Settings, LogOut } from 'lucide-react';
+import { User, Settings } from 'lucide-react';
 
 interface UserMenuProps {
   user: {
@@ -23,7 +22,6 @@ interface UserMenuProps {
 
 export const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
   const navigate = useNavigate();
-  const { signOut } = useSignOut();
 
   const { profile } = useProfile(user?.id);
 
@@ -111,16 +109,6 @@ export const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         
-        <DropdownMenuSeparator />
-        
-        {/* Session Section */}
-        <DropdownMenuItem
-          onClick={signOut}
-          className="cursor-pointer text-destructive focus:text-destructive"
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Sign out</span>
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

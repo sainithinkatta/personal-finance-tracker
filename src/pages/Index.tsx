@@ -284,7 +284,7 @@ const Index = () => {
         {/* Title and Tagline */}
         <div className="flex flex-col justify-center ml-3">
           <span className="text-xl font-bold text-blue-600 leading-tight">Finmate</span>
-          <span className="text-[11px] text-gray-400 font-medium tracking-wide">
+          <span className="text-[11px] text-black font-medium tracking-wide">
             Track, analyze, and manage your complete financial picture
           </span>
         </div>

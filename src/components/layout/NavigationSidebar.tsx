@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -10,12 +10,24 @@ import {
   TrendingUp,
   Landmark,
   CreditCard,
+  LogOut,
 } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useSignOut } from '@/hooks/useSignOut';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface NavigationSidebarProps {
   activeTab: string;
@@ -40,6 +52,9 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   onTabChange,
   isExpanded,
 }) => {
+  const { signOut } = useSignOut();
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false);
+
   return (
     <aside
       className={cn(
@@ -91,6 +106,55 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
           })}
         </ul>
       </nav>
+
+      <div className="mt-auto px-2 pb-3">
+        {isExpanded ? (
+          <button
+            onClick={() => setIsLogoutOpen(true)}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <LogOut className="h-5 w-5" />
+            <span className="truncate">Log out</span>
+          </button>
+        ) : (
+          <Tooltip delayDuration={100}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setIsLogoutOpen(true)}
+                className="w-full flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>
+              Log out
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+
+      <AlertDialog open={isLogoutOpen} onOpenChange={setIsLogoutOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Logging out ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You&apos;ll need to sign in again to access your dashboard.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsLogoutOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600"
+              onClick={() => {
+                setIsLogoutOpen(false);
+                signOut();
+              }}
+            >
+              Log out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </aside>
   );
 };

@@ -128,9 +128,11 @@ const RightSidebar: React.FC = () => {
                                         <h4 className="text-xs font-medium text-gray-900 truncate mb-1">
                                             {payment.name}
                                         </h4>
-                                        <p className="text-[11px] text-gray-500 mb-1">
-                                            Due: {format(parseLocalDate(payment.next_due_date), 'MMM d, yyyy')}{' '}
-                                            <span className="text-gray-400">{getRelativeTime(daysUntilDue)}</span>
+                                        <p className="text-[11px] text-gray-500 mb-0.5">
+                                            Due: {format(parseLocalDate(payment.next_due_date), 'MMM d, yyyy')}
+                                        </p>
+                                        <p className="text-[11px] text-gray-400 mb-1">
+                                            {getRelativeTime(daysUntilDue)}
                                         </p>
                                         <p className={`text-sm font-semibold ${payment.isCredit ? 'text-red-500' : 'text-green-600'}`}>
                                             {formatCurrency(payment.amount, payment.currency)}

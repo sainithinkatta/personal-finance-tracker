@@ -54,9 +54,15 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
     return totals;
   };
 
+  const formatAmount = (amount: number) =>
+    new Intl.NumberFormat('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+
   const formatCurrency = (amount: number, currency: string) => {
     const symbol = currency === 'USD' ? '$' : '₹';
-    return `${symbol}${amount.toFixed(2)}`;
+    return `${symbol}${formatAmount(amount)}`;
   };
 
   const formatTotals = (totals: Record<string, number>) => {
