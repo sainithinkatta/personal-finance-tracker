@@ -17,7 +17,7 @@ import SavingsGoals from "@/components/SavingsGoals";
 import DuesManager from "@/components/DuesManager";
 import CreditAnalysisDashboard from "@/components/credit-analysis/CreditAnalysisDashboard";
 import LoanDashboard from "@/components/loan/LoanDashboard";
-import BankAccountManager from "@/components/BankAccountManager";
+import { AccountsPage } from "@/components/accounts/AccountsPage";
 import NavigationSidebar from "@/components/layout/NavigationSidebar";
 import RightSidebar from "@/components/layout/RightSidebar";
 import ContentHeader from "@/components/layout/ContentHeader";
@@ -191,13 +191,7 @@ const Index = () => {
           </div>
         );
       case "accounts":
-        return (
-          <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
-            <div className="p-3.5 sm:p-4">
-              <BankAccountManager />
-            </div>
-          </div>
-        );
+        return <AccountsPage />;
       case "budget":
         return (
           <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
