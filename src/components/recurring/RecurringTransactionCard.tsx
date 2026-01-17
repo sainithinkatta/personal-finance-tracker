@@ -133,7 +133,10 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
             </div>
 
             {/* Transaction Name */}
-            <div className="text-sm text-foreground/80 leading-relaxed line-clamp-2">
+            <div
+              className="text-sm text-foreground/80 leading-relaxed truncate"
+              title={transaction.name}
+            >
               {transaction.name}
             </div>
 

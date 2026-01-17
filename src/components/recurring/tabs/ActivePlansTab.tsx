@@ -236,7 +236,9 @@ export const ActivePlansTab: React.FC = () => {
 
                 return (
                   <TableRow key={plan.id}>
-                    <TableCell className="font-medium">{plan.name}</TableCell>
+                    <TableCell className="font-medium max-w-[200px]">
+                      <span className="block truncate" title={plan.name}>{plan.name}</span>
+                    </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="text-xs">
                         {plan.category}

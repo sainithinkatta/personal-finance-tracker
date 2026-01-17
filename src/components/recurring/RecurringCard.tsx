@@ -218,7 +218,10 @@ export const RecurringCard: React.FC<RecurringCardProps> = ({
 
                 {/* Title */}
                 <div className="space-y-1">
-                    <h3 className="text-base font-medium text-foreground leading-tight line-clamp-2">
+                    <h3
+                        className="text-base font-medium text-foreground leading-tight truncate"
+                        title={name}
+                    >
                         {name}
                     </h3>
                     {isPaused && (

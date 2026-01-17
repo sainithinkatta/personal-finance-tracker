@@ -162,7 +162,7 @@ export const AnalysisTab: React.FC = () => {
                 <p className="text-sm text-muted-foreground">Largest Item</p>
                 {analytics.largestRecurring ? (
                   <>
-                    <p className="text-lg font-bold truncate max-w-[120px]">
+                    <p className="text-lg font-bold truncate max-w-[120px]" title={analytics.largestRecurring.name}>
                       {analytics.largestRecurring.name}
                     </p>
                     <p className="text-sm text-muted-foreground">
@@ -296,7 +296,9 @@ export const AnalysisTab: React.FC = () => {
                 <TableBody>
                   {topItems.map((item) => (
                     <TableRow key={item.planId}>
-                      <TableCell className="font-medium">{item.name}</TableCell>
+                      <TableCell className="font-medium max-w-[200px]">
+                        <span className="block truncate" title={item.name}>{item.name}</span>
+                      </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="text-xs">
                           {item.category}

@@ -168,7 +168,7 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
           <Button
             variant="ghost"
             size="sm"
-            className="flex-1 h-11 rounded-none hover:bg-accent/10 flex items-center justify-center gap-2 touch-target transition-colors border-r border-border"
+            className="h-7 w-7 p-0"
             onClick={() => onMarkAsSettled(due.id)}
           >
             <CheckCircle className="h-4 w-4 text-accent" />
@@ -272,7 +272,7 @@ const DuesList: React.FC<DuesListProps> = ({ dues, onEdit, onDelete, onMarkAsSet
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-7 w-7 p-0 text-accent hover:text-accent"
+                              className="h-7 w-7 p-0"
                               onClick={() => onMarkAsSettled(due.id)}
                               title="Mark as Settled"
                             >

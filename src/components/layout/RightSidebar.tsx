@@ -87,10 +87,10 @@ const RightSidebar: React.FC = () => {
 
     return (
         <aside className="hidden xl:flex flex-col w-[220px] flex-shrink-0 p-4 space-y-4 border-l border-gray-200/60 bg-white overflow-y-auto">
-            {/* Add Expense Button - Green Gradient */}
+            {/* Add Expense Button - Blue Gradient */}
             <Button
                 onClick={() => setIsAddExpenseOpen(true)}
-                className="w-full h-11 text-sm font-medium shadow-lg bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0"
+                className="w-full h-11 text-sm font-medium shadow-lg bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0"
             >
                 <Plus className="h-5 w-5 mr-2" />
                 Add Expense

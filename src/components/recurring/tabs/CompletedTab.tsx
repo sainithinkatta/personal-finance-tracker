@@ -184,8 +184,8 @@ export const CompletedTab: React.FC = () => {
               <Card key={occ.id}>
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="font-medium">{occ.plan?.name || 'Unknown Plan'}</h3>
+                    <div className="min-w-0 flex-1 mr-2">
+                      <h3 className="font-medium truncate" title={occ.plan?.name || 'Unknown Plan'}>{occ.plan?.name || 'Unknown Plan'}</h3>
                       <p className="text-sm text-muted-foreground">{occ.plan?.category || 'Others'}</p>
                     </div>
                     <Badge variant="outline" className={statusBadge.className}>
@@ -248,8 +248,8 @@ export const CompletedTab: React.FC = () => {
                         <span className="text-xs text-muted-foreground">{format(occDate, 'EEEE')}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium">
-                      {occ.plan?.name || 'Unknown Plan'}
+                    <TableCell className="font-medium max-w-[200px]">
+                      <span className="block truncate" title={occ.plan?.name || 'Unknown Plan'}>{occ.plan?.name || 'Unknown Plan'}</span>
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="text-xs">

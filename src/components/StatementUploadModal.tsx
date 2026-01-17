@@ -145,7 +145,7 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Upload Bank Statement</DialogTitle>
+          <DialogTitle>Upload Statement</DialogTitle>
           <DialogDescription>
             Upload your bank statement to automatically import transactions.
           </DialogDescription>

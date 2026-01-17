@@ -1,7 +1,5 @@
 import React from 'react';
 import { Landmark } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { calculateDebitTotals, formatBalance, getCurrencyFlag } from '../utils/accountsUtils';
 import { BankAccount } from '@/types/bankAccount';
 
@@ -16,51 +14,114 @@ export const TotalBalanceCard: React.FC<TotalBalanceCardProps> = ({
 }) => {
   const { usd, inr, usdCount, inrCount } = calculateDebitTotals(accounts);
 
-  return (
-    <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
-      <CardHeader className="pb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center flex-shrink-0">
-            <Landmark className="h-5 w-5 text-white" />
-          </div>
-          <h3 className="text-base font-semibold text-slate-800">Total Balance</h3>
-          <Badge className="ml-auto bg-green-100 text-green-700 border-0 hover:bg-green-100 uppercase text-[10px] font-medium px-2 py-0.5">
-            Debit
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {/* 2-column grid for currency boxes */}
-        <div className="grid grid-cols-2 gap-3">
-          {/* USD Box */}
-          <div className="bg-slate-50 border border-gray-200 rounded-xl p-4 pr-5">
-            <div className="flex items-center gap-2 mb-2.5">
-              <span className="text-lg">{getCurrencyFlag('USD')}</span>
-              <span className="text-[13px] font-medium text-slate-600">USD</span>
-              <Badge className="ml-auto bg-slate-100 text-slate-600 border-0 hover:bg-slate-100 text-[11px] font-medium px-2 py-0.5 whitespace-nowrap">
-                {usdCount} account{usdCount !== 1 ? 's' : ''}
-              </Badge>
-            </div>
-            <p className="text-2xl font-bold text-slate-900">
-              {formatBalance(usd, 'USD', isHidden)}
-            </p>
-          </div>
+  const balances = [
+    { currency: 'USD', amount: usd, count: usdCount, flag: '🇺🇸' },
+    { currency: 'INR', amount: inr, count: inrCount, flag: '🇮🇳' },
+  ].filter(b => b.count > 0);
 
-          {/* INR Box */}
-          <div className="bg-slate-50 border border-gray-200 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2.5">
-              <span className="text-lg">{getCurrencyFlag('INR')}</span>
-              <span className="text-[13px] font-medium text-slate-600">INR</span>
-              <Badge className="ml-auto bg-slate-100 text-slate-600 border-0 hover:bg-slate-100 text-[11px] font-medium px-2 py-0.5 whitespace-nowrap">
-                {inrCount} account{inrCount !== 1 ? 's' : ''}
-              </Badge>
-            </div>
-            <p className="text-2xl font-bold text-slate-900">
-              {formatBalance(inr, 'INR', isHidden)}
-            </p>
+  return (
+    <div
+      style={{
+        background: '#FFFFFF',
+        borderRadius: '16px',
+        padding: '20px 24px',
+        border: '1px solid #F1F5F9',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        minHeight: 'auto',
+      }}
+    >
+      {/* Header Row */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* Icon Container */}
+          <div
+            style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '12px',
+              background: '#ECFDF5',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Landmark style={{ width: '20px', height: '20px', color: '#10B981' }} />
           </div>
+          {/* Title */}
+          <span
+            style={{
+              fontWeight: 500,
+              color: '#374151',
+              fontSize: '15px',
+            }}
+          >
+            Total Balance
+          </span>
         </div>
-      </CardContent>
-    </Card>
+        {/* Badge */}
+        <span
+          style={{
+            background: '#EFF6FF',
+            color: '#2563EB',
+            fontSize: '12px',
+            fontWeight: 600,
+            padding: '4px 10px',
+            borderRadius: '20px',
+          }}
+        >
+          DEBIT
+        </span>
+      </div>
+
+      {/* Amounts Container */}
+      <div style={{ display: 'flex', gap: '32px', marginTop: '16px' }}>
+        {balances.map((balance) => (
+          <div key={balance.currency}>
+            {/* Amount */}
+            <div
+              style={{
+                fontSize: '24px',
+                fontWeight: 700,
+                color: '#111827',
+              }}
+            >
+              {formatBalance(balance.amount, balance.currency, isHidden)}
+            </div>
+            {/* Account Label */}
+            <div
+              style={{
+                fontSize: '13px',
+                color: '#9CA3AF',
+                marginTop: '4px',
+              }}
+            >
+              {balance.flag} {balance.count} account{balance.count !== 1 ? 's' : ''}
+            </div>
+          </div>
+        ))}
+        {balances.length === 0 && (
+          <div>
+            <div
+              style={{
+                fontSize: '24px',
+                fontWeight: 700,
+                color: '#111827',
+              }}
+            >
+              {formatBalance(0, 'USD', isHidden)}
+            </div>
+            <div
+              style={{
+                fontSize: '13px',
+                color: '#9CA3AF',
+                marginTop: '4px',
+              }}
+            >
+              No accounts
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };

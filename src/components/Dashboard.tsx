@@ -61,8 +61,8 @@ const Dashboard: React.FC<DashboardProps> = ({ expenses, selectedCurrency }) => 
         currency={selectedCurrency}
       />
 
-      {/* Middle Grid - 3 Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      {/* Analytics Grid - 2 Columns on md+ */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Spending by Category Chart */}
         <div className="h-[400px] lg:h-[440px]">
           <Card className="bg-card border border-border/60 shadow-sm h-full flex flex-col">
@@ -98,6 +98,69 @@ const Dashboard: React.FC<DashboardProps> = ({ expenses, selectedCurrency }) => 
           />
         </div>
 
+        {/* Expense Trends Chart */}
+        <div className="h-full">
+          <Card className="bg-card border border-border/60 shadow-sm h-full">
+            <CardHeader className="pb-2 px-4 pt-4">
+              <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary" />
+                Expense Trends
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <Tabs defaultValue="daily" className="w-full">
+                <TabsList className="grid w-full max-w-xs grid-cols-3 mb-4 bg-muted/50 p-1 h-9">
+                  <TabsTrigger
+                    value="daily"
+                    className="text-xs font-medium data-[state=active]:bg-card data-[state=active]:shadow-sm"
+                  >
+                    Daily
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="monthly"
+                    className="text-xs font-medium data-[state=active]:bg-card data-[state=active]:shadow-sm"
+                  >
+                    Monthly
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="yearly"
+                    className="text-xs font-medium data-[state=active]:bg-card data-[state=active]:shadow-sm"
+                  >
+                    Yearly
+                  </TabsTrigger>
+                </TabsList>
+
+                {currencyFilteredExpenses.length > 0 ? (
+                  <>
+                    <TabsContent value="daily" className="mt-0">
+                      <div className="h-[280px] lg:h-[320px]">
+                        <ExpenseTimeChart expenses={currencyFilteredExpenses} groupBy="day" currency={selectedCurrency} />
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="monthly" className="mt-0">
+                      <div className="h-[280px] lg:h-[320px]">
+                        <ExpenseTimeChart expenses={currencyFilteredExpenses} groupBy="month" currency={selectedCurrency} />
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="yearly" className="mt-0">
+                      <div className="h-[280px] lg:h-[320px]">
+                        <ExpenseTimeChart expenses={currencyFilteredExpenses} groupBy="year" currency={selectedCurrency} />
+                      </div>
+                    </TabsContent>
+                  </>
+                ) : (
+                  <EmptyState
+                    icon={BarChart3}
+                    title="No trend data"
+                    description="Add some expenses to see your spending trends over time"
+                    className="h-[280px]"
+                  />
+                )}
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Budget Summary */}
         <div className="h-[400px] lg:h-[440px]">
           <BudgetSummary
@@ -105,70 +168,6 @@ const Dashboard: React.FC<DashboardProps> = ({ expenses, selectedCurrency }) => 
             currency={selectedCurrency}
           />
         </div>
-      </div>
-
-      {/* Lower Section - 2 Columns */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* Expense Trends Chart */}
-        <Card className="bg-card border border-border/60 shadow-sm">
-          <CardHeader className="pb-2 px-4 pt-4">
-            <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-primary" />
-              Expense Trends
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <Tabs defaultValue="daily" className="w-full">
-              <TabsList className="grid w-full max-w-xs grid-cols-3 mb-4 bg-muted/50 p-1 h-9">
-                <TabsTrigger
-                  value="daily"
-                  className="text-xs font-medium data-[state=active]:bg-card data-[state=active]:shadow-sm"
-                >
-                  Daily
-                </TabsTrigger>
-                <TabsTrigger
-                  value="monthly"
-                  className="text-xs font-medium data-[state=active]:bg-card data-[state=active]:shadow-sm"
-                >
-                  Monthly
-                </TabsTrigger>
-                <TabsTrigger
-                  value="yearly"
-                  className="text-xs font-medium data-[state=active]:bg-card data-[state=active]:shadow-sm"
-                >
-                  Yearly
-                </TabsTrigger>
-              </TabsList>
-
-              {currencyFilteredExpenses.length > 0 ? (
-                <>
-                  <TabsContent value="daily" className="mt-0">
-                    <div className="h-[280px] lg:h-[320px]">
-                      <ExpenseTimeChart expenses={currencyFilteredExpenses} groupBy="day" currency={selectedCurrency} />
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="monthly" className="mt-0">
-                    <div className="h-[280px] lg:h-[320px]">
-                      <ExpenseTimeChart expenses={currencyFilteredExpenses} groupBy="month" currency={selectedCurrency} />
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="yearly" className="mt-0">
-                    <div className="h-[280px] lg:h-[320px]">
-                      <ExpenseTimeChart expenses={currencyFilteredExpenses} groupBy="year" currency={selectedCurrency} />
-                    </div>
-                  </TabsContent>
-                </>
-              ) : (
-                <EmptyState
-                  icon={BarChart3}
-                  title="No trend data"
-                  description="Add some expenses to see your spending trends over time"
-                  className="h-[280px]"
-                />
-              )}
-            </Tabs>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Calendar } from 'lucide-react';
-import { format } from 'date-fns';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { format, differenceInDays } from 'date-fns';
 import { calculateTotalDue, formatBalance } from '../utils/accountsUtils';
 import { BankAccount } from '@/types/bankAccount';
 
@@ -16,35 +15,95 @@ export const TotalDueCard: React.FC<TotalDueCardProps> = ({
 }) => {
   const { totalDue, nextDueDate } = calculateTotalDue(accounts);
 
+  // Check if due date is within 7 days for urgency indicator
+  const isUrgent = nextDueDate && differenceInDays(nextDueDate, new Date()) <= 7;
+
   return (
-    <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-medium text-gray-600">
-          Total Due This Month
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-start gap-4">
-          <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center flex-shrink-0">
-            <Calendar className="h-6 w-6 text-white" />
-          </div>
-          <div className="flex-1 space-y-2">
-            {/* Total Due Amount */}
-            <div className="text-3xl font-bold text-red-600">
-              {formatBalance(totalDue, 'USD', isHidden)}
-            </div>
-            {/* Next Due Date */}
-            {nextDueDate && (
-              <p className="text-xs text-gray-500">
-                Next due: {format(nextDueDate, 'MMM d, yyyy')}
-              </p>
-            )}
-            {!nextDueDate && totalDue === 0 && (
-              <p className="text-xs text-gray-500">No payments due</p>
-            )}
-          </div>
+    <div
+      style={{
+        background: '#FFFFFF',
+        borderRadius: '16px',
+        padding: '20px 24px',
+        border: '1px solid #F1F5F9',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        minHeight: 'auto',
+      }}
+    >
+      {/* Header Row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {/* Icon Container */}
+        <div
+          style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '12px',
+            background: '#FEE2E2',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Calendar style={{ width: '20px', height: '20px', color: '#EF4444' }} />
         </div>
-      </CardContent>
-    </Card>
+        {/* Title */}
+        <span
+          style={{
+            fontWeight: 500,
+            color: '#374151',
+            fontSize: '15px',
+          }}
+        >
+          Total Due This Month
+        </span>
+      </div>
+
+      {/* Amount */}
+      <div
+        style={{
+          fontSize: '28px',
+          fontWeight: 700,
+          color: '#EF4444',
+          marginTop: '16px',
+        }}
+      >
+        {formatBalance(totalDue, 'USD', isHidden)}
+      </div>
+
+      {/* Due Date */}
+      <div
+        style={{
+          fontSize: '13px',
+          color: '#6B7280',
+          marginTop: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+        }}
+      >
+        {nextDueDate ? (
+          <>
+            Next due: {format(nextDueDate, 'MMM d, yyyy')}
+            {isUrgent && !isHidden && (
+              <span
+                style={{
+                  background: '#FEF2F2',
+                  color: '#DC2626',
+                  fontSize: '11px',
+                  fontWeight: 500,
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                }}
+              >
+                Due soon
+              </span>
+            )}
+          </>
+        ) : totalDue === 0 ? (
+          'No payments due'
+        ) : (
+          'No due date set'
+        )}
+      </div>
+    </div>
   );
 };

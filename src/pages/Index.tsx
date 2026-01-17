@@ -168,11 +168,11 @@ const Index = () => {
                     size="sm"
                     onClick={() => setIsUploadModalOpen(true)}
                     className="gap-1.5"
-                    aria-label="Upload Bank Statement"
-                    title="Upload Bank Statement"
+                    aria-label="Upload Statement"
+                    title="Upload Statement"
                   >
                     <Upload className="h-4 w-4" />
-                    <span className="hidden sm:inline">Upload Bank Statement</span>
+                    <span className="hidden sm:inline">Upload Statement</span>
                     <span className="sm:hidden">Upload</span>
                   </Button>
                   <ExportDataButton transactions={filteredTransactions} />
@@ -276,7 +276,7 @@ const Index = () => {
         </div>
 
         {/* Title and Tagline */}
-        <div className="flex flex-col justify-center ml-3">
+        <div className="flex flex-col justify-center">
           <span className="text-xl font-bold text-blue-600 leading-tight">Finmate</span>
           <span className="text-[11px] text-black font-medium tracking-wide">
             Track, analyze, and manage your complete financial picture
