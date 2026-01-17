@@ -6,7 +6,7 @@ import { RecurringTransactionWithStatus } from '@/hooks/useRecurringTransactions
 import { format, differenceInDays } from 'date-fns';
 import { parseLocalDate } from '@/utils/dateUtils';
 import { BankAccount } from '@/types/bankAccount';
-import { getStatusDisplayText, getStatusBadgeClass, ComputedStatus } from '@/utils/recurringStatusUtils';
+import { getStatusDisplayText, getStatusBadgeClass } from '@/utils/recurringStatusUtils';
 
 interface RecurringTransactionCardProps {
   transaction: RecurringTransactionWithStatus;
@@ -114,19 +114,27 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
 
           {/* Content Section */}
           <div className="flex-1 min-w-0 flex flex-col gap-2">
-            {/* Amount and Category Row */}
-            <div className="flex items-start justify-between gap-2">
-              <Badge
-                className={`font-semibold text-xs px-3 py-1 rounded-lg ${transaction.category === 'Groceries' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
-                    transaction.category === 'Food' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' :
-                      transaction.category === 'Travel' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
-                        transaction.category === 'Bills' ? 'bg-red-100 text-red-800 hover:bg-red-200' :
-                          transaction.category === 'Others' ? 'bg-purple-100 text-purple-800 hover:bg-purple-200' :
-                            'bg-muted text-muted-foreground hover:bg-muted/80'
-                  }`}
-              >
-                {transaction.category}
-              </Badge>
+            {/* Amount, Category and Frequency Row */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Badge
+                  className={`font-semibold text-xs px-3 py-1 rounded-lg ${transaction.category === 'Groceries' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
+                      transaction.category === 'Food' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' :
+                        transaction.category === 'Travel' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
+                          transaction.category === 'Bills' ? 'bg-red-100 text-red-800 hover:bg-red-200' :
+                            transaction.category === 'Others' ? 'bg-purple-100 text-purple-800 hover:bg-purple-200' :
+                              'bg-muted text-muted-foreground hover:bg-muted/80'
+                    }`}
+                >
+                  {transaction.category}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className={`text-xs px-2.5 py-0.5 rounded-full ${getFrequencyBadgeColor(transaction.frequency)}`}
+                >
+                  {transaction.frequency.charAt(0).toUpperCase() + transaction.frequency.slice(1)}
+                </Badge>
+              </div>
               <div className="text-xl font-bold text-foreground whitespace-nowrap">
                 {formatCurrency(transaction.amount, transaction.currency)}
               </div>
@@ -146,8 +154,8 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
               <span className="truncate">{bankName}</span>
             </div>
 
-            {/* Status, Due Date and Frequency */}
-            <div className="flex items-center gap-2 flex-wrap">
+            {/* Status and Due Date */}
+            <div className="flex items-center gap-2">
               {/* Status Badge */}
               <Badge
                 variant="outline"
@@ -161,13 +169,6 @@ export const RecurringTransactionCard: React.FC<RecurringTransactionCardProps> =
               <span className={`text-xs flex items-center gap-1 ${getDueColorClass()}`}>
                 {getDueText()}
               </span>
-
-              <Badge
-                variant="outline"
-                className={`text-xs ${getFrequencyBadgeColor(transaction.frequency)}`}
-              >
-                {transaction.frequency.charAt(0).toUpperCase() + transaction.frequency.slice(1)}
-              </Badge>
             </div>
           </div>
         </div>
