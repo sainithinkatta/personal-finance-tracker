@@ -120,18 +120,18 @@ const Index = () => {
       setEditingBankAccount(account);
       setIsEditBankAccountOpen(true);
     },
-    [bankAccounts, toast],
+    [bankAccounts, toast]
   );
 
   useEffect(() => {
     window.addEventListener(
       "edit-bank-account",
-      handleEditBankAccountEvent as EventListener,
+      handleEditBankAccountEvent as EventListener
     );
     return () => {
       window.removeEventListener(
         "edit-bank-account",
-        handleEditBankAccountEvent as EventListener,
+        handleEditBankAccountEvent as EventListener
       );
     };
   }, [handleEditBankAccountEvent]);
@@ -145,7 +145,7 @@ const Index = () => {
     }
 
     const currencies = Array.from(
-      new Set(expenses.map((expense) => expense.currency)),
+      new Set(expenses.map((expense) => expense.currency))
     );
     setSelectedCurrency(currencies.length === 1 ? currencies[0] : "USD");
     setHasInitializedCurrency(true);
@@ -214,7 +214,9 @@ const Index = () => {
               />
               <TransactionList
                 transactions={filteredTransactions}
-                title={`${filters.category === "All" ? "All" : filters.category} Transactions`}
+                title={`${
+                  filters.category === "All" ? "All" : filters.category
+                } Transactions`}
                 bankAccounts={bankAccounts}
               />
             </div>
@@ -280,7 +282,7 @@ const Index = () => {
   return (
     <div className="h-screen overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col w-full">
       {/* Desktop Header - Sticky */}
-      <header className="hidden lg:flex flex-shrink-0 sticky top-0 z-40 bg-white border-b border-gray-200/60 shadow-sm min-h-[72px] items-center px-6 py-3 gap-4">
+      <header className="hidden lg:flex flex-shrink-0 sticky top-0 z-40 bg-white border-b border-gray-200/60 shadow-sm min-h-[72px] items-center pl-6 pr-20 py-3 gap-4">
         {/* Left: Toggle Button */}
         <Button
           variant="ghost"
@@ -327,7 +329,7 @@ const Index = () => {
 
       {/* Mobile Header - Sticky with safe area */}
       <header className="lg:hidden flex-shrink-0 sticky top-0 z-40 bg-white backdrop-blur-md pt-safe border-b border-gray-200/60 shadow-sm">
-        <div className="flex items-center gap-2 px-4 h-14">
+        <div className="flex items-center gap-2 pl-4 pr-6 h-14">
           <Sheet
             open={isMobileSidebarOpen}
             onOpenChange={setIsMobileSidebarOpen}
