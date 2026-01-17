@@ -14,7 +14,7 @@ import FilterPanel from "@/components/FilterPanel";
 import BudgetManager from "@/components/BudgetManager";
 import RecurringPage from "@/components/recurring/RecurringPage";
 import SavingsGoals from "@/components/SavingsGoals";
-import DuesManager from "@/components/DuesManager";
+import DuesPage from "@/components/dues/DuesPage";
 import CreditAnalysisDashboard from "@/components/credit-analysis/CreditAnalysisDashboard";
 import LoanDashboard from "@/components/loan/LoanDashboard";
 import { AccountsPage } from "@/components/accounts/AccountsPage";
@@ -212,7 +212,7 @@ const Index = () => {
         return (
           <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
             <div className="p-3.5 sm:p-4">
-              <DuesManager />
+              <DuesPage />
             </div>
           </div>
         );
