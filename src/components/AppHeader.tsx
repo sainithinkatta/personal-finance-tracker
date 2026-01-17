@@ -31,7 +31,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ user, showSignOut = false 
                 FinMate
               </h1>
               <p className="text-sm text-muted-foreground mt-0.5">
-                Track, analyze, and manage your complete financial picture
+                Track, analyze and manage your complete finances
               </p>
             </div>
           </div>

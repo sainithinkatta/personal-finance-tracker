@@ -109,7 +109,7 @@ const RightSidebar: React.FC = () => {
             {/* Upcoming Payments Section */}
             <Card className="rounded-lg shadow-sm border-gray-200/60">
                 <CardHeader className="p-3 pb-2">
-                    <CardTitle className="text-xs font-medium text-gray-600 flex items-center gap-2">
+                    <CardTitle className="text-xs font-bold text-black-600 flex items-center gap-2">
                         <Clock className="h-4 w-4" />
                         Upcoming Payments
                     </CardTitle>

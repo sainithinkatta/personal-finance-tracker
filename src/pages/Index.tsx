@@ -296,25 +296,27 @@ const Index = () => {
           )}
         </Button>
 
-        {/* Finmate Logo */}
-        <div
-          className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
-          style={{
-            background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
-            boxShadow: "0 2px 8px rgba(59, 130, 246, 0.3)",
-          }}
-        >
-          <FinmateLogo />
-        </div>
+        <div className="flex items-center gap-2">
+          {/* Finmate Logo */}
+          <div
+            className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
+            style={{
+              background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
+              boxShadow: "0 2px 8px rgba(59, 130, 246, 0.3)",
+            }}
+          >
+            <FinmateLogo />
+          </div>
 
-        {/* Title and Tagline */}
-        <div className="flex flex-col justify-center">
-          <span className="text-xl font-bold text-blue-600 leading-tight">
-            Finmate
-          </span>
-          <span className="text-[11px] text-black font-medium tracking-wide">
-            Track, analyze, and manage your complete financial picture
-          </span>
+          {/* Title and Tagline */}
+          <div className="flex flex-col justify-center">
+            <span className="text-xl font-bold text-blue-600 leading-tight">
+              Finmate
+            </span>
+            <span className="text-[11px] text-black font-medium tracking-wide">
+              Track, analyze and manage your complete finances
+            </span>
+          </div>
         </div>
 
         {/* Right: User Image */}
