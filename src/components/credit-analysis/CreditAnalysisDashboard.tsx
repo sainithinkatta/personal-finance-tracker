@@ -136,10 +136,6 @@ const CreditAnalysisDashboard: React.FC = () => {
     <div className="space-y-6">
       {/* Header with Currency Selector */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-lg font-semibold">Credit Analysis</h2>
-          <p className="text-sm text-muted-foreground">Track and plan your credit card payoff</p>
-        </div>
         {availableCurrencies.length > 1 && (
           <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
             <SelectTrigger className="w-[120px]">

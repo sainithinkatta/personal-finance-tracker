@@ -33,7 +33,7 @@ const Settings: React.FC = () => {
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-2">Settings</h1>
           <p className="text-muted-foreground mb-6">
-            Settings page coming soon. We're working on adding more customization options.
+            We're working on adding more customization options.
           </p>
           <Button
             variant="outline"
