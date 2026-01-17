@@ -43,7 +43,7 @@ const navigationItems = [
   { id: 'recurring', label: 'Recurring', icon: Repeat },
   { id: 'dues', label: 'Dues', icon: Clock },
   { id: 'savings', label: 'Savings', icon: TrendingUp },
-  { id: 'loan', label: 'Loan', icon: Landmark },
+  { id: 'loan', label: 'Loans', icon: Landmark },
   { id: 'credit', label: 'Credit', icon: CreditCard },
 ];
 

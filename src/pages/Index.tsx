@@ -43,8 +43,22 @@ const FinmateLogo = () => (
     <rect x="4" y="14" width="4" height="6" rx="1" fill="white" />
     <rect x="10" y="10" width="4" height="10" rx="1" fill="white" />
     <rect x="16" y="4" width="4" height="16" rx="1" fill="white" />
-    <path d="M6 12L12 8L18 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
-    <path d="M15 3H18V6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
+    <path
+      d="M6 12L12 8L18 3"
+      stroke="white"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      opacity="0.9"
+    />
+    <path
+      d="M15 3H18V6"
+      stroke="white"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      opacity="0.9"
+    />
   </svg>
 );
 
@@ -66,7 +80,8 @@ const Index = () => {
   const [user, setUser] = useState<any>(null);
 
   // State for editing bank account from Credit Analysis
-  const [editingBankAccount, setEditingBankAccount] = useState<BankAccount | null>(null);
+  const [editingBankAccount, setEditingBankAccount] =
+    useState<BankAccount | null>(null);
   const [isEditBankAccountOpen, setIsEditBankAccountOpen] = useState(false);
 
   // State for statement upload modal
@@ -74,38 +89,50 @@ const Index = () => {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setUser(user);
     };
     getUser();
   }, []);
 
   // Listen for edit-bank-account custom event from Credit Analysis
-  const handleEditBankAccountEvent = useCallback((event: CustomEvent<{ id: string }>) => {
-    const accountId = event.detail?.id;
-    if (!accountId) {
-      console.error('edit-bank-account event missing account id');
-      return;
-    }
+  const handleEditBankAccountEvent = useCallback(
+    (event: CustomEvent<{ id: string }>) => {
+      const accountId = event.detail?.id;
+      if (!accountId) {
+        console.error("edit-bank-account event missing account id");
+        return;
+      }
 
-    const account = bankAccounts.find(acc => acc.id === accountId);
-    if (!account) {
-      toast({
-        title: 'Account not found',
-        description: 'This card could not be loaded for editing. Please refresh and try again.',
-        variant: 'destructive',
-      });
-      return;
-    }
+      const account = bankAccounts.find((acc) => acc.id === accountId);
+      if (!account) {
+        toast({
+          title: "Account not found",
+          description:
+            "This card could not be loaded for editing. Please refresh and try again.",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    setEditingBankAccount(account);
-    setIsEditBankAccountOpen(true);
-  }, [bankAccounts, toast]);
+      setEditingBankAccount(account);
+      setIsEditBankAccountOpen(true);
+    },
+    [bankAccounts, toast],
+  );
 
   useEffect(() => {
-    window.addEventListener('edit-bank-account', handleEditBankAccountEvent as EventListener);
+    window.addEventListener(
+      "edit-bank-account",
+      handleEditBankAccountEvent as EventListener,
+    );
     return () => {
-      window.removeEventListener('edit-bank-account', handleEditBankAccountEvent as EventListener);
+      window.removeEventListener(
+        "edit-bank-account",
+        handleEditBankAccountEvent as EventListener,
+      );
     };
   }, [handleEditBankAccountEvent]);
 
@@ -117,7 +144,9 @@ const Index = () => {
       return;
     }
 
-    const currencies = Array.from(new Set(expenses.map((expense) => expense.currency)));
+    const currencies = Array.from(
+      new Set(expenses.map((expense) => expense.currency)),
+    );
     setSelectedCurrency(currencies.length === 1 ? currencies[0] : "USD");
     setHasInitializedCurrency(true);
   }, [expenses, hasInitializedCurrency]);
@@ -153,15 +182,14 @@ const Index = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
-        return <Dashboard expenses={expenses} selectedCurrency={selectedCurrency} />;
+        return (
+          <Dashboard expenses={expenses} selectedCurrency={selectedCurrency} />
+        );
       case "expenses":
         return (
           <div className="space-y-3">
             <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm p-3.5 sm:p-4">
-              <div className="border-b border-gray-200/60 pb-2 mb-3 flex items-center justify-between">
-                <h2 className="text-base sm:text-lg font-semibold text-gray-900">
-                  Transactions
-                </h2>
+              <div className="border-b border-gray-200/60 pb-2 mb-3 flex items-center justify-end">
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
@@ -175,9 +203,11 @@ const Index = () => {
                     <span className="hidden sm:inline">Upload Statement</span>
                     <span className="sm:hidden">Upload</span>
                   </Button>
+
                   <ExportDataButton transactions={filteredTransactions} />
                 </div>
               </div>
+
               <FilterPanel
                 filters={filters}
                 onFilterChange={handleFilterChange}
@@ -241,7 +271,9 @@ const Index = () => {
           </div>
         );
       default:
-        return <Dashboard expenses={expenses} selectedCurrency={selectedCurrency} />;
+        return (
+          <Dashboard expenses={expenses} selectedCurrency={selectedCurrency} />
+        );
     }
   };
 
@@ -268,8 +300,8 @@ const Index = () => {
         <div
           className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
           style={{
-            background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-            boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
+            background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
+            boxShadow: "0 2px 8px rgba(59, 130, 246, 0.3)",
           }}
         >
           <FinmateLogo />
@@ -277,13 +309,15 @@ const Index = () => {
 
         {/* Title and Tagline */}
         <div className="flex flex-col justify-center">
-          <span className="text-xl font-bold text-blue-600 leading-tight">Finmate</span>
+          <span className="text-xl font-bold text-blue-600 leading-tight">
+            Finmate
+          </span>
           <span className="text-[11px] text-black font-medium tracking-wide">
             Track, analyze, and manage your complete financial picture
           </span>
         </div>
 
-        {/* Right: User Avatar */}
+        {/* Right: User Image */}
         <div className="ml-auto flex items-center">
           {user && <UserMenu user={user} />}
         </div>
@@ -292,7 +326,10 @@ const Index = () => {
       {/* Mobile Header - Sticky with safe area */}
       <header className="lg:hidden flex-shrink-0 sticky top-0 z-40 bg-white backdrop-blur-md pt-safe border-b border-gray-200/60 shadow-sm">
         <div className="flex items-center gap-2 px-4 h-14">
-          <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+          <Sheet
+            open={isMobileSidebarOpen}
+            onOpenChange={setIsMobileSidebarOpen}
+          >
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
@@ -317,8 +354,8 @@ const Index = () => {
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
             style={{
-              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-              boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
+              background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
+              boxShadow: "0 2px 8px rgba(59, 130, 246, 0.3)",
             }}
           >
             <FinmateLogo />
@@ -362,9 +399,7 @@ const Index = () => {
             </div>
 
             {/* Tab Content */}
-            <div className="w-full">
-              {renderContent()}
-            </div>
+            <div className="w-full">{renderContent()}</div>
           </div>
         </main>
 
@@ -379,7 +414,10 @@ const Index = () => {
       <MobileReminders />
 
       {/* Edit Bank Account Dialog - triggered from Credit Analysis */}
-      <Dialog open={isEditBankAccountOpen} onOpenChange={setIsEditBankAccountOpen}>
+      <Dialog
+        open={isEditBankAccountOpen}
+        onOpenChange={setIsEditBankAccountOpen}
+      >
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Bank Account</DialogTitle>

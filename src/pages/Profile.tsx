@@ -39,7 +39,7 @@ const Profile: React.FC = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [saving, setSaving] = useState(false);
   
-  // Avatar state
+  // Image state
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -149,7 +149,7 @@ const Profile: React.FC = () => {
       if (error) throw error;
 
       toast({
-        title: 'Avatar updated',
+        title: 'Image updated',
         description: 'Your profile picture has been changed.',
       });
 
@@ -177,7 +177,7 @@ const Profile: React.FC = () => {
       if (error) throw error;
 
       toast({
-        title: 'Avatar removed',
+        title: 'Image removed',
         description: 'Your profile picture has been removed.',
       });
 
@@ -312,9 +312,9 @@ const Profile: React.FC = () => {
         {/* Tabs */}
         <Tabs defaultValue="personal" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="personal">Personal</TabsTrigger>
-            <TabsTrigger value="avatar">Avatar</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
+            <TabsTrigger value="personal">Personal Details</TabsTrigger>
+            <TabsTrigger value="avatar">Profile Photo</TabsTrigger>
+            <TabsTrigger value="security">Change Password</TabsTrigger>
           </TabsList>
 
           {/* Personal Details Tab */}
@@ -380,7 +380,7 @@ const Profile: React.FC = () => {
             </div>
           </TabsContent>
 
-          {/* Avatar Tab */}
+          {/* Image Tab */}
           <TabsContent value="avatar">
             <div className="bg-card rounded-xl border border-border p-6 space-y-6">
               <h2 className="text-lg font-semibold flex items-center gap-2">

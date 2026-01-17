@@ -26,7 +26,7 @@ const Onboarding: React.FC = () => {
     lastName: ''
   });
 
-  // Step 2: Avatar
+  // Step 2: Image
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -141,7 +141,7 @@ const Onboarding: React.FC = () => {
       } = await uploadAvatar(avatarFile);
       if (error) throw error;
       toast({
-        title: 'Avatar uploaded!',
+        title: 'Image uploaded!',
         description: 'Your profile picture has been saved.'
       });
       handleComplete();
@@ -290,7 +290,7 @@ const Onboarding: React.FC = () => {
             </Button>
           </div>}
 
-          {/* Step 2: Avatar Upload */}
+          {/* Step 2: Image Upload */}
           {step === 2 && <div className="space-y-6">
             {/* Step indicator */}
             <div className="space-y-2">
@@ -307,9 +307,9 @@ const Onboarding: React.FC = () => {
             </div>
 
             <div className="flex flex-col items-center gap-3 py-4">
-              {/* Avatar circle */}
+              {/* Image circle */}
               <div className={cn("h-28 w-28 rounded-full flex items-center justify-center overflow-hidden", avatarPreview ? "border-2 border-border" : "border-2 border-dashed border-muted-foreground/40 bg-muted/30")}>
-                {avatarPreview ? <img src={avatarPreview} alt="Avatar preview" className="h-full w-full object-cover" /> : <span className="text-3xl font-medium text-muted-foreground">
+                {avatarPreview ? <img src={avatarPreview} alt="Image preview" className="h-full w-full object-cover" /> : <span className="text-3xl font-medium text-muted-foreground">
                   {getInitials()}
                 </span>}
               </div>
