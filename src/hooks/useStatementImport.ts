@@ -47,7 +47,14 @@ export const useStatementImport = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to import statement');
+        // Handle specific AI key errors with user-friendly messages
+        if (data.error === 'AI_KEY_MISSING') {
+          throw new Error('AI_KEY_MISSING');
+        }
+        if (data.error === 'AI_KEY_INVALID') {
+          throw new Error('AI_KEY_INVALID');
+        }
+        throw new Error(data.message || data.error || 'Failed to import statement');
       }
 
       // Invalidate expenses query to refresh the list
@@ -62,10 +69,19 @@ export const useStatementImport = () => {
       return data as ImportResult;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to import statement';
-      setError(errorMessage);
+      
+      // Provide user-friendly messages for AI key errors
+      let displayMessage = errorMessage;
+      if (errorMessage === 'AI_KEY_MISSING') {
+        displayMessage = 'Please connect your Gemini API key in Settings to use AI-powered statement import.';
+      } else if (errorMessage === 'AI_KEY_INVALID') {
+        displayMessage = 'Your Gemini API key is invalid or expired. Please update it in Settings.';
+      }
+      
+      setError(displayMessage);
       toast({
         title: 'Import failed',
-        description: errorMessage,
+        description: displayMessage,
         variant: 'destructive',
       });
       return null;

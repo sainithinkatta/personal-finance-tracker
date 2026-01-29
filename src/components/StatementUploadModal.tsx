@@ -18,8 +18,10 @@ import {
 } from '@/components/ui/select';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
 import { useStatementImport } from '@/hooks/useStatementImport';
-import { Upload, FileText, X, Loader2, CheckCircle } from 'lucide-react';
+import { useAISettings } from '@/hooks/useAISettings';
+import { Upload, FileText, X, Loader2, CheckCircle, Bot, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface StatementUploadModalProps {
   open: boolean;
@@ -39,13 +41,18 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
   open,
   onOpenChange,
 }) => {
+  const navigate = useNavigate();
   const { bankAccounts, isLoading: isLoadingBanks } = useBankAccounts();
   const { importStatement, isImporting, error, clearError } = useStatementImport();
+  const { hasKey, isLoading: isLoadingAISettings } = useAISettings();
   const [selectedBankId, setSelectedBankId] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [importResult, setImportResult] = useState<{ imported: number; skipped: number; duplicates: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // If user doesn't have an AI key, show setup prompt
+  const showKeySetupPrompt = !isLoadingAISettings && hasKey === false;
 
   const handleFileSelect = (file: File) => {
     clearError();
@@ -152,6 +159,31 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-4 py-2">
+          {/* Show AI key setup prompt if user hasn't configured their key */}
+          {showKeySetupPrompt ? (
+            <div className="text-center py-6 space-y-4">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                <Bot className="h-8 w-8 text-primary" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold text-foreground">Gemini API Key Required</h3>
+                <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                  To use AI-powered statement import, you need to connect your Gemini API key first.
+                </p>
+              </div>
+              <Button
+                onClick={() => {
+                  handleClose();
+                  navigate('/settings');
+                }}
+                className="gap-2"
+              >
+                <Settings className="h-4 w-4" />
+                Go to Settings
+              </Button>
+            </div>
+          ) : (
+            <>
           {/* Bank Account Selector */}
           <div className="space-y-2">
             <Label htmlFor="bank-select">Bank Account</Label>
@@ -250,7 +282,7 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
           )}
 
           {importResult && (
-            <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-950/30 rounded-lg p-3">
+            <div className="flex items-center gap-2 text-sm text-primary bg-primary/10 rounded-lg p-3">
               <CheckCircle className="h-4 w-4" />
               <span>
                 Imported {importResult.imported} transactions
@@ -264,6 +296,8 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
             <div className="text-sm text-destructive bg-destructive/10 rounded-lg p-3">
               {error}
             </div>
+          )}
+            </>
           )}
         </div>
 

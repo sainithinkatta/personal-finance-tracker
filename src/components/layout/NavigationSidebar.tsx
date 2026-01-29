@@ -9,7 +9,6 @@ import {
   Clock,
   TrendingUp,
   Landmark,
-  CreditCard,
   LogOut,
 } from 'lucide-react';
 import {
@@ -44,7 +43,6 @@ const navigationItems = [
   { id: 'dues', label: 'Dues', icon: Clock },
   { id: 'savings', label: 'Savings', icon: TrendingUp },
   { id: 'loan', label: 'Loans', icon: Landmark },
-  { id: 'credit', label: 'Credit', icon: CreditCard },
 ];
 
 const NavigationSidebar: React.FC<NavigationSidebarProps> = ({

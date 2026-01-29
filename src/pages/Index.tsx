@@ -1,13 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu, ChevronLeft, Upload } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import Dashboard from "@/components/Dashboard";
 import TransactionList from "@/components/TransactionList";
 import FilterPanel from "@/components/FilterPanel";
@@ -15,7 +9,6 @@ import BudgetManager from "@/components/BudgetManager";
 import RecurringPage from "@/components/recurring/RecurringPage";
 import SavingsGoals from "@/components/SavingsGoals";
 import DuesPage from "@/components/dues/DuesPage";
-import CreditAnalysisDashboard from "@/components/credit-analysis/CreditAnalysisDashboard";
 import LoanDashboard from "@/components/loan/LoanDashboard";
 import { AccountsPage } from "@/components/accounts/AccountsPage";
 import NavigationSidebar from "@/components/layout/NavigationSidebar";
@@ -25,7 +18,6 @@ import FloatingActionButton from "@/components/layout/FloatingActionButton";
 import { MobileReminders } from "@/components/layout/MobileReminders";
 import { UserMenu } from "@/components/layout/UserMenu";
 import MobileNavigation from "@/components/layout/MobileNavigation";
-import BankAccountForm from "@/components/BankAccountForm";
 import { StatementUploadModal } from "@/components/StatementUploadModal";
 import ExportDataButton from "@/components/ExportDataButton";
 import FinmateLogo from "@/components/FinmateLogo";
@@ -34,15 +26,12 @@ import { useBankAccounts } from "@/hooks/useBankAccounts";
 import { FilterOptions } from "@/types/expense";
 import { filterTransactions } from "@/utils/expenseUtils";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { BankAccount } from "@/types/bankAccount";
 import { useExpenses } from "@/hooks/useExpenses";
 
 const Index = () => {
   const { transactions, isLoading } = useTransactions();
   const { expenses } = useExpenses();
   const { bankAccounts } = useBankAccounts();
-  const { toast } = useToast();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isLeftSidebarExpanded, setIsLeftSidebarExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -54,11 +43,6 @@ const Index = () => {
     category: "All",
   });
   const [user, setUser] = useState<any>(null);
-
-  // State for editing bank account from Credit Analysis
-  const [editingBankAccount, setEditingBankAccount] =
-    useState<BankAccount | null>(null);
-  const [isEditBankAccountOpen, setIsEditBankAccountOpen] = useState(false);
 
   // State for statement upload modal
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -72,45 +56,6 @@ const Index = () => {
     };
     getUser();
   }, []);
-
-  // Listen for edit-bank-account custom event from Credit Analysis
-  const handleEditBankAccountEvent = useCallback(
-    (event: CustomEvent<{ id: string }>) => {
-      const accountId = event.detail?.id;
-      if (!accountId) {
-        console.error("edit-bank-account event missing account id");
-        return;
-      }
-
-      const account = bankAccounts.find((acc) => acc.id === accountId);
-      if (!account) {
-        toast({
-          title: "Account not found",
-          description:
-            "This card could not be loaded for editing. Please refresh and try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setEditingBankAccount(account);
-      setIsEditBankAccountOpen(true);
-    },
-    [bankAccounts, toast]
-  );
-
-  useEffect(() => {
-    window.addEventListener(
-      "edit-bank-account",
-      handleEditBankAccountEvent as EventListener
-    );
-    return () => {
-      window.removeEventListener(
-        "edit-bank-account",
-        handleEditBankAccountEvent as EventListener
-      );
-    };
-  }, [handleEditBankAccountEvent]);
 
   useEffect(() => {
     if (hasInitializedCurrency) return;
@@ -126,11 +71,6 @@ const Index = () => {
     setSelectedCurrency(currencies.length === 1 ? currencies[0] : "USD");
     setHasInitializedCurrency(true);
   }, [expenses, hasInitializedCurrency]);
-
-  const handleEditBankAccountClose = () => {
-    setIsEditBankAccountOpen(false);
-    setEditingBankAccount(null);
-  };
 
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
@@ -237,14 +177,6 @@ const Index = () => {
           <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
             <div className="p-3.5 sm:p-4">
               <LoanDashboard />
-            </div>
-          </div>
-        );
-      case "credit":
-        return (
-          <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-sm">
-            <div className="p-3.5 sm:p-4">
-              <CreditAnalysisDashboard />
             </div>
           </div>
         );
@@ -392,25 +324,6 @@ const Index = () => {
 
       {/* Mobile Reminders */}
       <MobileReminders />
-
-      {/* Edit Bank Account Dialog - triggered from Credit Analysis */}
-      <Dialog
-        open={isEditBankAccountOpen}
-        onOpenChange={setIsEditBankAccountOpen}
-      >
-        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Bank Account</DialogTitle>
-          </DialogHeader>
-          {editingBankAccount && (
-            <BankAccountForm
-              onClose={handleEditBankAccountClose}
-              account={editingBankAccount}
-              bankAccounts={bankAccounts}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Statement Upload Modal */}
       <StatementUploadModal

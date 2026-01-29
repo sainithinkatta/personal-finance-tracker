@@ -9,7 +9,6 @@ import {
     Clock,
     TrendingUp,
     Landmark,
-    CreditCard,
 } from 'lucide-react';
 
 interface MobileNavigationProps {
@@ -27,7 +26,6 @@ const navigationItems = [
     { id: 'dues', label: 'Dues', icon: Clock },
     { id: 'savings', label: 'Savings', icon: TrendingUp },
     { id: 'loan', label: 'Loan', icon: Landmark },
-    { id: 'credit', label: 'Credit', icon: CreditCard },
 ];
 
 const MobileNavigation: React.FC<MobileNavigationProps> = ({

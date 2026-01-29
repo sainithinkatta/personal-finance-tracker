@@ -1,8 +1,19 @@
+/**
+ * =====================================================
+ * RIGHT SIDEBAR
+ * =====================================================
+ * 
+ * Contains quick action buttons and upcoming payments widget.
+ * 
+ * IMPORTANT: Upcoming Payments only shows transactions from ACTIVE plans.
+ * Plans with plan_status = 'cancelled' or 'paused' are excluded.
+ */
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, Plus, TrendingUp } from 'lucide-react';
-import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
+import { useRecurringPlans } from '@/hooks/useRecurringPlans';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
 import { useExpenses } from '@/hooks/useExpenses';
 import { format, differenceInDays, addDays } from 'date-fns';
@@ -18,14 +29,39 @@ import ExpenseForm from '@/components/ExpenseForm';
 import AddIncomeModal from '@/components/AddIncomeModal';
 
 const RightSidebar: React.FC = () => {
-    const { getUpcomingReminders } = useRecurringTransactions();
+    // Use the new useRecurringPlans hook which properly filters by plan_status
+    const { activePlans } = useRecurringPlans();
     const { bankAccounts } = useBankAccounts();
     const { addExpense } = useExpenses();
     const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
     const [isAddIncomeOpen, setIsAddIncomeOpen] = useState(false);
 
-    // Filter out transactions that are marked as 'done' from upcoming reminders
-    const upcomingReminders = getUpcomingReminders().filter(tx => tx.status !== 'done');
+    /**
+     * Get upcoming reminders from ACTIVE plans only.
+     * Filters out cancelled, paused, and done plans.
+     * Only shows plans due within the next 7 days.
+     */
+    const getUpcomingReminders = () => {
+        const today = new Date();
+        const nextWeek = addDays(today, 7);
+
+        return activePlans.filter(plan => {
+            // Only show active plans (already filtered by activePlans)
+            const dueDate = parseLocalDate(plan.next_due_date);
+            const reminderDate = addDays(dueDate, -plan.reminder_days_before);
+            return reminderDate <= today && dueDate <= nextWeek;
+        }).map(plan => ({
+            id: plan.id,
+            name: plan.name,
+            amount: plan.amount,
+            currency: plan.currency,
+            next_due_date: plan.next_due_date,
+            status: plan.status,
+            last_done_date: plan.last_done_date,
+        }));
+    };
+
+    const upcomingReminders = getUpcomingReminders();
 
     const handleAddExpense = (expense: any) => {
         addExpense(expense);

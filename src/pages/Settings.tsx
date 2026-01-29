@@ -1,8 +1,18 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Settings as SettingsIcon, Wallet } from 'lucide-react';
+import { ArrowLeft, Wallet, Settings as SettingsIcon } from 'lucide-react';
+import AISettingsCard from '@/components/settings/AISettingsCard';
 
+/**
+ * Settings Page
+ * 
+ * User-facing settings for the application.
+ * Currently includes:
+ * - AI Settings: Manage Gemini API key for AI-powered features
+ * 
+ * Future sections can be added as the app grows.
+ */
 const Settings: React.FC = () => {
   const navigate = useNavigate();
 
@@ -26,23 +36,31 @@ const Settings: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-2xl mx-auto p-4 sm:p-6">
-        <div className="bg-card rounded-xl border border-border p-8 text-center">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <SettingsIcon className="h-8 w-8 text-primary" />
+      <main className="max-w-2xl mx-auto p-4 sm:p-6 space-y-8">
+        {/* AI Settings Section */}
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">AI Settings</h2>
+            <p className="text-sm text-muted-foreground">
+              Configure AI-powered features for your account.
+            </p>
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Settings</h1>
-          <p className="text-muted-foreground mb-6">
-            We're working on adding more customization options.
-          </p>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/app')}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
-        </div>
+          <AISettingsCard />
+        </section>
+
+        {/* Placeholder for future settings */}
+        <section className="space-y-4">
+          <div className="bg-card rounded-xl border border-border p-8 text-center">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <SettingsIcon className="h-8 w-8 text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">More Settings Coming Soon</h3>
+            <p className="text-muted-foreground text-sm">
+              We're working on adding more customization options like notifications, 
+              data export, and display preferences.
+            </p>
+          </div>
+        </section>
       </main>
     </div>
   );
