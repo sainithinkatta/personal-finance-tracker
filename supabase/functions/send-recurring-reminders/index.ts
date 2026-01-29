@@ -504,7 +504,7 @@ Deno.serve(async (req) => {
         <div class="footer">
           <div class="footer-logo">💰</div>
           <p class="footer-text">
-            This is an automated reminder from FinMate.
+            This is an automated reminder from Fingo.
           </p>
           <p class="footer-text">
             <a href="https://personal-finance-tracker-eosin-eight.vercel.app/" class="footer-link">Manage your recurring transactions</a>

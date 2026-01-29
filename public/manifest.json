@@ -1,6 +1,6 @@
 {
-  "name": "FinMate",
-  "short_name": "FinMate",
+  "name": "Fingo",
+  "short_name": "Fingo",
   "description": "Track your income, expenses, and financial goals",
   "start_url": "/app",
   "display": "standalone",

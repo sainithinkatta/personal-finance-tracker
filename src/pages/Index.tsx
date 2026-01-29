@@ -20,7 +20,7 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import MobileNavigation from "@/components/layout/MobileNavigation";
 import { StatementUploadModal } from "@/components/StatementUploadModal";
 import ExportDataButton from "@/components/ExportDataButton";
-import FinmateLogo from "@/components/FinmateLogo";
+import FingoLogo from "@/components/FingoLogo";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useBankAccounts } from "@/hooks/useBankAccounts";
 import { FilterOptions } from "@/types/expense";
@@ -207,7 +207,7 @@ const Index = () => {
         </Button>
 
         <div className="flex items-center gap-2">
-          {/* Finmate Logo */}
+          {/* Fingo Logo */}
           <div
             className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
             style={{
@@ -215,13 +215,13 @@ const Index = () => {
               boxShadow: "0 2px 8px rgba(59, 130, 246, 0.3)",
             }}
           >
-            <FinmateLogo />
+            <FingoLogo />
           </div>
 
           {/* Title and Tagline */}
           <div className="flex flex-col justify-center">
             <span className="text-xl font-bold text-blue-600 leading-tight">
-              Finmate
+              Fingo
             </span>
             <span className="text-[11px] text-black font-medium tracking-wide">
               Track, analyze and manage your complete finances
@@ -270,11 +270,11 @@ const Index = () => {
               boxShadow: "0 2px 8px rgba(59, 130, 246, 0.3)",
             }}
           >
-            <FinmateLogo />
+            <FingoLogo />
           </div>
 
           <h1 className="text-base font-semibold text-blue-600 truncate flex-1">
-            Finmate
+            Fingo
           </h1>
           {user && <UserMenu user={user} />}
         </div>
