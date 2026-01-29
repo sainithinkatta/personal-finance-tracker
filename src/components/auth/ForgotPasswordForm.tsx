@@ -43,7 +43,9 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack }
         description: 'Please check your email for password reset instructions.',
       });
     } catch (error: any) {
-      console.error('Password reset error:', error);
+      if (import.meta.env.DEV) {
+        console.error('Password reset error:', error);
+      }
       toast({
         title: 'Error',
         description: error.message || 'Failed to send reset email. Please try again.',

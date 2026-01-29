@@ -94,7 +94,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({
       onSuccess?.();
       navigate('/app');
     } catch (error: any) {
-      console.error('Login error:', error);
+      if (import.meta.env.DEV) {
+        console.error('Login error:', error);
+      }
       toast({
         title: 'Sign in failed',
         description: 'An error occurred. Please try again.',
