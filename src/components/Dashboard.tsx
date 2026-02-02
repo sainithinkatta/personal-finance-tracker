@@ -16,26 +16,35 @@ import { PieChart, BarChart3, Receipt } from 'lucide-react';
 interface DashboardProps {
   expenses: Expense[];
   selectedCurrency: string;
+  selectedMonth?: number;
+  selectedYear?: number;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ expenses, selectedCurrency }) => {
-  const currentMonthLabel = format(new Date(), 'MMM yyyy').toUpperCase();
+const Dashboard: React.FC<DashboardProps> = ({
+  expenses,
+  selectedCurrency,
+  selectedMonth,
+  selectedYear
+}) => {
+  // Use selected month/year or fallback to current date
+  const currentDate = new Date();
+  const month = selectedMonth ?? currentDate.getMonth();
+  const year = selectedYear ?? currentDate.getFullYear();
 
-  const currencyFilteredExpenses = useMemo(() => 
+  // Generate label for selected month/year
+  const currentMonthLabel = format(new Date(year, month), 'MMM yyyy').toUpperCase();
+
+  const currencyFilteredExpenses = useMemo(() =>
     expenses.filter(e => e.currency === selectedCurrency),
     [expenses, selectedCurrency]
   );
 
-  const currentDate = new Date();
-  const currentMonth = currentDate.getMonth();
-  const currentYear = currentDate.getFullYear();
-
-  const currentMonthExpenses = useMemo(() => 
+  const currentMonthExpenses = useMemo(() =>
     currencyFilteredExpenses.filter(expense => {
       const expenseDate = new Date(expense.date);
-      return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
+      return expenseDate.getMonth() === month && expenseDate.getFullYear() === year;
     }),
-    [currencyFilteredExpenses, currentMonth, currentYear]
+    [currencyFilteredExpenses, month, year]
   );
 
   const { bankAccounts } = useBankAccounts();
@@ -166,6 +175,8 @@ const Dashboard: React.FC<DashboardProps> = ({ expenses, selectedCurrency }) => 
           <BudgetSummary
             expenses={currentMonthExpenses}
             currency={selectedCurrency}
+            selectedMonth={month}
+            selectedYear={year}
           />
         </div>
       </div>

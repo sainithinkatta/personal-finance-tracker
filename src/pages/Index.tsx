@@ -37,6 +37,8 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
   const [hasInitializedCurrency, setHasInitializedCurrency] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [filters, setFilters] = useState<FilterOptions>({
     startDate: null,
     endDate: null,
@@ -81,6 +83,14 @@ const Index = () => {
     setIsMobileSidebarOpen(false);
   };
 
+  const handleMonthChange = (month: number) => {
+    setSelectedMonth(month);
+  };
+
+  const handleYearChange = (year: number) => {
+    setSelectedYear(year);
+  };
+
   const filteredTransactions = filterTransactions(transactions, filters);
 
   if (isLoading) {
@@ -99,7 +109,12 @@ const Index = () => {
     switch (activeTab) {
       case "dashboard":
         return (
-          <Dashboard expenses={expenses} selectedCurrency={selectedCurrency} />
+          <Dashboard
+            expenses={expenses}
+            selectedCurrency={selectedCurrency}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+          />
         );
       case "expenses":
         return (
@@ -182,7 +197,12 @@ const Index = () => {
         );
       default:
         return (
-          <Dashboard expenses={expenses} selectedCurrency={selectedCurrency} />
+          <Dashboard
+            expenses={expenses}
+            selectedCurrency={selectedCurrency}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+          />
         );
     }
   };
@@ -307,6 +327,10 @@ const Index = () => {
                 activeTab={activeTab}
                 selectedCurrency={selectedCurrency}
                 onCurrencyChange={setSelectedCurrency}
+                selectedMonth={selectedMonth}
+                selectedYear={selectedYear}
+                onMonthChange={handleMonthChange}
+                onYearChange={handleYearChange}
               />
             </div>
 

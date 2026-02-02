@@ -9,25 +9,34 @@ import { TrendingUp } from 'lucide-react';
 interface BudgetSummaryProps {
   expenses: Expense[];
   currency: string;
+  selectedMonth?: number;
+  selectedYear?: number;
 }
 
 const getCurrencySymbol = (currency: string) => currency === 'INR' ? '₹' : '$';
 
-export const BudgetSummary: React.FC<BudgetSummaryProps> = ({ expenses, currency }) => {
+export const BudgetSummary: React.FC<BudgetSummaryProps> = ({
+  expenses,
+  currency,
+  selectedMonth,
+  selectedYear
+}) => {
   const { budgets } = useBudgets();
 
-  const currentMonth = new Date().getMonth() + 1;
-  const currentYear = new Date().getFullYear();
+  // Use selected month/year or fallback to current date
+  const currentDate = new Date();
+  const month = (selectedMonth ?? currentDate.getMonth()) + 1; // Convert to 1-12 range
+  const year = selectedYear ?? currentDate.getFullYear();
 
-  // Find budget for current month and currency
+  // Find budget for selected month and currency
   const currentBudget = useMemo(() => {
     return budgets.find(
       budget =>
-        budget.month === currentMonth &&
-        budget.year === currentYear &&
+        budget.month === month &&
+        budget.year === year &&
         budget.currency === currency
     );
-  }, [budgets, currentMonth, currentYear, currency]);
+  }, [budgets, month, year, currency]);
 
   // Calculate total spent from current month expenses
   const totalSpent = useMemo(() => {
@@ -53,7 +62,7 @@ export const BudgetSummary: React.FC<BudgetSummaryProps> = ({ expenses, currency
             </div>
             <p className="text-sm font-medium text-foreground">No budget set</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Create a budget for {format(new Date(), 'MMMM yyyy')}
+              Create a budget for {format(new Date(year, month - 1), 'MMMM yyyy')}
             </p>
           </div>
         </CardContent>
@@ -89,7 +98,7 @@ export const BudgetSummary: React.FC<BudgetSummaryProps> = ({ expenses, currency
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-purple-500" />
-            {format(new Date(currentYear, currentMonth - 1), 'MMMM yyyy')}
+            {format(new Date(year, month - 1), 'MMMM yyyy')}
           </CardTitle>
           <Badge
             variant="outline"

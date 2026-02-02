@@ -25,10 +25,14 @@ interface ContentHeaderProps {
     activeTab: string;
     selectedCurrency: string;
     onCurrencyChange: (currency: string) => void;
+    selectedMonth?: number;
+    selectedYear?: number;
+    onMonthChange?: (month: number) => void;
+    onYearChange?: (year: number) => void;
 }
 
 const tabTitles: Record<string, { title: string; subtitle?: string }> = {
-    dashboard: { title: 'Overview', subtitle: `Your financial snapshot for ${format(new Date(), 'MMM yyyy').toUpperCase()}` },
+    dashboard: { title: 'Overview', subtitle: '' }, // Will be set dynamically
     expenses: { title: 'Expenses', subtitle: 'Track and manage your spending' },
     accounts: { title: 'Accounts', subtitle: 'Manage your bank accounts and cards' },
     budget: { title: 'Budget', subtitle: 'Create and manage your monthly budgets' },
@@ -38,13 +42,51 @@ const tabTitles: Record<string, { title: string; subtitle?: string }> = {
     loan: { title: 'Loan', subtitle: 'Track and project your loan repayment' },
 };
 
+// Month names for dropdown options
+const MONTHS = [
+    { value: 0, label: 'January' },
+    { value: 1, label: 'February' },
+    { value: 2, label: 'March' },
+    { value: 3, label: 'April' },
+    { value: 4, label: 'May' },
+    { value: 5, label: 'June' },
+    { value: 6, label: 'July' },
+    { value: 7, label: 'August' },
+    { value: 8, label: 'September' },
+    { value: 9, label: 'October' },
+    { value: 10, label: 'November' },
+    { value: 11, label: 'December' },
+];
+
+// Generate year options (2020 to current year + 1)
+const generateYearOptions = () => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let year = 2020; year <= currentYear + 1; year++) {
+        years.push(year);
+    }
+    return years;
+};
+
 const ContentHeader: React.FC<ContentHeaderProps> = ({
     activeTab,
     selectedCurrency,
     onCurrencyChange,
+    selectedMonth,
+    selectedYear,
+    onMonthChange,
+    onYearChange,
 }) => {
-    const { title, subtitle } = tabTitles[activeTab] || { title: 'Dashboard', subtitle: '' };
+    const { title } = tabTitles[activeTab] || { title: 'Dashboard', subtitle: '' };
     const [isAddPlanOpen, setIsAddPlanOpen] = useState(false);
+
+    // Generate dynamic subtitle for dashboard based on selected month/year
+    const currentDate = new Date();
+    const displayMonth = selectedMonth ?? currentDate.getMonth();
+    const displayYear = selectedYear ?? currentDate.getFullYear();
+    const dashboardSubtitle = `Your financial snapshot for ${format(new Date(displayYear, displayMonth), 'MMM yyyy').toUpperCase()}`;
+
+    const subtitle = activeTab === 'dashboard' ? dashboardSubtitle : tabTitles[activeTab]?.subtitle;
 
     return (
         <>
@@ -56,9 +98,44 @@ const ContentHeader: React.FC<ContentHeaderProps> = ({
                     )}
                 </div>
                 
-                {/* Dashboard: Currency selector */}
+                {/* Dashboard: Month, Year, and Currency selectors */}
                 {activeTab === 'dashboard' && (
-                    <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                        {/* Month Selector */}
+                        <Select
+                            value={displayMonth.toString()}
+                            onValueChange={(value) => onMonthChange?.(parseInt(value))}
+                        >
+                            <SelectTrigger className="w-[130px] h-9 bg-white border-gray-200 text-sm">
+                                <SelectValue placeholder="Month" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {MONTHS.map((month) => (
+                                    <SelectItem key={month.value} value={month.value.toString()}>
+                                        {month.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
+                        {/* Year Selector */}
+                        <Select
+                            value={displayYear.toString()}
+                            onValueChange={(value) => onYearChange?.(parseInt(value))}
+                        >
+                            <SelectTrigger className="w-[100px] h-9 bg-white border-gray-200 text-sm">
+                                <SelectValue placeholder="Year" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {generateYearOptions().map((year) => (
+                                    <SelectItem key={year} value={year.toString()}>
+                                        {year}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
+                        {/* Currency Selector */}
                         <Select value={selectedCurrency} onValueChange={onCurrencyChange}>
                             <SelectTrigger className="w-[110px] h-9 bg-white border-gray-200 text-sm">
                                 <SelectValue placeholder="Currency" />
