@@ -17,7 +17,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ user, showSignOut = false 
             <FingoLogo />
             <div>
               <h1 className="text-2xl font-bold text-primary">
-                Fingo
+                FinGo
               </h1>
               <p className="text-sm text-muted-foreground mt-0.5">
                 Track, analyze and manage your complete finances

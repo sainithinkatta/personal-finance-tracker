@@ -221,7 +221,7 @@ const Index = () => {
           {/* Title and Tagline */}
           <div className="flex flex-col justify-center">
             <span className="text-xl font-bold text-blue-600 leading-tight">
-              Fingo
+              FinGo
             </span>
             <span className="text-[11px] text-black font-medium tracking-wide">
               Track, analyze and manage your complete finances
