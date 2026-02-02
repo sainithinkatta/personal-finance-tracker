@@ -49,6 +49,12 @@ export const ExpenseTimeChart: React.FC<ExpenseTimeChartProps> = ({
         return;
       }
 
+      // Skip income transactions and negative amounts (defensive filtering)
+      // This ensures we only show expenses, not net balance (expenses - income)
+      if ((expense as any).category === 'Income' || expense.amount < 0) {
+        return;
+      }
+
       let periodKey: string;
 
       switch (groupBy) {
@@ -63,9 +69,10 @@ export const ExpenseTimeChart: React.FC<ExpenseTimeChartProps> = ({
           break;
       }
 
+      // Use Math.abs for extra safety to ensure only positive values
       expenseMap.set(
         periodKey,
-        (expenseMap.get(periodKey) || 0) + expense.amount
+        (expenseMap.get(periodKey) || 0) + Math.abs(expense.amount)
       );
     });
 
