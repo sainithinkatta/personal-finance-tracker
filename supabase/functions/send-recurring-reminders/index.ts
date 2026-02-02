@@ -495,7 +495,7 @@ Deno.serve(async (req) => {
           </div>
           
           <div class="cta-section">
-            <a href="https://personal-finance-tracker-eosin-eight.vercel.app/" class="cta-button">
+            <a href="https://fin-go-one.vercel.app/" class="cta-button">
               View in Dashboard →
             </a>
           </div>
@@ -507,7 +507,7 @@ Deno.serve(async (req) => {
             This is an automated reminder from Fingo.
           </p>
           <p class="footer-text">
-            <a href="https://personal-finance-tracker-eosin-eight.vercel.app/" class="footer-link">Manage your recurring transactions</a>
+            <a href="https://fin-go-one.vercel.app/" class="footer-link">Manage your recurring transactions</a>
           </p>
           <p class="footer-text" style="margin-top: 20px; font-size: 12px;">
             You receive reminders every \${MAIL_TRIGGER_INTERVAL_HOURS} hours to help you stay on top of your finances.
