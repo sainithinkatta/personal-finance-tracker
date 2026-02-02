@@ -1,14 +1,10 @@
-import { createClient } from '@supabase/supabase-js';
-import { format, addDays, parseISO } from 'date-fns';
-import { Resend } from 'resend';
-
-const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') ?? '*';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
+import { format, addDays, parseISO } from 'https://esm.sh/date-fns@3.6.0';
+import { Resend } from 'https://esm.sh/resend@2.0.0';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Max-Age': '86400',
 };
 
 interface RecurringTransaction {
@@ -24,115 +20,235 @@ interface RecurringTransaction {
   last_reminder_sent_at: string | null;
 }
 
-// Configurable interval for sending reminders (in hours)
-const MAIL_TRIGGER_INTERVAL_HOURS = 5;
+interface EmailResult {
+  transactionId: string;
+  transactionName: string;
+  userEmail: string;
+  status: 'sent' | 'failed' | 'skipped';
+  reason?: string;
+  attempts: number;
+  timestamp: string;
+}
 
-Deno.serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+// Configuration
+const CONFIG = {
+  MAIL_TRIGGER_INTERVAL_HOURS: 5,
+  BATCH_SIZE: 10, // Process 10 emails at a time
+  RATE_LIMIT_DELAY_MS: 600, // 600ms between emails (safer than 500ms for 2/sec limit)
+  MAX_RETRY_ATTEMPTS: 3,
+  RETRY_DELAYS: [1000, 3000, 7000], // Exponential backoff in ms
+};
+
+// Utility: Structured logging
+const log = {
+  info: (message: string, data?: any) => {
+    console.log(JSON.stringify({
+      level: 'INFO',
+      timestamp: new Date().toISOString(),
+      message,
+      ...data
+    }));
+  },
+  error: (message: string, error?: any, data?: any) => {
+    console.error(JSON.stringify({
+      level: 'ERROR',
+      timestamp: new Date().toISOString(),
+      message,
+      error: error?.message || error,
+      stack: error?.stack,
+      ...data
+    }));
+  },
+  warn: (message: string, data?: any) => {
+    console.warn(JSON.stringify({
+      level: 'WARN',
+      timestamp: new Date().toISOString(),
+      message,
+      ...data
+    }));
   }
+};
 
+// Utility: Delay function
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Utility: Send email with retry logic
+async function sendEmailWithRetry(
+  resend: Resend,
+  transaction: RecurringTransaction,
+  userEmail: string,
+  dueDate: string,
+  attemptNumber = 1
+): Promise<{ success: boolean; error?: any }> {
   try {
-    // Initialize Supabase admin client with service role
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
-    );
-
-    console.log('Starting recurring transaction reminder check...');
-
-    // Get today's date in UTC
-    const today = new Date();
-    const todayString = format(today, 'yyyy-MM-dd');
-
-    console.log(`Checking for reminders due on or before: ${todayString}`);
-
-    // Query recurring transactions that need reminders
-    // We check for transactions where: next_due_date - reminder_days_before <= today
-    const { data: transactions, error: queryError } = await supabaseAdmin
-      .from('recurring_transactions')
-      .select('*')
-      .eq('email_reminder', true)
-      .eq('status', 'pending')
-      .lte('next_due_date', format(addDays(today, 7), 'yyyy-MM-dd')); // Check next 7 days
-
-    if (queryError) {
-      console.error('Error querying transactions:', queryError);
-      throw queryError;
-    }
-
-    console.log(`Found ${transactions?.length || 0} transactions with reminders enabled`);
-
-    if (!transactions || transactions.length === 0) {
-      return new Response(
-        JSON.stringify({ message: 'No reminders to send', count: 0 }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-      );
-    }
-
-    // Filter transactions that should send reminders today
-    const transactionsToRemind = transactions.filter((transaction: RecurringTransaction) => {
-      const dueDate = parseISO(transaction.next_due_date);
-      const reminderDate = addDays(dueDate, -transaction.reminder_days_before);
-      const reminderDateString = format(reminderDate, 'yyyy-MM-dd');
-
-      // Check if today matches or is past the reminder date
-      const isReminderDue = reminderDateString <= todayString;
-
-      // Check if enough time has passed since last reminder (5 hours)
-      if (transaction.last_reminder_sent_at) {
-        const lastSentAt = new Date(transaction.last_reminder_sent_at);
-        const hoursSinceLastReminder = (today.getTime() - lastSentAt.getTime()) / (1000 * 60 * 60);
-
-        // Only send if it's been more than MAIL_TRIGGER_INTERVAL_HOURS since last reminder
-        return isReminderDue && hoursSinceLastReminder >= MAIL_TRIGGER_INTERVAL_HOURS;
-      }
-
-      // If never sent before, send if reminder is due
-      return isReminderDue;
+    const emailHtml = generateEmailHtml(transaction, dueDate);
+    
+    const { error: emailError } = await resend.emails.send({
+      from: 'Reminders <onboarding@resend.dev>',
+      to: [userEmail],
+      subject: `Reminder: ${transaction.name} due on ${dueDate}`,
+      html: emailHtml,
     });
 
-    console.log(`${transactionsToRemind.length} transactions need reminders today`);
-
-    let emailsSent = 0;
-    let emailsFailed = 0;
-
-    // Send reminder emails for each transaction
-    // Add delay between sends to respect rate limits (max 2 per second)
-    for (let i = 0; i < transactionsToRemind.length; i++) {
-      const transaction = transactionsToRemind[i];
-
-      // Add 500ms delay between emails (except for first one)
-      if (i > 0) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+    if (emailError) {
+      // Check if it's a rate limit error
+      const isRateLimit = emailError.message?.toLowerCase().includes('rate limit') || 
+                         emailError.message?.toLowerCase().includes('too many requests');
+      
+      if (isRateLimit && attemptNumber < CONFIG.MAX_RETRY_ATTEMPTS) {
+        const retryDelay = CONFIG.RETRY_DELAYS[attemptNumber - 1];
+        log.warn('Rate limit hit, retrying...', {
+          transactionId: transaction.id,
+          transactionName: transaction.name,
+          attempt: attemptNumber,
+          retryAfter: retryDelay
+        });
+        
+        await delay(retryDelay);
+        return sendEmailWithRetry(resend, transaction, userEmail, dueDate, attemptNumber + 1);
       }
-      try {
-        // Get user email from auth.users
-        const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(
-          transaction.user_id
-        );
+      
+      return { success: false, error: emailError };
+    }
 
-        if (userError || !userData?.user?.email) {
-          console.error(`Error getting user email for user ${transaction.user_id}:`, userError);
-          emailsFailed++;
-          continue;
-        }
+    return { success: true };
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    if (attemptNumber < CONFIG.MAX_RETRY_ATTEMPTS) {
+      const retryDelay = CONFIG.RETRY_DELAYS[attemptNumber - 1];
+      log.warn('Email send failed, retrying...', {
+        transactionId: transaction.id,
+        attempt: attemptNumber,
+        retryAfter: retryDelay,
+        error: err.message
+      });
+      
+      await delay(retryDelay);
+      return sendEmailWithRetry(resend, transaction, userEmail, dueDate, attemptNumber + 1);
+    }
+    
+    return { success: false, error: err };
+  }
+}
 
-        const userEmail = userData.user.email;
-        const dueDate = format(parseISO(transaction.next_due_date), 'MMM dd, yyyy');
+// Process a batch of transactions
+async function processBatch(
+  supabaseAdmin: any,
+  resend: Resend,
+  transactions: RecurringTransaction[],
+  batchNumber: number
+): Promise<EmailResult[]> {
+  log.info('Processing batch', {
+    batchNumber,
+    batchSize: transactions.length
+  });
 
-        // Initialize Resend
-        const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
+  const results: EmailResult[] = [];
 
-        // Send email using Resend - Enhanced Modern Design
-        const emailHtml = `
+  for (let i = 0; i < transactions.length; i++) {
+    const transaction = transactions[i];
+    const startTime = Date.now();
+    
+    // Add delay between emails (except first email in batch)
+    if (i > 0) {
+      await delay(CONFIG.RATE_LIMIT_DELAY_MS);
+    }
+
+    try {
+      // Get user email from auth.users
+      const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(
+        transaction.user_id
+      );
+
+      if (userError || !userData?.user?.email) {
+        log.error('Failed to get user email', userError, {
+          transactionId: transaction.id,
+          userId: transaction.user_id
+        });
+        
+        results.push({
+          transactionId: transaction.id,
+          transactionName: transaction.name,
+          userEmail: 'unknown',
+          status: 'failed',
+          reason: 'User email not found',
+          attempts: 0,
+          timestamp: new Date().toISOString()
+        });
+        continue;
+      }
+
+      const userEmail = userData.user.email;
+      const dueDate = format(parseISO(transaction.next_due_date), 'MMM dd, yyyy');
+
+      // Send email with retry logic
+      const { success, error } = await sendEmailWithRetry(resend, transaction, userEmail, dueDate);
+
+      if (success) {
+        // Update last_reminder_sent_at timestamp
+        await supabaseAdmin
+          .from('recurring_transactions')
+          .update({ last_reminder_sent_at: new Date().toISOString() })
+          .eq('id', transaction.id);
+
+        const duration = Date.now() - startTime;
+        log.info('Email sent successfully', {
+          transactionId: transaction.id,
+          transactionName: transaction.name,
+          userEmail,
+          durationMs: duration
+        });
+
+        results.push({
+          transactionId: transaction.id,
+          transactionName: transaction.name,
+          userEmail,
+          status: 'sent',
+          attempts: 1,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        log.error('Email send failed after retries', error, {
+          transactionId: transaction.id,
+          transactionName: transaction.name,
+          userEmail
+        });
+
+        results.push({
+          transactionId: transaction.id,
+          transactionName: transaction.name,
+          userEmail,
+          status: 'failed',
+          reason: error?.message || 'Unknown error',
+          attempts: CONFIG.MAX_RETRY_ATTEMPTS,
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      log.error('Unexpected error processing transaction', err, {
+        transactionId: transaction.id,
+        transactionName: transaction.name
+      });
+
+      results.push({
+        transactionId: transaction.id,
+        transactionName: transaction.name,
+        userEmail: 'unknown',
+        status: 'failed',
+        reason: err.message || 'Unexpected error',
+        attempts: 0,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  return results;
+}
+
+// Generate email HTML
+function generateEmailHtml(transaction: RecurringTransaction, dueDate: string): string {
+  return `
   <!DOCTYPE html>
   <html lang="en">
     <head>
@@ -282,7 +398,7 @@ Deno.serve(async (req) => {
         
         .detail-row {
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           padding: 16px;
           background: #f8f9fa !important;
           border-radius: 10px;
@@ -453,7 +569,7 @@ Deno.serve(async (req) => {
           <div class="transaction-card">
             <div class="amount-section">
               <div class="amount-label">Payment Amount</div>
-              <div class="amount-value">\${transaction.currency} \${transaction.amount}</div>
+              <div class="amount-value">${transaction.currency} ${transaction.amount}</div>
             </div>
             
             <div class="details-grid">
@@ -463,7 +579,7 @@ Deno.serve(async (req) => {
                 </div>
                 <div class="detail-content">
                   <div class="detail-label">Transaction Name</div>
-                  <div class="detail-value">\${transaction.name}</div>
+                  <div class="detail-value">${transaction.name}</div>
                 </div>
               </div>
               
@@ -473,7 +589,7 @@ Deno.serve(async (req) => {
                 </div>
                 <div class="detail-content">
                   <div class="detail-label">Category</div>
-                  <div class="detail-value">\${transaction.category}</div>
+                  <div class="detail-value">${transaction.category}</div>
                 </div>
               </div>
               
@@ -483,7 +599,7 @@ Deno.serve(async (req) => {
                 </div>
                 <div class="detail-content">
                   <div class="detail-label">Due Date</div>
-                  <div class="detail-value">\${dueDate}</div>
+                  <div class="detail-value">${dueDate}</div>
                 </div>
               </div>
             </div>
@@ -495,7 +611,7 @@ Deno.serve(async (req) => {
           </div>
           
           <div class="cta-section">
-            <a href="https://fin-go-one.vercel.app/" class="cta-button">
+            <a href="https://personal-finance-tracker-eosin-eight.vercel.app/" class="cta-button">
               View in Dashboard →
             </a>
           </div>
@@ -504,52 +620,155 @@ Deno.serve(async (req) => {
         <div class="footer">
           <div class="footer-logo">💰</div>
           <p class="footer-text">
-            This is an automated reminder from Fingo.
+            This is an automated reminder from your Personal Expense Tracker.
           </p>
           <p class="footer-text">
-            <a href="https://fin-go-one.vercel.app/" class="footer-link">Manage your recurring transactions</a>
+            <a href="https://personal-finance-tracker-eosin-eight.vercel.app/" class="footer-link">Manage your recurring transactions</a>
           </p>
           <p class="footer-text" style="margin-top: 20px; font-size: 12px;">
-            You receive reminders every \${MAIL_TRIGGER_INTERVAL_HOURS} hours to help you stay on top of your finances.
+            You receive reminders every ${CONFIG.MAIL_TRIGGER_INTERVAL_HOURS} hours to help you stay on top of your finances.
           </p>
         </div>
       </div>
     </body>
   </html>
 `;
+}
 
-        try {
-          const { error: emailError } = await resend.emails.send({
-            from: 'Reminders <onboarding@resend.dev>',
-            to: [userEmail],
-            subject: `Reminder: ${transaction.name} due on ${dueDate}`,
-            html: emailHtml,
-          });
+Deno.serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
 
-          if (emailError) {
-            console.error(`Failed to send email for transaction ${transaction.name}:`, emailError);
-            emailsFailed++;
-          } else {
-            console.log(`Reminder sent successfully for transaction: ${transaction.name} to ${userEmail}`);
+  const executionStart = Date.now();
+  log.info('Starting recurring transaction reminder check');
 
-            // Update last_reminder_sent_at timestamp
-            await supabaseAdmin
-              .from('recurring_transactions')
-              .update({ last_reminder_sent_at: new Date().toISOString() })
-              .eq('id', transaction.id);
-
-            emailsSent++;
-          }
-        } catch (emailError: any) {
-          console.error(`Error sending email for transaction ${transaction.name}:`, emailError);
-          emailsFailed++;
+  try {
+    // Initialize Supabase admin client with service role
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
         }
+      }
+    );
 
-      } catch (error) {
-        console.error(`Error processing transaction ${transaction.name}:`, error);
-        emailsFailed++;
+    // Initialize Resend (single instance for all emails)
+    const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
+
+    // Get today's date in UTC
+    const today = new Date();
+    const todayString = format(today, 'yyyy-MM-dd');
+    
+    log.info('Querying transactions', { date: todayString });
+
+    /**
+     * Query recurring transactions that need reminders.
+     * 
+     * IMPORTANT: Only send reminders for ACTIVE plans.
+     * Plans with plan_status = 'cancelled' or 'paused' should NOT receive emails.
+     */
+    const { data: transactions, error: queryError } = await supabaseAdmin
+      .from('recurring_transactions')
+      .select('*')
+      .eq('email_reminder', true)
+      .eq('status', 'pending')
+      .eq('plan_status', 'active') // Only active plans receive reminders
+      .lte('next_due_date', format(addDays(today, 7), 'yyyy-MM-dd')); // Check next 7 days
+
+    if (queryError) {
+      log.error('Error querying transactions', queryError);
+      throw queryError;
+    }
+
+    log.info('Query completed', { 
+      transactionsFound: transactions?.length || 0 
+    });
+
+    if (!transactions || transactions.length === 0) {
+      const result = { 
+        message: 'No reminders to send', 
+        count: 0,
+        executionTimeMs: Date.now() - executionStart 
+      };
+      log.info('Execution completed', result);
+      return new Response(
+        JSON.stringify(result),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
+    }
+
+    // Filter transactions that should send reminders today
+    const transactionsToRemind = transactions.filter((transaction: RecurringTransaction) => {
+      const dueDate = parseISO(transaction.next_due_date);
+      const reminderDate = addDays(dueDate, -transaction.reminder_days_before);
+      const reminderDateString = format(reminderDate, 'yyyy-MM-dd');
+      
+      // Check if today matches or is past the reminder date
+      const isReminderDue = reminderDateString <= todayString;
+      
+      // Check if enough time has passed since last reminder
+      if (transaction.last_reminder_sent_at) {
+        const lastSentAt = new Date(transaction.last_reminder_sent_at);
+        const hoursSinceLastReminder = (today.getTime() - lastSentAt.getTime()) / (1000 * 60 * 60);
+        
+        return isReminderDue && hoursSinceLastReminder >= CONFIG.MAIL_TRIGGER_INTERVAL_HOURS;
+      }
+      
+      return isReminderDue;
+    });
+
+    log.info('Filtering completed', {
+      totalTransactions: transactions.length,
+      remindersDue: transactionsToRemind.length
+    });
+
+    if (transactionsToRemind.length === 0) {
+      const result = {
+        message: 'No reminders due at this time',
+        totalChecked: transactions.length,
+        remindersDue: 0,
+        executionTimeMs: Date.now() - executionStart
+      };
+      log.info('Execution completed', result);
+      return new Response(
+        JSON.stringify(result),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
+    }
+
+    // Process transactions in batches
+    const allResults: EmailResult[] = [];
+    const totalBatches = Math.ceil(transactionsToRemind.length / CONFIG.BATCH_SIZE);
+
+    for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+      const start = batchIndex * CONFIG.BATCH_SIZE;
+      const end = Math.min(start + CONFIG.BATCH_SIZE, transactionsToRemind.length);
+      const batch = transactionsToRemind.slice(start, end);
+
+      log.info('Starting batch processing', {
+        batchNumber: batchIndex + 1,
+        totalBatches,
+        batchSize: batch.length
+      });
+
+      const batchResults = await processBatch(supabaseAdmin, resend, batch, batchIndex + 1);
+      allResults.push(...batchResults);
+
+      // Add delay between batches to further reduce rate limit risk
+      if (batchIndex < totalBatches - 1) {
+        log.info('Pausing between batches', { delayMs: 2000 });
+        await delay(2000);
       }
     }
+
+    // Aggregate results
+    const emailsSent = allResults.filter(r => r.status === 'sent').length;
+    const emailsFailed = allResults.filter(r => r.status === 'failed').length;
 
     const result = {
       message: 'Reminder check completed',
@@ -557,9 +776,18 @@ Deno.serve(async (req) => {
       remindersDue: transactionsToRemind.length,
       emailsSent,
       emailsFailed,
+      batchesProcessed: totalBatches,
+      results: allResults,
+      executionTimeMs: Date.now() - executionStart
     };
 
-    console.log('Summary:', result);
+    log.info('Execution completed successfully', {
+      totalChecked: result.totalChecked,
+      remindersDue: result.remindersDue,
+      emailsSent: result.emailsSent,
+      emailsFailed: result.emailsFailed,
+      executionTimeMs: result.executionTimeMs
+    });
 
     return new Response(
       JSON.stringify(result),
@@ -567,9 +795,15 @@ Deno.serve(async (req) => {
     );
 
   } catch (error: any) {
-    console.error('Error in send-recurring-reminders function:', error);
+    log.error('Fatal error in send-recurring-reminders function', error, {
+      executionTimeMs: Date.now() - executionStart
+    });
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        executionTimeMs: Date.now() - executionStart
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }

@@ -2,3 +2,9 @@ project_id = "qsjbbzrfvzxtymgolnqa"
 
 [functions.send-recurring-reminders]
 verify_jwt = false
+
+[functions.import-statement]
+verify_jwt = false
+
+[functions.manage-ai-key]
+verify_jwt = false

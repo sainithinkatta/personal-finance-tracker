@@ -57,8 +57,9 @@ export const useStatementImport = () => {
         throw new Error(data.message || data.error || 'Failed to import statement');
       }
 
-      // Invalidate expenses query to refresh the list
+      // Invalidate all relevant queries to refresh data across all views
       await queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      await queryClient.invalidateQueries({ queryKey: ['transactions'] });
       await queryClient.invalidateQueries({ queryKey: ['bank-accounts'] });
 
       toast({
