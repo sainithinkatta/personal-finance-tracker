@@ -1,15 +1,15 @@
-# Fingo
+# FinGo
 
 A responsive web application to help you track bank accounts, budgets, and expenses—built with React, TypeScript, Vite and Supabase.
 
 ## Live Demo
-The project is now live! You can check it out here: [Fingo - Live](https://fin-go-one.vercel.app/)
+The project is now live! You can check it out here: [FinGo - Live](https://fin-go-one.vercel.app/)
 
 ---
 
 ## 1. Project Overview
 
-**Fingo** provides an intuitive dashboard to:
+**FinGo** provides an intuitive dashboard to:
 
 - Connect multiple bank accounts  
 - Create and allocate budgets by category  

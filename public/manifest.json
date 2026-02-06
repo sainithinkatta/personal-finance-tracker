@@ -1,13 +1,17 @@
 {
-  "name": "Fingo",
-  "short_name": "Fingo",
+  "name": "FinGo",
+  "short_name": "FinGo",
   "description": "Track your income, expenses, and financial goals",
   "start_url": "/app",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
   "orientation": "portrait-primary",
-  "categories": ["finance", "productivity", "business"],
+  "categories": [
+    "finance",
+    "productivity",
+    "business"
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.png",

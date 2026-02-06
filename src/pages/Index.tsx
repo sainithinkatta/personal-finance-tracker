@@ -20,7 +20,7 @@ import { UserMenu } from "@/components/layout/UserMenu";
 import MobileNavigation from "@/components/layout/MobileNavigation";
 import { StatementUploadModal } from "@/components/StatementUploadModal";
 import ExportDataButton from "@/components/ExportDataButton";
-import FingoLogo from "@/components/FingoLogo";
+import FinGoLogo from "@/components/FinGoLogo";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useBankAccounts } from "@/hooks/useBankAccounts";
 import { FilterOptions } from "@/types/expense";
@@ -145,9 +145,8 @@ const Index = () => {
               />
               <TransactionList
                 transactions={filteredTransactions}
-                title={`${
-                  filters.category === "All" ? "All" : filters.category
-                } Transactions`}
+                title={`${filters.category === "All" ? "All" : filters.category
+                  } Transactions`}
                 bankAccounts={bankAccounts}
               />
             </div>
@@ -227,7 +226,7 @@ const Index = () => {
         </Button>
 
         <div className="flex items-center gap-2">
-          {/* Fingo Logo */}
+          {/* FinGo Logo */}
           <div
             className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
             style={{
@@ -235,7 +234,7 @@ const Index = () => {
               boxShadow: "0 2px 8px rgba(59, 130, 246, 0.3)",
             }}
           >
-            <FingoLogo />
+            <FinGoLogo />
           </div>
 
           {/* Title and Tagline */}
@@ -290,11 +289,11 @@ const Index = () => {
               boxShadow: "0 2px 8px rgba(59, 130, 246, 0.3)",
             }}
           >
-            <FingoLogo />
+            <FinGoLogo />
           </div>
 
           <h1 className="text-base font-semibold text-blue-600 truncate flex-1">
-            Fingo
+            FinGo
           </h1>
           {user && <UserMenu user={user} />}
         </div>

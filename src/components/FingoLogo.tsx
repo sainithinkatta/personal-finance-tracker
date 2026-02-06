@@ -1,8 +1,8 @@
 import React from 'react';
 
-type FingoLogoProps = React.SVGProps<SVGSVGElement>;
+type FinGoLogoProps = React.SVGProps<SVGSVGElement>;
 
-const FingoLogo: React.FC<FingoLogoProps> = ({
+const FinGoLogo: React.FC<FinGoLogoProps> = ({
   width = 20,
   height = 20,
   ...props
@@ -30,5 +30,5 @@ const FingoLogo: React.FC<FingoLogoProps> = ({
   </svg>
 );
 
-export default FingoLogo;
-export { FingoLogo };
+export default FinGoLogo;
+export { FinGoLogo };

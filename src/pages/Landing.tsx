@@ -128,8 +128,8 @@ const Landing = () => {
             <div className="flex items-center gap-2">
               <Wallet className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
               <span className="text-lg sm:text-xl font-bold text-gray-900 truncate">
-                <span className="hidden sm:inline">Fingo</span>
-                <span className="sm:hidden">Fingo</span>
+                <span className="hidden sm:inline">FinGo</span>
+                <span className="sm:hidden">FinGo</span>
               </span>
             </div>
 
@@ -339,7 +339,7 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-xs sm:text-sm">
-              © {new Date().getFullYear()} Fingo. All rights reserved.
+              © {new Date().getFullYear()} FinGo. All rights reserved.
             </p>
           </div>
         </div>

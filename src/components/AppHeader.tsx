@@ -1,7 +1,7 @@
 import React from 'react';
 import { User } from '@supabase/supabase-js';
 import { UserMenu } from './layout/UserMenu';
-import FingoLogo from './FingoLogo';
+import FinGoLogo from './FinGoLogo';
 
 interface AppHeaderProps {
   user?: User | null;
@@ -14,7 +14,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ user, showSignOut = false 
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <FingoLogo />
+            <FinGoLogo />
             <div>
               <h1 className="text-2xl font-bold text-primary">
                 FinGo

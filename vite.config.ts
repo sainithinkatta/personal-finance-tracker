@@ -15,8 +15,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["logo.png", "robots.txt"],
       manifest: {
-        name: "Fingo",
-        short_name: "Fingo",
+        name: "FinGo",
+        short_name: "FinGo",
         description: "Track your income, expenses, and financial goals",
         theme_color: "#000000",
         background_color: "#ffffff",
