@@ -135,12 +135,12 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md mx-auto my-8 overflow-auto">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Recurring Transaction</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Label htmlFor="edit-name" className="text-sm font-medium">
               Name
             </Label>
@@ -156,7 +156,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
             />
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Label htmlFor="edit-amount" className="text-sm font-medium">
               Amount
             </Label>
@@ -177,7 +177,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
             />
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Label htmlFor="edit-currency" className="text-sm font-medium">
               Currency
             </Label>
@@ -201,7 +201,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
             </Select>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Label htmlFor="edit-category" className="text-sm font-medium">
               Category
             </Label>
@@ -234,7 +234,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
             </Select>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Label htmlFor="edit-frequency" className="text-sm font-medium">
               Frequency
             </Label>
@@ -264,7 +264,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
             </Select>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Label htmlFor="edit-next_due_date" className="text-sm font-medium">
               Next Due Date
             </Label>
@@ -280,7 +280,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
             />
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Label htmlFor="edit-bank_account_id" className="text-sm font-medium">
               Bank Account <span className="text-destructive">*</span>
             </Label>
@@ -307,7 +307,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
             )}
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Label
               htmlFor="edit-reminder_days_before"
               className="text-sm font-medium"
@@ -330,7 +330,7 @@ export const EditRecurringTransactionForm: React.FC<EditRecurringTransactionForm
             />
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Label htmlFor="edit-status" className="text-sm font-medium">
               Status
             </Label>

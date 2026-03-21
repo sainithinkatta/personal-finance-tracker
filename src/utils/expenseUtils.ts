@@ -12,17 +12,27 @@ export const filterExpenses = (expenses: Expense[], filters: FilterOptions): Exp
     if (filters.endDate && expense.date > endOfDay(filters.endDate)) {
       return false;
     }
-    
+
     // Category filter - Income filter doesn't apply to expenses
     if (filters.category !== 'All' && filters.category !== 'Income' && expense.category !== filters.category) {
       return false;
     }
-    
+
     // If Income filter is selected, no expenses should match
     if (filters.category === 'Income') {
       return false;
     }
-    
+
+    // Description filter (case-insensitive contains)
+    if (filters.description && !expense.description?.toLowerCase().includes(filters.description.toLowerCase())) {
+      return false;
+    }
+
+    // Bank account filter
+    if (filters.bankAccountId && expense.bank_account_id !== filters.bankAccountId) {
+      return false;
+    }
+
     return true;
   });
 };
@@ -36,12 +46,22 @@ export const filterTransactions = (transactions: Transaction[], filters: FilterO
     if (filters.endDate && tx.date > endOfDay(filters.endDate)) {
       return false;
     }
-    
+
     // Category filter
     if (filters.category !== 'All' && tx.category !== filters.category) {
       return false;
     }
-    
+
+    // Description filter (case-insensitive contains)
+    if (filters.description && !tx.description?.toLowerCase().includes(filters.description.toLowerCase())) {
+      return false;
+    }
+
+    // Bank account filter
+    if (filters.bankAccountId && tx.bank_account_id !== filters.bankAccountId) {
+      return false;
+    }
+
     return true;
   });
 };

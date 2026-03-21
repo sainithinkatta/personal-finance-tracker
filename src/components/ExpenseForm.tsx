@@ -79,10 +79,10 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+    if (!amount || isNaN(Number(amount)) || Number(amount) === 0) {
       toast({
         title: 'Invalid Amount',
-        description: 'Please enter a valid amount greater than 0.',
+        description: 'Please enter a valid non-zero amount.',
         variant: 'destructive',
       });
       return;
@@ -191,7 +191,6 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense, expense, onClos
             className="pl-9"
             type="number"
             step="0.01"
-            min="0"
             required
           />
         </div>

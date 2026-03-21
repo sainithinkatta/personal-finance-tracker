@@ -12,7 +12,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, Plus, TrendingUp } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Clock, Plus, TrendingUp } from 'lucide-react';
 import { useRecurringPlans } from '@/hooks/useRecurringPlans';
 import { useBankAccounts } from '@/hooks/useBankAccounts';
 import { useExpenses } from '@/hooks/useExpenses';
@@ -115,10 +115,45 @@ const RightSidebar: React.FC = () => {
         ...upcomingCreditPayments,
     ];
 
-    const getRelativeTime = (daysUntilDue: number) => {
-        if (daysUntilDue === 0) return '(Today)';
-        if (daysUntilDue === 1) return '(Tomorrow)';
-        return `(${daysUntilDue} days)`;
+    const getPaymentInfo = (days: number) => {
+        if (days < 0) {
+            const n = Math.abs(days);
+            return {
+                label: `Overdue by ${n} day${n !== 1 ? 's' : ''}!`,
+                labelClass: 'text-red-600 font-semibold',
+                cardClass: 'bg-red-50 border-red-200',
+                Icon: AlertCircle,
+                iconClass: 'text-red-500',
+            };
+        }
+        if (days === 0) return {
+            label: 'Due Today!',
+            labelClass: 'text-orange-600 font-semibold',
+            cardClass: 'bg-orange-50 border-orange-200',
+            Icon: AlertTriangle,
+            iconClass: 'text-orange-500',
+        };
+        if (days === 1) return {
+            label: 'Due Tomorrow',
+            labelClass: 'text-amber-600 font-medium',
+            cardClass: 'bg-amber-50 border-amber-200',
+            Icon: AlertTriangle,
+            iconClass: 'text-amber-500',
+        };
+        if (days <= 3) return {
+            label: `In ${days} days`,
+            labelClass: 'text-yellow-600',
+            cardClass: 'bg-yellow-50 border-yellow-100',
+            Icon: Clock,
+            iconClass: 'text-yellow-500',
+        };
+        return {
+            label: `In ${days} days`,
+            labelClass: 'text-gray-400',
+            cardClass: 'bg-gray-50 border-gray-100',
+            Icon: Clock,
+            iconClass: 'text-gray-400',
+        };
     };
 
     return (
@@ -156,19 +191,21 @@ const RightSidebar: React.FC = () => {
                             {allUpcomingPayments.map((payment) => {
                                 const daysUntilDue = differenceInDays(parseLocalDate(payment.next_due_date), new Date());
 
+                                const info = getPaymentInfo(daysUntilDue);
                                 return (
                                     <div
                                         key={payment.id}
-                                        className="p-2.5 rounded-lg bg-gray-50 border border-gray-100"
+                                        className={`p-2.5 rounded-lg border ${info.cardClass}`}
                                     >
                                         <h4 className="text-xs font-medium text-gray-900 truncate mb-1">
                                             {payment.name}
                                         </h4>
-                                        <p className="text-[11px] text-gray-500 mb-0.5">
+                                        <div className="flex items-center gap-1 mb-0.5">
+                                            <info.Icon className={`h-3 w-3 flex-shrink-0 ${info.iconClass}`} />
+                                            <span className={`text-[11px] ${info.labelClass}`}>{info.label}</span>
+                                        </div>
+                                        <p className="text-[11px] text-gray-500 mb-1">
                                             Due: {format(parseLocalDate(payment.next_due_date), 'MMM d, yyyy')}
-                                        </p>
-                                        <p className="text-[11px] text-gray-400 mb-1">
-                                            {getRelativeTime(daysUntilDue)}
                                         </p>
                                         <p className={`text-sm font-semibold ${payment.isCredit ? 'text-red-500' : 'text-green-600'}`}>
                                             {formatCurrency(payment.amount, payment.currency)}

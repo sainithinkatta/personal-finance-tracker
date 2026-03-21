@@ -149,7 +149,7 @@ const SavingsGoals: React.FC = () => {
               Add Goal
             </Button>
           </DialogTrigger>
-          <DialogContent className="mx-auto w-[calc(100%-2rem)] sm:w-full">
+          <DialogContent className="mx-auto w-[calc(100%-2rem)] sm:w-full max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingGoal ? 'Edit Savings Goal' : 'Add Savings Goal'}</DialogTitle>
               <DialogDescription>
@@ -172,7 +172,7 @@ const SavingsGoals: React.FC = () => {
               Add Contribution
             </Button>
           </DialogTrigger>
-          <DialogContent className="mx-auto w-[calc(100%-2rem)] sm:w-full">
+          <DialogContent className="mx-auto w-[calc(100%-2rem)] sm:w-full max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add Contribution</DialogTitle>
               <DialogDescription>

@@ -104,7 +104,7 @@ const BankAccountManager: React.FC = () => {
               Add Account
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingAccount ? 'Edit Bank Account' : 'Add Bank Account'}

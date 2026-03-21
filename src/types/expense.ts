@@ -18,6 +18,8 @@ export interface FilterOptions {
   startDate: Date | null;
   endDate: Date | null;
   category: TransactionCategory | 'All';
+  description: string;
+  bankAccountId: string;
 }
 
 export interface ExpenseSummary {

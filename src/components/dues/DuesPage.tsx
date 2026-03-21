@@ -22,6 +22,7 @@ import { IOweTab } from "./tabs/IOweTab";
 import { TheyOweMeTab } from "./tabs/TheyOweMeTab";
 import { SettledTab } from "./tabs/SettledTab";
 import { CreateDueData, Due, UpdateDueData } from "@/types/due";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 export const DuesPage: React.FC = () => {
@@ -38,6 +39,10 @@ export const DuesPage: React.FC = () => {
 
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState("i-owe");
+
+  const iOweCount = dues.filter(d => d.type === 'I Owe' && d.status !== 'Settled').length;
+  const theyOweMeCount = dues.filter(d => d.type === 'They Owe Me' && d.status !== 'Settled').length;
+  const settledCount = dues.filter(d => d.status === 'Settled').length;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingDue, setEditingDue] = useState<Due | null>(null);
 
@@ -109,14 +114,29 @@ export const DuesPage: React.FC = () => {
           >
             <TabsTrigger value="i-owe" className={triggerClassName}>
               I Owe
+              {iOweCount > 0 && (
+                <Badge className="ml-1.5 h-5 w-5 flex items-center justify-center p-0 text-xs rounded-full bg-red-100 text-red-700 hover:bg-red-100 border-0">
+                  {iOweCount}
+                </Badge>
+              )}
             </TabsTrigger>
 
             <TabsTrigger value="they-owe-me" className={triggerClassName}>
               They Owe Me
+              {theyOweMeCount > 0 && (
+                <Badge className="ml-1.5 h-5 w-5 flex items-center justify-center p-0 text-xs rounded-full bg-green-100 text-green-700 hover:bg-green-100 border-0">
+                  {theyOweMeCount}
+                </Badge>
+              )}
             </TabsTrigger>
 
             <TabsTrigger value="settled" className={triggerClassName}>
               Settled
+              {settledCount > 0 && (
+                <Badge className="ml-1.5 h-5 w-5 flex items-center justify-center p-0 text-xs rounded-full bg-gray-100 text-gray-600 hover:bg-gray-100 border-0">
+                  {settledCount}
+                </Badge>
+              )}
             </TabsTrigger>
           </TabsList>
         </div>

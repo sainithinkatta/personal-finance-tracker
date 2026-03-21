@@ -36,7 +36,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ expenses, currentMonthLabel
   const cards = [
     {
       title: 'Total Expenses',
-      value: validExpenses.length > 0 ? `${symbol}${totalSpent.toFixed(2)}` : 'No data',
+      value: validExpenses.length > 0 ? `${symbol}${totalSpent.toFixed(2)}` : '—',
       subtitle: currentMonthLabel,
       icon: DollarSign,
       iconBg: 'bg-primary/10',
@@ -44,7 +44,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ expenses, currentMonthLabel
     },
     {
       title: 'Highest Category',
-      value: validExpenses.length > 0 ? highestCategory[0] : 'No data',
+      value: validExpenses.length > 0 ? highestCategory[0] : '—',
       subtitle: validExpenses.length > 0 ? `${symbol}${Number(highestCategory[1]).toFixed(2)}` : '',
       icon: TrendingUp,
       iconBg: 'bg-accent/10',
@@ -52,7 +52,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ expenses, currentMonthLabel
     },
     {
       title: 'Transactions',
-      value: validExpenses.length > 0 ? validExpenses.length.toString() : 'No data',
+      value: validExpenses.length > 0 ? validExpenses.length.toString() : '—',
       subtitle: currentMonthLabel,
       icon: Receipt,
       iconBg: 'bg-warning/10',
@@ -60,7 +60,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ expenses, currentMonthLabel
     },
     {
       title: 'Avg Transaction',
-      value: validExpenses.length > 0 ? `${symbol}${avgTransaction.toFixed(2)}` : 'No data',
+      value: validExpenses.length > 0 ? `${symbol}${avgTransaction.toFixed(2)}` : '—',
       subtitle: 'Per expense',
       icon: ArrowUpRight,
       iconBg: 'bg-info/10',

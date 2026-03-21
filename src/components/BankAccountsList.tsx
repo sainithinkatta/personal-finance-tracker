@@ -353,7 +353,7 @@ const BankAccountsList: React.FC = () => {
         </BottomSheet>
       ) : (
         <Dialog open={!!editingAccount} onOpenChange={() => setEditingAccount(null)}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Bank Account</DialogTitle>
             </DialogHeader>

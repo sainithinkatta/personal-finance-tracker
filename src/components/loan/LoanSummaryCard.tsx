@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { format } from 'date-fns';
+import { ArrowDownCircle, BarChart3, CalendarDays, Percent, TrendingDown, Wallet } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loan, LoanContribution } from '@/types/loan';
 import {
@@ -40,13 +41,18 @@ const LoanSummaryCard: React.FC<LoanSummaryCardProps> = ({
   );
 
   const totalInterest = calculateTotalInterest(projections);
-  const projectedOutstanding = projections.length > 0 
-    ? projections[projections.length - 1].closingBalance 
+  const projectedOutstanding = projections.length > 0
+    ? projections[projections.length - 1].closingBalance
     : currentOutstanding;
-  
-  const lastProjectionMonth = projections.length > 0 
-    ? projections[projections.length - 1].month 
+
+  const lastProjectionMonth = projections.length > 0
+    ? projections[projections.length - 1].month
     : '';
+
+  const repaidPercent = Math.min(
+    Math.round((totalContributions / loan.reference_outstanding) * 100),
+    100
+  );
 
   return (
     <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200/60">
@@ -58,13 +64,19 @@ const LoanSummaryCard: React.FC<LoanSummaryCardProps> = ({
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Principal</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+              <Wallet className="h-3 w-3" />
+              Principal
+            </p>
             <p className="text-lg font-bold text-foreground">
               {formatLoanCurrency(loan.principal, loan.currency)}
             </p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">ROI (Annual)</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+              <Percent className="h-3 w-3" />
+              ROI (Annual)
+            </p>
             <p className="text-lg font-bold text-foreground">
               {loan.roi}%
             </p>
@@ -74,7 +86,8 @@ const LoanSummaryCard: React.FC<LoanSummaryCardProps> = ({
         <div className="border-t border-blue-200/60 pt-3">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+                <CalendarDays className="h-3 w-3" />
                 Outstanding ({format(new Date(loan.reference_date), 'MMM d, yyyy')})
               </p>
               <p className="text-xl font-bold text-foreground">
@@ -82,18 +95,22 @@ const LoanSummaryCard: React.FC<LoanSummaryCardProps> = ({
               </p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+                <ArrowDownCircle className="h-3 w-3" />
                 Paid Since
               </p>
               <p className="text-xl font-bold text-green-600">
-                -{formatLoanCurrency(totalContributions, loan.currency)}
+                {totalContributions > 0
+                  ? `-${formatLoanCurrency(totalContributions, loan.currency)}`
+                  : formatLoanCurrency(0, loan.currency)}
               </p>
             </div>
           </div>
         </div>
 
         <div className="border-t border-blue-200/60 pt-3">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">
+          <p className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+            <TrendingDown className="h-3 w-3" />
             Current Outstanding
           </p>
           <p className="text-2xl font-bold text-foreground">
@@ -101,9 +118,26 @@ const LoanSummaryCard: React.FC<LoanSummaryCardProps> = ({
           </p>
         </div>
 
+        <div className="border-t border-blue-200/60 pt-3">
+          <div className="flex items-center justify-between mb-1.5">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Repayment Progress</p>
+            <span className="text-xs font-semibold text-blue-700">{repaidPercent}% repaid</span>
+          </div>
+          <div className="w-full bg-blue-100 rounded-full h-2">
+            <div
+              className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+              style={{ width: `${repaidPercent}%` }}
+            />
+          </div>
+          {repaidPercent === 0 && (
+            <p className="text-xs text-muted-foreground mt-1">Make your first contribution to track progress</p>
+          )}
+        </div>
+
         <div className="grid grid-cols-2 gap-4 border-t border-blue-200/60 pt-3">
           <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+              <BarChart3 className="h-3 w-3" />
               Projected ({lastProjectionMonth})
             </p>
             <p className="text-lg font-bold text-amber-600">
@@ -111,7 +145,8 @@ const LoanSummaryCard: React.FC<LoanSummaryCardProps> = ({
             </p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+              <TrendingDown className="h-3 w-3 text-red-400" />
               Interest ({monthsAhead} months)
             </p>
             <p className="text-lg font-bold text-red-600">

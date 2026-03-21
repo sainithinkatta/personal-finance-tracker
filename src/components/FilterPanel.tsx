@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { CalendarIcon, ChevronDown, ChevronUp } from 'lucide-react';
+import { CalendarIcon, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Popover,
@@ -19,13 +20,15 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { FilterOptions, TransactionCategory } from '@/types/expense';
+import { BankAccount } from '@/types/bankAccount';
 
 interface FilterPanelProps {
   filters: FilterOptions;
   onFilterChange: (filters: FilterOptions) => void;
+  bankAccounts: BankAccount[];
 }
 
-const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) => {
+const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange, bankAccounts }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleCategoryChange = (value: string) => {
@@ -49,11 +52,21 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
     });
   };
 
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onFilterChange({ ...filters, description: e.target.value });
+  };
+
+  const handleBankAccountChange = (value: string) => {
+    onFilterChange({ ...filters, bankAccountId: value === 'all' ? '' : value });
+  };
+
   const clearFilters = () => {
     onFilterChange({
       startDate: null,
       endDate: null,
       category: 'All',
+      description: '',
+      bankAccountId: '',
     });
   };
 
@@ -84,12 +97,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
             Filters
           </span>
           {/* Active Filter Indicator */}
-          {(filters.category !== 'All' || filters.startDate || filters.endDate) && (
+          {(filters.category !== 'All' || filters.startDate || filters.endDate || filters.description || filters.bankAccountId) && (
             <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
               {[
                 filters.category !== 'All',
                 filters.startDate !== null,
-                filters.endDate !== null
+                filters.endDate !== null,
+                !!filters.description,
+                !!filters.bankAccountId,
               ].filter(Boolean).length}
             </span>
           )}
@@ -113,6 +128,41 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
         <div className="bg-secondary/50 p-3 md:p-4 rounded-lg space-y-3 md:space-y-0">
           {/* Mobile: Stacked Layout */}
           <div className="block md:hidden space-y-3">
+            {/* Description Search */}
+            <div className="w-full space-y-2">
+              <Label className="text-sm font-medium">Search Description</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  value={filters.description}
+                  onChange={handleDescriptionChange}
+                  placeholder="Search by description..."
+                  className="pl-9 touch-target"
+                />
+              </div>
+            </div>
+
+            {/* Bank Account Select */}
+            <div className="w-full space-y-2">
+              <Label className="text-sm font-medium">Bank Account</Label>
+              <Select
+                value={filters.bankAccountId || 'all'}
+                onValueChange={handleBankAccountChange}
+              >
+                <SelectTrigger className="touch-target">
+                  <SelectValue placeholder="All Accounts" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Accounts</SelectItem>
+                  {bankAccounts.map(acct => (
+                    <SelectItem key={acct.id} value={acct.id}>
+                      {acct.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Category Select */}
             <div className="w-full space-y-2">
               <Label className="text-sm font-medium">
@@ -200,6 +250,37 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFilterChange }) =>
 
           {/* Desktop: Horizontal Layout */}
           <div className="hidden md:flex flex-wrap items-center gap-4">
+            {/* Description Search */}
+            <div className="flex-1 min-w-[180px] relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                value={filters.description}
+                onChange={handleDescriptionChange}
+                placeholder="Search description..."
+                className="pl-9"
+              />
+            </div>
+
+            {/* Bank Account Select */}
+            <div className="flex-1 min-w-[180px]">
+              <Select
+                value={filters.bankAccountId || 'all'}
+                onValueChange={handleBankAccountChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All Accounts" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Accounts</SelectItem>
+                  {bankAccounts.map(acct => (
+                    <SelectItem key={acct.id} value={acct.id}>
+                      {acct.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="flex-1 min-w-[180px]">
               <Select value={filters.category} onValueChange={handleCategoryChange}>
                 <SelectTrigger>

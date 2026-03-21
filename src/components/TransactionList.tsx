@@ -522,7 +522,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
             </BottomSheet>
           ) : (
             <Dialog open={!!editingExpense} onOpenChange={() => setEditingExpense(null)}>
-              <DialogContent>
+              <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Edit Expense</DialogTitle>
                 </DialogHeader>

@@ -168,7 +168,7 @@ export const CategoryAllocationForm: React.FC<CategoryAllocationFormProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Allocate Budget by Category</DialogTitle>
           <p className="text-sm text-muted-foreground">

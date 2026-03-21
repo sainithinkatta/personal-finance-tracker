@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Edit2, Trash2, Calculator, GraduationCap, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -249,25 +250,6 @@ const LoanDashboard: React.FC = () => {
           />
         )}
 
-        {/* Contribution Form */}
-        {selectedLoan && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Add Contribution
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <LoanContributionForm
-                loanId={selectedLoan.id}
-                onSubmit={handleAddContribution}
-                isSubmitting={isAddingContribution}
-              />
-            </CardContent>
-          </Card>
-        )}
-
         {/* Contributions List */}
         {selectedLoan && contributions.length > 0 && (
           <Card>
@@ -290,21 +272,38 @@ const LoanDashboard: React.FC = () => {
           </Card>
         )}
 
-        {/* Projection Table */}
+        {/* Tabbed: Projection + Add Contribution */}
         {selectedLoan && (
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <Calculator className="h-4 w-4" />
-                {monthsAhead}-Month Projection
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <LoanProjectionTable
-                loan={selectedLoan}
-                contributions={contributions}
-                monthsAhead={monthsAhead}
-              />
+            <CardContent className="pt-4">
+              <Tabs defaultValue="projection">
+                <TabsList className="w-full">
+                  <TabsTrigger value="projection" className="flex-1">
+                    <Calculator className="h-4 w-4 mr-1.5" />
+                    {monthsAhead}-Month Projection
+                  </TabsTrigger>
+                  <TabsTrigger value="contribution" className="flex-1">
+                    <Plus className="h-4 w-4 mr-1.5" />
+                    Add Contribution
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="projection">
+                  <LoanProjectionTable
+                    loan={selectedLoan}
+                    contributions={contributions}
+                    monthsAhead={monthsAhead}
+                  />
+                </TabsContent>
+
+                <TabsContent value="contribution">
+                  <LoanContributionForm
+                    loanId={selectedLoan.id}
+                    onSubmit={handleAddContribution}
+                    isSubmitting={isAddingContribution}
+                  />
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         )}

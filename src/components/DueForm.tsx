@@ -81,7 +81,7 @@ const DueForm: React.FC<DueFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="type">Type *</Label>
         <Select
           value={formData.type}
@@ -99,7 +99,7 @@ const DueForm: React.FC<DueFormProps> = ({
         </Select>
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="person_name">Person's Name *</Label>
         <Input
           id="person_name"
@@ -113,7 +113,7 @@ const DueForm: React.FC<DueFormProps> = ({
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div>
+        <div className="space-y-2">
           <Label htmlFor="amount">Amount *</Label>
           <Input
             id="amount"
@@ -131,7 +131,7 @@ const DueForm: React.FC<DueFormProps> = ({
             required
           />
         </div>
-        <div>
+        <div className="space-y-2">
           <Label htmlFor="currency">Currency *</Label>
           <Select
             value={formData.currency}
@@ -150,7 +150,7 @@ const DueForm: React.FC<DueFormProps> = ({
         </div>
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="due_date">Due Date *</Label>
         <Input
           id="due_date"
@@ -161,7 +161,7 @@ const DueForm: React.FC<DueFormProps> = ({
         />
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="status">Status *</Label>
         <Select
           value={formData.status}
@@ -179,7 +179,7 @@ const DueForm: React.FC<DueFormProps> = ({
         </Select>
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="notes">Notes</Label>
         <Textarea
           id="notes"

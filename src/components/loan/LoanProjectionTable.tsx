@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { format } from 'date-fns';
+import { format, isSameMonth } from 'date-fns';
 import {
   Table,
   TableBody,
@@ -61,9 +61,17 @@ const LoanProjectionTable: React.FC<LoanProjectionTableProps> = ({
         <TableBody>
           {projections.map((projection) => {
             const monthKey = format(projection.monthStart, 'yyyy-MM');
+            const isCurrentMonth = isSameMonth(projection.monthStart, new Date());
             return (
-              <TableRow key={monthKey}>
-                <TableCell className="font-medium">{projection.month}</TableCell>
+              <TableRow key={monthKey} className={isCurrentMonth ? 'bg-blue-50' : ''}>
+                <TableCell className="font-medium">
+                  {projection.month}
+                  {isCurrentMonth && (
+                    <span className="ml-2 text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-semibold">
+                      Now
+                    </span>
+                  )}
+                </TableCell>
                 <TableCell className="text-center text-muted-foreground">
                   {projection.daysInMonth}
                 </TableCell>

@@ -43,6 +43,8 @@ const Index = () => {
     startDate: null,
     endDate: null,
     category: "All",
+    description: "",
+    bankAccountId: "",
   });
   const [user, setUser] = useState<any>(null);
 
@@ -142,6 +144,7 @@ const Index = () => {
               <FilterPanel
                 filters={filters}
                 onFilterChange={handleFilterChange}
+                bankAccounts={bankAccounts}
               />
               <TransactionList
                 transactions={filteredTransactions}
